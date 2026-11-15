@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: gitelik-center
+    runtime: node
+    plan: free
+    buildCommand: "echo no build step"
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
+      - key: MAX_TOKENS
+        value: "2000"
+      - key: RATE_PER_HOUR
+        value: "60"

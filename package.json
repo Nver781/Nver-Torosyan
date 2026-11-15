@@ -1,0 +1,14 @@
+{
+  "name": "gitelik-center",
+  "version": "1.0.0",
+  "description": "Գիտելիքի կենտրոն — լեզուներ, ֆինանսներ, IT, թրեյդինգ և Project Management ակադեմիաներ AI ուսուցչով",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node scripts/check.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
