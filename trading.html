@@ -1,0 +1,1608 @@
+<!doctype html><html lang="hy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Թրեյդինգի ակադեմիա</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@500;700;800&family=Noto+Sans+Armenian:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: planning-board — a course catalog leads to one course at a time; each course has a Gantt strip of 8 modules, then theory / practice / test per module, a final exam and a certificate */
+:root{
+  --paper:#f3f5f4; --sheet:#ffffff; --ink:#14232b; --muted:#5b6b70; --line:#d5dddb;
+  --accent:#1f6f5c; --accent-soft:#dcefe8; --milestone:#c9821b; --milestone-soft:#f8ead2;
+  --ok:#2f7d3a; --bad:#b23a2e; --bad-soft:#f7e1de; --ok-soft:#e0f0e1;
+  --c-tf:#1f6f5c; --c-ta:#2a5db0; --c-rm:#b0442e; --c-mk:#7a4fb8;
+  --f-display:"Noto Serif Armenian",Georgia,serif;
+  --f-body:"Noto Sans Armenian","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0f171a; --sheet:#162125; --ink:#e4ecea; --muted:#9aaaa8; --line:#2a3a3e;
+  --accent:#5cc7a8; --accent-soft:#173a32; --milestone:#e6a84a; --milestone-soft:#3a2c14;
+  --ok:#6cc27a; --bad:#ec7b6e; --bad-soft:#3d1f1c; --ok-soft:#1c3520;
+  --c-tf:#5cc7a8; --c-ta:#7aa6ec; --c-rm:#ec8a72; --c-mk:#b394e6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f171a; --sheet:#162125; --ink:#e4ecea; --muted:#9aaaa8; --line:#2a3a3e;
+  --accent:#5cc7a8; --accent-soft:#173a32; --milestone:#e6a84a; --milestone-soft:#3a2c14;
+  --ok:#6cc27a; --bad:#ec7b6e; --bad-soft:#3d1f1c; --ok-soft:#1c3520;
+  --c-tf:#5cc7a8; --c-ta:#7aa6ec; --c-rm:#ec8a72; --c-mk:#b394e6; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:clamp(28px,5vw,40px);font-weight:800}
+h2{font-size:clamp(22px,3.5vw,26px);font-weight:700}
+h3{font-size:19px;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header.top{display:flex;flex-direction:column;gap:10px}
+header.top .lead,.lead{color:var(--muted);max-width:70ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips a{text-decoration:none;color:var(--ink);padding:6px 13px;border-radius:999px;border:1px solid var(--line);font-size:14px;background:var(--sheet);display:inline-flex;align-items:center;gap:7px}
+.chips a .dot{width:9px;height:9px;border-radius:50%;background:var(--cc,var(--accent))}
+.chips a.on{border-color:var(--cc,var(--accent));box-shadow:inset 0 0 0 1px var(--cc,var(--accent))}
+.statrow{display:flex;flex-wrap:wrap;gap:22px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-mono);font-size:22px;font-weight:500}
+.stat span{font-size:13px;color:var(--muted)}
+.course-head{display:flex;flex-direction:column;gap:12px;border-left:4px solid var(--cc,var(--accent));padding-left:14px}
+.gantt{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+.gantt-grid{display:grid;grid-template-columns:repeat(8,minmax(92px,1fr));gap:6px;min-width:760px}
+.g-head{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:0 4px}
+.g-bar{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-align:left;border-radius:6px;padding:8px;cursor:pointer;font:inherit;font-size:13px;line-height:1.3;display:flex;flex-direction:column;gap:6px;min-height:84px}
+.g-bar:hover{border-color:var(--cc,var(--accent))}
+.g-bar.active{border-color:var(--cc,var(--accent));box-shadow:inset 0 0 0 1px var(--cc,var(--accent))}
+.fill{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:block}
+.fill i{display:block;height:100%;background:var(--cc,var(--accent))}
+.g-ms{grid-column:1/-1;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;gap:10px;flex-wrap:wrap}
+.diamond{display:inline-block;width:9px;height:9px;background:var(--milestone);transform:rotate(45deg);margin-right:6px}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs a{text-decoration:none;color:var(--ink);padding:7px 14px;border-radius:999px;border:1px solid var(--line);font-size:14px;background:var(--sheet)}
+nav.tabs a.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+section.panel{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:18px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cols>*{min-width:0}
+.box{border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.course-card{background:var(--sheet);border:1px solid var(--line);border-top:4px solid var(--cc);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--ink)}
+.course-card:hover{border-color:var(--cc)}
+.course-card .meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+ul,ol{margin:0;padding-left:22px}
+li{margin:3px 0}
+.lesson{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.lesson-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.lesson .body{max-width:76ch;display:flex;flex-direction:column;gap:8px;min-width:0}
+.formula{font-family:var(--f-mono);background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:13.5px;overflow-x:auto;white-space:pre;max-width:100%}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;user-select:none}
+.chk input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600;white-space:nowrap;align-self:flex-start}
+.pill.ms{background:var(--milestone-soft);color:var(--milestone)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.sub-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sub-tabs button{appearance:none;border:0;background:none;font:inherit;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub-tabs button.on{color:var(--ink);border-bottom-color:var(--cc,var(--accent));font-weight:600}
+textarea{width:100%;min-height:180px;font:inherit;font-size:15px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;resize:vertical}
+input[type=number],input[type=text]{font:inherit;width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+input[type=number]{font-family:var(--f-mono)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--sheet);font:inherit;font-weight:600;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:15px;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--milestone);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.q{border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.q .opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.opt input{margin-top:5px;accent-color:var(--accent);flex:none}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.expl{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px}
+.result{font-size:18px;font-weight:600}
+.feedback{white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:15px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl{overflow-x:auto;max-width:100%}
+.timer{font-family:var(--f-mono);font-size:20px}
+.save-note{font-size:12px;color:var(--muted)}
+.notice{background:var(--milestone-soft);border:1px solid var(--milestone);border-radius:8px;padding:12px 14px;font-size:14px;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.req{display:flex;flex-direction:column;gap:6px}
+.req div{display:flex;gap:8px;align-items:center}
+.req .mark{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;background:var(--line);color:var(--muted)}
+.req .mark.done{background:var(--ok);color:var(--sheet)}
+.cert{border:2px solid var(--cc);outline:1px solid var(--cc);outline-offset:6px;border-radius:4px;padding:clamp(20px,5vw,48px);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--sheet);margin:10px}
+.cert .cname{font-family:var(--f-display);font-size:clamp(26px,5vw,40px);font-weight:800;border-bottom:1px solid var(--line);padding:0 20px 6px;min-width:min(100%,320px)}
+.cert .ctitle{font-family:var(--f-display);font-size:clamp(20px,3.5vw,28px);font-weight:700;color:var(--cc)}
+.cert .seal{width:64px;height:64px;border-radius:50%;border:2px solid var(--cc);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:12px;color:var(--cc)}
+.cert-meta{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.cert-meta b{display:block;color:var(--ink);font-family:var(--f-mono);font-weight:500;font-size:15px}
+.intro{background:var(--accent-soft);border-radius:10px;padding:clamp(14px,3vw,20px);display:flex;flex-direction:column;gap:12px}
+.intro .box{background:var(--sheet)}
+.intro table{background:var(--sheet);border-radius:6px}
+.simple{border-left:3px solid var(--milestone);background:var(--milestone-soft);border-radius:0 8px 8px 0;padding:12px 14px;display:flex;flex-direction:column;gap:6px;max-width:76ch}
+.pre{white-space:pre-wrap}
+.lesson-content{display:flex;flex-direction:column;gap:12px}
+.simple .btn{align-self:flex-start}
+details.qa{border:1px dashed var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:10px;max-width:76ch}
+details.qa[open]{border-style:solid;background:var(--paper)}
+details.qa summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:14px}
+details.qa[open] summary{margin-bottom:10px}
+details.qa textarea{min-height:70px;margin-top:10px;background:var(--sheet)}
+details.qa .row{margin-top:8px}
+.qa-thread{display:flex;flex-direction:column;gap:8px}
+.msg{white-space:pre-wrap;padding:10px 12px;border-radius:10px;font-size:15px;max-width:92%}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--sheet);border-bottom-right-radius:3px}
+.msg.a{align-self:flex-start;background:var(--sheet);border:1px solid var(--line);border-bottom-left-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.backlink{font-size:14px;text-decoration:none;color:var(--muted)}.backlink:hover{color:var(--accent)}
+select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)}
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.method .box p{font-size:15px}
+
+</style>
+<script>
+/* claude bridge: when embedded in the hub, use the hub's runtime */
+(function(){try{if(window.parent!==window&&window.parent.claude&&window.parent.claude.use){window.claude=window.parent.claude;}}catch(e){}})();
+</script>
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <a class="backlink" id="backlink" href="index.html">← Գիտելիքի կենտրոն</a>
+    <span class="eyebrow">4 դասընթաց · բոլոր շուկաները · ապացույցների վրա հիմնված · քննություններ և վկայականներ</span>
+    <h1><a href="#" style="color:inherit;text-decoration:none">Թրեյդինգի ակադեմիա</a></h1>
+    <nav class="chips" id="chips" aria-label="Դասընթացներ"></nav>
+  </header>
+  <div id="course"></div>
+  <main id="view"></main>
+  <p class="save-note" id="saveNote"></p>
+</div>
+<script>
+try{if(window.parent!==window&&window.parent.HUB)document.getElementById("backlink").hidden=true;}catch(e){}
+/* ========== TRADING 1: FOUNDATIONS ========== */
+const TF = { id:"tf", title:"Շուկաներ և թրեյդինգի հիմունքներ", short:"Հիմունքներ",
+lead:"Ինչպես են աշխատում ֆինանսական շուկաները, ինչ գործիքներ կան, որքան է իրականում արժենում գործարքը, ինչ են ասում հետազոտությունները մանրածախ թրեյդերների մասին և ինչպես կազմել թրեյդինգ պլան։",
+weeks:[
+{ n:1, aca:"Շուկայի կառուցվածք", title:"Շուկաները և մասնակիցները", short:"Շուկաներ",
+  goal:"Հասկանալ, թե ով է գնում և վաճառում, որտեղ են կատարվում գործարքները և ինչով են տարբերվում ակտիվների դասերը։",
+  lessons:[
+    {t:"Ի՞նչ է ֆինանսական շուկան", h:"1 ժ", b:`<p><b>Առաջնային շուկա</b>՝ ընկերությունը կամ պետությունը առաջին անգամ թողարկում է արժեթուղթ (IPO, պարտատոմսերի տեղաբաշխում) և ստանում գումարը։ <b>Երկրորդային շուկա</b>՝ ներդրողները առևտուր են անում իրար միջև. ընկերությունը այս գործարքներից գումար չի ստանում։</p>
+      <div class="tbl"><table><tr><th>Վայր</th><th>Ինչպես է աշխատում</th><th>Օրինակներ</th></tr><tr><td>Բորսա (exchange)</td><td>Կենտրոնացված order book, հրապարակային գներ, clearing house</td><td>NYSE, Nasdaq, CME, Deutsche Börse, Հայաստանի ֆոնդային բորսա (AMX)</td></tr><tr><td>OTC (արտաբորսայական)</td><td>Գործարքը երկու կողմի կամ դիլերի միջև</td><td>Արժութային (FX) շուկայի մեծ մասը, շատ պարտատոմսեր, CFD</td></tr><tr><td>Կրիպտո բորսաներ</td><td>Կենտրոնացված (CEX) կամ ապակենտրոն (DEX), աշխատում են 24/7</td><td>Coinbase, Kraken, Binance, Uniswap</td></tr></table></div>
+      <p><b>Մասնակիցներ.</b> Ինստիտուցիոնալ ներդրողներ (կենսաթոշակային ֆոնդեր, ապահովագրական ընկերություններ, mutual fund-եր), hedge fund-եր, market maker-ներ (մշտապես տալիս են գնման և վաճառքի գին և աշխատում spread-ով), HFT ընկերություններ, կենտրոնական բանկեր, ընկերություններ (hedging) և մանրածախ (retail) ներդրողներ։ Retail թրեյդերը առևտուր է անում պրոֆեսիոնալների դեմ, որոնք ունեն ավելի արագ տվյալներ, ավելի էժան կատարում և ավելի շատ կապիտալ։</p>`},
+    {t:"Ակտիվների դասերը մեկ աղյուսակում", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Ակտիվ</th><th>Ինչ ես գնում</th><th>Եկամտի աղբյուր</th><th>Հիմնական ռիսկ</th></tr>
+      <tr><td>Բաժնետոմս</td><td>Ընկերության բաժին</td><td>Գնի աճ, դիվիդենդ</td><td>Ընկերության և շուկայի անկում</td></tr>
+      <tr><td>ETF</td><td>Ֆոնդ, որը պահում է բազմաթիվ ակտիվներ և առևտուր է արվում բորսայում</td><td>Ինդեքսի եկամտաբերություն</td><td>Շուկայական, tracking error</td></tr>
+      <tr><td>Պարտատոմս</td><td>Պարտք պետությանը կամ ընկերությանը</td><td>Տոկոսներ (կուպոն)</td><td>Տոկոսադրույքի, վարկային</td></tr>
+      <tr><td>Արժույթ (FX)</td><td>Մեկ արժույթ մյուսի դիմաց (EUR/USD)</td><td>Փոխարժեքի փոփոխություն, տոկոսների տարբերություն</td><td>Լծակ (leverage), մակրո շոկեր</td></tr>
+      <tr><td>Կրիպտոարժույթ</td><td>Թվային ակտիվ բլոկչեյնում</td><td>Գնի փոփոխություն</td><td>Բարձր volatility, պահպանում, խարդախություն</td></tr>
+      <tr><td>Ֆյուչերս</td><td>Պայմանագիր՝ գնել/վաճառել ապագայում ֆիքսված գնով</td><td>Գնի փոփոխություն</td><td>Լծակ, margin call</td></tr>
+      <tr><td>Օպցիոն</td><td>Իրավունք (ոչ պարտավորություն) գնել կամ վաճառել</td><td>Գնի, ժամանակի և volatility-ի փոփոխություն</td><td>Ժամանակի արժեքի կորուստ, բարդություն</td></tr></table></div>
+      <p><b>CFD</b> (Contract for Difference)՝ պայմանագիր բրոքերի հետ գնի տարբերության վրա. դու չես տիրապետում ակտիվին։ ԱՄՆ-ում retail հաճախորդների համար արգելված է, ԵՄ-ում խիստ սահմանափակված (տես մոդուլ 3)։</p>`},
+    {t:"Ներդրում, թրեյդինգ և սպեկուլյացիա", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ոճ</th><th>Պահման ժամկետ</th><th>Ժամանակ օրական</th><th>Ծախսերի ազդեցություն</th></tr><tr><td>Scalping</td><td>Վայրկյաններ, րոպեներ</td><td>Ամբողջ օր</td><td>Շատ բարձր</td></tr><tr><td>Day trading</td><td>Մինչև օրվա վերջ</td><td>4–8 ժ</td><td>Բարձր</td></tr><tr><td>Swing trading</td><td>Օրեր, շաբաթներ</td><td>30–60 րոպե</td><td>Միջին</td></tr><tr><td>Position / trend</td><td>Շաբաթներ, ամիսներ</td><td>Շաբաթական մի քանի ժամ</td><td>Ցածր</td></tr><tr><td>Ներդրում (buy & hold)</td><td>Տարիներ</td><td>Ամսական մի քանի րոպե</td><td>Շատ ցածր</td></tr></table></div>
+      <p><b>Դրական գումարով vs զրոյական գումարով խաղ.</b> Բաժնետոմսերի երկարաժամկետ պահումը մասնակցում է տնտեսության աճին և ընկերությունների շահույթին (դրական գումար)։ Կարճաժամկետ թրեյդինգը, ֆյուչերսները և օպցիոնները ծախսերից առաջ մոտավորապես զրոյական գումարով են (մեկի շահույթը մյուսի վնասն է), իսկ ծախսերից հետո՝ բացասական։ Սա չի նշանակում, որ թրեյդինգով անհնար է վաստակել, բայց նշանակում է, որ պետք է ունենալ ապացուցված առավելություն (edge)։</p>`}
+  ],
+  practice:{t:"Շուկայի քարտեզ", steps:["Ընտրիր 3 ակտիվ տարբեր դասերից (օր.՝ SPY ETF, EUR/USD, BTC) և գրիր, թե որտեղ և ինչ ժամերին են առևտուր արվում","Յուրաքանչյուրի համար նշիր եկամտի աղբյուրը և հիմնական ռիսկը","Որոշիր քո ոճը (swing, position կամ ներդրում)՝ ելնելով օրվա ազատ ժամանակից","Գրիր 3 նախադասություն՝ ինչու ես ուզում զբաղվել թրեյդինգով և ինչ ես համարում հաջողություն 12 ամսից"], deliverable:"Ակտիվների աղյուսակ, ընտրված ոճ և նպատակներ"},
+  quiz:[
+    ["Ո՞ր շուկայում է ընկերությունը ստանում գումար բաժնետոմսերի վաճառքից։",["Երկրորդային","Առաջնային (IPO)","OTC CFD","Ֆյուչերսների"],1,"Միայն թողարկման ժամանակ գումարը գնում է ընկերությանը։"],
+    ["Market maker-ը վաստակում է հիմնականում...",["Դիվիդենդներից","Spread-ից՝ գնման և վաճառքի գնի տարբերությունից","Հարկերից","Կենտրոնական բանկից"],1,"Նա միշտ տալիս է bid և ask։"],
+    ["Ո՞ր գործիքն է տալիս իրավունք, բայց ոչ պարտավորություն։",["Ֆյուչերս","Օպցիոն","Բաժնետոմս","CFD"],1,"Օպցիոնի գնորդը կարող է չօգտագործել իրավունքը։"],
+    ["CFD-ով BTC գնելիս դու...",["Տիրապետում ես բիտկոինին","Պայմանագիր ունես բրոքերի հետ գնի տարբերության վրա","Գնում ես բորսայի բաժնետոմս","Ստանում ես դիվիդենդ"],1,"CFD-ն ածանցյալ պայմանագիր է։"],
+    ["Ինչու է կարճաժամկետ թրեյդինգը ծախսերից հետո բացասական գումարով խաղ։",["Քանի որ գները միշտ ընկնում են","Քանի որ մոտավորապես զրոյական գումարով խաղից հանվում են կոմիսիոնները և spread-ը","Քանի որ բորսաները արգելում են","Դա ճիշտ չէ"],1,"Ծախսերը հավաքվում են յուրաքանչյուր գործարքի հետ։"]
+  ]},
+{ n:2, aca:"Կատարում և ծախսեր", title:"Գներ, պատվերներ և ծախսեր", short:"Պատվերներ",
+  goal:"Կարդալ order book-ը, ճիշտ ընտրել պատվերի տեսակը և հաշվել գործարքի իրական ծախսը։",
+  lessons:[
+    {t:"Order book, spread և liquidity", h:"1 ժ", b:`<div class="formula">ASK (վաճառողներ)    100.06 × 500
+                    100.05 × 300   ← լավագույն ask
+BID (գնորդներ)      100.03 × 400   ← լավագույն bid
+                    100.02 × 900
+Spread = 100.05 − 100.03 = 0.02  (≈ 0.02%)</div>
+      <ul><li><b>Bid</b>՝ ամենաբարձր գինը, որ գնորդը պատրաստ է վճարել. <b>Ask</b>՝ ամենացածրը, որով վաճառողը պատրաստ է վաճառել</li><li><b>Liquidity</b>՝ որքան հեշտ է գնել կամ վաճառել մեծ ծավալ առանց գինը շարժելու. նեղ spread և մեծ ծավալներ = բարձր liquidity</li><li><b>Slippage</b>՝ տարբերություն սպասված և փաստացի կատարման գնի միջև. մեծանում է նորությունների ժամանակ, բացման պահին և ցածր liquidity-ով ակտիվներում</li><li><b>Gap</b>՝ գինը բացվում է նախորդ փակումից զգալիորեն տարբեր. stop պատվերը կարող է կատարվել շատ ավելի վատ գնով</li></ul>`},
+    {t:"Պատվերների տեսակները", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Պատվեր</th><th>Ինչ է անում</th><th>Ռիսկ</th></tr>
+      <tr><td>Market</td><td>Կատարվում է անմիջապես լավագույն հասանելի գնով</td><td>Slippage, հատկապես ցածր liquidity-ի դեպքում</td></tr>
+      <tr><td>Limit</td><td>Գնել ոչ ավելի թանկ / վաճառել ոչ ավելի էժան, քան նշված գինը</td><td>Կարող է չկատարվել</td></tr>
+      <tr><td>Stop (stop-market)</td><td>Երբ գինը հասնում է stop-ին, դառնում է market պատվեր</td><td>Gap-ի դեպքում կատարվում է շատ ավելի վատ գնով</td></tr>
+      <tr><td>Stop-limit</td><td>Stop-ից հետո դառնում է limit պատվեր</td><td>Արագ անկման ժամանակ կարող է ընդհանրապես չկատարվել</td></tr>
+      <tr><td>Trailing stop</td><td>Stop-ը շարժվում է գնի հետ ֆիքսված հեռավորությամբ</td><td>Աղմուկից շուտ դուրս գալ</td></tr>
+      <tr><td>OCO / Bracket</td><td>Մեկը կատարվելիս մյուսը չեղարկվում է (take profit + stop)</td><td>Կարգավորման սխալներ</td></tr></table></div>
+      <p><b>Ժամկետ.</b> Day (ուժի մեջ է մինչև օրվա վերջ), GTC (մինչև չեղարկում)։ <b>Կանոն.</b> Մուտք գործիր limit պատվերով, իսկ ելքի համար միշտ նախապես տեղադրիր stop. «Մտքում պահած» stop-ը stop չէ։</p>`},
+    {t:"Գործարքի իրական ծախսը", h:"1.5 ժ", b:`<p>Ընդհանուր ծախս = կոմիսիոն + spread + slippage + ֆինանսավորում (swap, margin interest, crypto funding) + արժույթի փոխարկում + հարկեր։</p>
+      <div class="formula">Օրինակ: հաշիվ $10 000, ամեն օր 2 գործարք (մուտք + ելք = round trip)
+Մեկ round trip-ի ծախս ≈ 0.05% (spread + կոմիսիոն + slippage) × $10 000 = $5
+Տարեկան ≈ 250 օր × 2 × $5 = $2 500 = հաշվի 25%-ը
+→ Միայն ծախսերը փակելու համար պետք է տարեկան +25% համախառն շահույթ</div>
+      <p><b>Եզրակացություն.</b> Ինչքան հաճախ ես առևտուր անում, այնքան մեծ առավելություն է պետք։ Ծախսերը միակ բանն են, որ վստահ գիտես նախապես։ Համեմատիր բրոքերներին ոչ միայն կոմիսիոնով, այլ նաև spread-ով, ֆինանսավորման տոկոսով և արժույթի փոխարկման վճարով։ «Զրո կոմիսիոն»-ը չի նշանակում զրո ծախս (payment for order flow, ավելի լայն spread)։</p>`}
+  ],
+  practice:{t:"Ծախսերի աուդիտ", steps:["Բացիր 2 բրոքերի կամ բորսայի գնացուցակը և գրիր կոմիսիոնները, spread-երը, ֆինանսավորման և փոխարկման վճարները","Ցանկացած ակտիվի համար դիտիր order book-ը (կամ bid/ask) 3 տարբեր ժամի և գրանցիր spread-ը","Հաշվիր քո ընտրած ոճի տարեկան ծախսը % -ով, օգտագործելով ներքևի հաշվիչը","Գրիր քո պատվերների կանոնները. ինչ պատվերով ես մտնում, որտեղ է stop-ը, երբ ես օգտագործում limit"], deliverable:"Բրոքերների համեմատություն, spread-ի դիտարկումներ, տարեկան ծախսի հաշվարկ, պատվերների կանոններ", tools:["cost"]},
+  quiz:[
+    ["Bid = 50.10, Ask = 50.14։ Spread-ը՝",["0.04","0.14","50.12","0.4"],0,"50.14 − 50.10 = 0.04։"],
+    ["Ո՞ր պատվերը կարող է արագ անկման ժամանակ ընդհանրապես չկատարվել։",["Market","Stop-market","Stop-limit","Trailing stop-market"],2,"Stop-ից հետո այն limit է և կարող է բաց թողնվել։"],
+    ["Gap-ի դեպքում stop-market պատվերը...",["Կատարվում է ճիշտ stop-ի գնով","Կարող է կատարվել շատ ավելի վատ գնով","Չեղարկվում է","Դառնում է limit"],1,"Stop-ը երաշխավորում է կատարումը, ոչ թե գինը։"],
+    ["Round trip-ի ծախսը 0.1% է, օրական 4 round trip, 250 օր։ Տարեկան ծախսը հաշվի նկատմամբ մոտավորապես՝",["10%","25%","100%","4%"],2,"0.1% × 4 × 250 = 100%։"],
+    ["«Զրո կոմիսիոն» բրոքերի դեպքում ծախսը...",["Միշտ զրո է","Կարող է թաքնված լինել spread-ում և կատարման որակում","Վճարում է պետությունը","Միայն հարկն է"],1,"Ստուգիր spread-ը և execution-ը։"]
+  ]},
+{ n:3, aca:"Պաշտպանություն", title:"Բրոքեր, լծակ և կարգավորում", short:"Կարգավորում",
+  goal:"Ընտրել կարգավորվող բրոքեր, հասկանալ margin-ը և լծակը և ճանաչել խարդախությունները։",
+  lessons:[
+    {t:"Ինչպես ընտրել բրոքեր", h:"1 ժ", b:`<ul><li><b>Կարգավորում.</b> ԱՄՆ՝ SEC և FINRA (հաճախորդի արժեթղթերը պաշտպանված են SIPC-ով մինչև $500 000 բրոքերի սնանկության դեպքում, ոչ թե շուկայական կորստից), Մեծ Բրիտանիա՝ FCA, ԵՄ՝ ազգային կարգավորողներ (CySEC, BaFin) ESMA-ի կանոններով, Հայաստան՝ ՀՀ Կենտրոնական բանկ (լիցենզավորված ներդրումային ընկերություններ և բանկեր)։ Ստուգիր լիցենզիան կարգավորողի կայքում, ոչ թե բրոքերի կայքում</li><li><b>Հաճախորդի միջոցների առանձնացում</b> (segregated accounts)</li><li><b>Իրական ակտիվ vs CFD.</b> Երկարաժամկետ ներդրման համար նախընտրելի է իրական բաժնետոմս/ETF</li><li><b>Ծախսեր</b>, հարթակի հուսալիություն, գումարի մուտքագրման և դուրսբերման պայմաններ, հարկային փաստաթղթեր</li></ul>
+      <p>ՀՀ ԿԲ-ն պարբերաբար հրապարակում է զգուշացումներ առանց լիցենզիայի գործող ընկերությունների մասին։ Եթե ընկերությունը քեզ զանգում է և առաջարկում «անձնական մենեջեր» ու «երաշխավորված եկամուտ», դա կարմիր դրոշ է։</p>`},
+    {t:"Margin, լծակ և margin call", h:"1.5 ժ", b:`<div class="formula">Լծակ 1:30, դիրք $30 000 → պահանջվող margin = $1 000
+Գինը շարժվում է քո դեմ 1% → կորուստ $300 = margin-ի 30%
+Գինը շարժվում է 3.3% → կորուստ ≈ ամբողջ margin-ը</div>
+      <p><b>Լծակը չի փոխում գործարքի որակը, այն բազմապատկում է և՛ շահույթը, և՛ վնասը։</b> Margin call՝ երբ հաշվի կապիտալը իջնում է պահանջվող նվազագույնից, բրոքերը պահանջում է գումար կամ փակում է դիրքերը։</p>
+      <div class="tbl"><table><tr><th>ESMA-ի սահմանափակումներ retail CFD-ների համար (2018-ից)</th><th>Առավելագույն լծակ</th></tr><tr><td>Հիմնական արժութային զույգեր</td><td>30:1</td></tr><tr><td>Այլ զույգեր, ոսկի, հիմնական ինդեքսներ</td><td>20:1</td></tr><tr><td>Այլ ապրանքներ, ոչ հիմնական ինդեքսներ</td><td>10:1</td></tr><tr><td>Առանձին բաժնետոմսեր</td><td>5:1</td></tr><tr><td>Կրիպտոարժույթներ</td><td>2:1</td></tr></table></div>
+      <p>Լրացուցիչ՝ դիրքերի ավտոմատ փակում, երբ margin-ը իջնում է նվազագույնի 50%-ին, negative balance protection (չես կարող կորցնել ավելին, քան ներդրել ես) և ստանդարտ զգուշացում՝ քանի % retail հաշիվ է կորցնում գումար։ <b>ԱՄՆ.</b> FINRA-ն 2026 թ. հունիսի 4-ից (անցումային շրջանով մինչև 2027 թ. հոկտեմբեր) $25 000-ի «pattern day trader» կանոնը փոխարինել է intraday margin ստանդարտներով։ Սա ավելի հեշտ է դարձնում day trading-ը, բայց չի փոքրացնում ռիսկը։</p>`},
+    {t:"Խարդախություններ և կարմիր դրոշներ", h:"1 ժ", b:`<ul><li>«Երաշխավորված» կամ «ամսական 20%» եկամուտ</li><li>Telegram/Instagram «signal» խմբեր, որոնք վաճառում են բաժանորդագրություն, բայց չեն ցույց տալիս ստուգելի track record</li><li>Գեղեցիկ screenshot-ներ առանց broker statement-ի</li><li>Ճնշում՝ «առաջարկը վավեր է միայն այսօր»</li><li>Ընկերություն, որը գրանցված է offshore և ՀՀ ԿԲ-ի կամ այլ հեղինակավոր կարգավորողի լիցենզիա չունի</li><li>Խնդրում են տեղադրել remote desktop ծրագիր (AnyDesk) «օգնելու համար»</li><li>Կրիպտոյում՝ pump-and-dump, rug pull, կեղծ app-եր, «recovery» ծառայություններ, որոնք խոստանում են վերադարձնել կորցրածը</li></ul>
+      <p><b>Ստուգաթերթ.</b> Լիցենզիա (կարգավորողի կայքում) → փոքր գումարի դուրսբերման թեստ → պայմանագրի ընթերցում → երբեք մի տուր գաղտնաբառեր, 2FA կոդեր կամ seed phrase։</p>`}
+  ],
+  practice:{t:"Բրոքերի due diligence", steps:["Ընտրիր 2 բրոքեր, որոնց մասին լսել ես, և ստուգիր նրանց լիցենզիան կարգավորողի պաշտոնական կայքում","Գտիր ESMA-ի պահանջով ստանդարտ զգուշացումը (կորցնող հաշիվների %-ը) EU բրոքերի կայքում","Հաշվիր, թե քանի % շարժումն է ոչնչացնում margin-ը 1:5, 1:20 և 1:30 լծակների դեպքում","Գրիր քո անձնական «երբեք չեմ անի» ցուցակը՝ 6 կետ"], deliverable:"Due diligence աղյուսակ, լծակի հաշվարկ, անձնական կանոններ"},
+  quiz:[
+    ["ESMA-ի համաձայն retail CFD-ների առավելագույն լծակը կրիպտոյի համար՝",["30:1","10:1","5:1","2:1"],3,"2:1։"],
+    ["Լծակ 1:20։ Որքա՞ն անբարենպաստ շարժումն է ոչնչացնում ամբողջ margin-ը։",["20%","5%","1%","50%"],1,"100% / 20 = 5%։"],
+    ["SIPC-ը պաշտպանում է...",["Շուկայական կորուստներից","Բրոքերի սնանկությունից՝ որոշակի սահմանով","Կրիպտոյի խարդախությունից","Հարկերից"],1,"Ոչ թե վատ գործարքներից։"],
+    ["Ո՞րն է խարդախության ամենաուժեղ նշանը։",["Ցածր կոմիսիոն","Երաշխավորված բարձր ամսական եկամուտ և ճնշում արագ որոշման համար","Լիցենզիա FCA-ից","Demo հաշիվ"],1,"Շուկան երաշխիքներ չի տալիս։"],
+    ["Ի՞նչ է փոխարինել ԱՄՆ-ում $25 000-ի PDT կանոնը 2026-ին։",["Ոչինչ","FINRA-ի intraday margin ստանդարտները","Day trading-ի արգելք","$50 000 նվազագույն"],1,"FINRA Rule 4210-ի փոփոխություն, ուժի մեջ՝ 2026-06-04։"]
+  ]},
+{ n:4, aca:"Ապացույցներ", title:"Ինչ են ասում տվյալները", short:"Ապացույցներ",
+  goal:"Իմանալ ակադեմիական և կարգավորողների տվյալները մանրածախ թրեյդինգի արդյունքների մասին և որտեղից կարող է գալ իրական առավելությունը։",
+  lessons:[
+    {t:"Մանրածախ թրեյդերների արդյունքները", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Հետազոտություն</th><th>Տվյալներ</th><th>Արդյունք</th></tr>
+      <tr><td>Barber & Odean, «Trading Is Hazardous to Your Wealth» (Journal of Finance, 2000)</td><td>66 465 ընտանիք, 1991–1996, ԱՄՆ discount broker</td><td>Միջին եկամտաբերություն 16.4% տարեկան vs շուկայի 17.9%. ամենաակտիվ թրեյդերները՝ 11.4%</td></tr>
+      <tr><td>Chague, De-Losso, Giovannetti, «Day Trading for a Living?» (2019)</td><td>Բրազիլիա, 19 646 մարդ, ովքեր սկսել են day trading ֆյուչերսներով 2013–2015</td><td>300+ օր համառածների 97%-ը կորցրել է գումար. միայն 1.1%-ն է վաստակել նվազագույն աշխատավարձից ավելի. ուսուցման ապացույց չի գտնվել</td></tr>
+      <tr><td>ESMA (2018)</td><td>ԵՄ կարգավորողների վերլուծություն CFD հաշիվների</td><td>Retail հաշիվների 74–89%-ը սովորաբար կորցնում է գումար</td></tr></table></div>
+      <p><b>Ինչու է այդպես.</b> Ծախսեր, չափազանց հաճախ առևտուր, overconfidence, լծակ, disposition effect (շահույթը շուտ փակել, վնասը երկար պահել), պրոֆեսիոնալների հետ մրցակցություն։ Այս դասընթացի նպատակը ոչ թե քեզ վախեցնելն է, այլ սովորեցնելը, թե ինչպես չլինել միջին վիճակագրությունը։</p>`},
+    {t:"Արդյունավետ շուկաներ և պասիվ ներդրում", h:"1 ժ", b:`<p><b>Efficient Market Hypothesis</b> (Eugene Fama)՝ գները արագ արտացոլում են հասանելի տեղեկատվությունը, ուստի համակարգված կերպով շուկային գերազանցելը դժվար է։ Շուկաները լիովին արդյունավետ չեն, բայց բավականաչափ արդյունավետ են, որ անհատի համար առավելությունը փոքր և թանկ լինի։</p>
+      <div class="tbl"><table><tr><th>SPIVA (S&P Dow Jones Indices), ԱՄՆ large-cap ակտիվ ֆոնդեր, 2024-ի վերջ</th><th>Զիջել են S&P 500-ին</th></tr><tr><td>1 տարի</td><td>65%</td></tr><tr><td>5 տարի</td><td>76%</td></tr><tr><td>10 տարի</td><td>84%</td></tr><tr><td>15 տարի</td><td>≈ 90%</td></tr></table></div>
+      <p>Եթե պրոֆեսիոնալ ֆոնդերի ճնշող մեծամասնությունը չի գերազանցում ինդեքսին, կապիտալի հիմնական մասի համար խելամիտ բազան է ցածր ծախսով, դիվերսիֆիկացված ինդեքսային ներդրումը։ Շատ պրոֆեսիոնալներ կիրառում են <b>core–satellite</b> մոտեցում՝ 80–90% պասիվ core, 10–20% ակտիվ «satellite» թրեյդինգի համար։</p>`},
+    {t:"Որտեղից կարող է գալ առավելությունը (edge)", h:"1.5 ժ", b:`<ul><li><b>Ռիսկի պրեմիաներ</b>՝ պարգև ռիսկ կրելու համար. equity premium, value, momentum, carry, volatility premium։ Դրանք լավ ուսումնասիրված են, բայց ունեն երկար վատ ժամանակաշրջաններ</li><li><b>Վարքագծային</b>՝ այլ մասնակիցների համակարգված սխալներ (under-reaction նորություններին → momentum, over-reaction → reversal)</li><li><b>Կառուցվածքային</b>՝ ֆոնդերի ստիպողական գործողություններ (ինդեքսի rebalancing, rollover), hedging-ի պահանջարկ</li><li><b>Տեղեկատվական / վերլուծական</b>՝ ավելի լավ վերլուծություն փոքր, քիչ ուսումնասիրված ակտիվներում (բայց ոչ ներքին տեղեկատվություն՝ insider trading-ը անօրինական է)</li><li><b>Կարգապահություն և համբերություն</b>՝ երկար horizon, երբ մյուսները չեն կարող սպասել</li></ul>
+      <div class="formula">Edge-ի ստուգում.  Ակնկալվող եկամուտ մեկ գործարքում − ծախսեր > 0
+                  + բավարար թվով գործարքներ (100+)
+                  + տրամաբանական բացատրություն՝ ինչու է այն գոյություն ունենում</div>`}
+  ],
+  practice:{t:"Case study՝ «Ինչու ես կարող եմ տարբերվել»", steps:["Կարդա Barber & Odean-ի կամ Chague et al.-ի հոդվածի ամփոփումը (աղբյուրներում)","Գրիր այն 3 պատճառները, որոնք քեզ ամենաշատն են վերաբերում (օր.՝ հաճախակի առևտուր, լծակ)","Ձևակերպիր մեկ հիպոթեզ քո ապագա edge-ի մասին և նշիր, թե որ կատեգորիային է այն պատկանում","Որոշիր քո core–satellite բաշխումը (օր.՝ 85/15) և հիմնավորիր"], deliverable:"Case study վերլուծություն, edge-ի հիպոթեզ, կապիտալի բաշխում"},
+  quiz:[
+    ["Barber & Odean-ի հետազոտությունում ամենաակտիվ թրեյդերների տարեկան եկամտաբերությունը՝",["17.9%","16.4%","11.4%","25%"],2,"Ամենաշատ առևտուր անողները ամենաշատն են զիջել։"],
+    ["Բրազիլիայի day trader-ների հետազոտությունում 300+ օր առևտուր արածների քանի՞ տոկոսն է կորցրել։",["50%","74%","97%","10%"],2,"97%։"],
+    ["SPIVA-ի տվյալներով 15 տարում ԱՄՆ large-cap ակտիվ ֆոնդերի մոտավորապես քանի՞ տոկոսն է զիջել S&P 500-ին։",["30%","50%","70%","90%"],3,"≈ 89.5% (2024-ի վերջ)։"],
+    ["Ո՞րն է edge-ի օրինական աղբյուր։",["Insider տեղեկատվություն","Momentum ռիսկի պրեմիա","Ուրիշի հաշվի օգտագործում","Կեղծ լուրերի տարածում"],1,"Insider trading-ը և մանիպուլյացիան անօրինական են։"],
+    ["Core–satellite մոտեցման մեջ core-ը սովորաբար...",["Լծակով day trading է","Ցածր ծախսով դիվերսիֆիկացված ինդեքսային ներդրում","Կրիպտո altcoin-ներ","Կանխիկ"],1,"Satellite-ը ակտիվ մասն է։"]
+  ]},
+{ n:5, aca:"Մակրո և հիմնարար", title:"Մակրոտնտեսություն և հիմնարար վերլուծություն", short:"Մակրո",
+  goal:"Հասկանալ տոկոսադրույքների, գնաճի և տնտեսական տվյալների ազդեցությունը շուկաների վրա և գնահատել ընկերության արժեքը։",
+  lessons:[
+    {t:"Տոկոսադրույքներ, գնաճ և կենտրոնական բանկեր", h:"1.5 ժ", b:`<ul><li><b>Կենտրոնական բանկերը</b> (Fed, ECB, ՀՀ ԿԲ) փոխում են քաղաքականության տոկոսադրույքը գնաճը վերահսկելու համար։ Բարձր տոկոսադրույքները սովորաբար ճնշում են բաժնետոմսերի գնահատականները և ամրացնում են արժույթը, ցածրերը՝ հակառակը</li><li><b>Պարտատոմսի գինը և եկամտաբերությունը շարժվում են հակառակ ուղղությամբ</b>. եթե տոկոսները աճում են, առկա պարտատոմսերի գները ընկնում են</li><li><b>Yield curve</b>՝ եկամտաբերությունը ըստ ժամկետների. շրջված կորը (կարճաժամկետը բարձր է երկարաժամկետից) պատմականորեն հաճախ նախորդել է ԱՄՆ ռեցեսիաներին, բայց ժամանակը անորոշ է</li><li><b>Իրական տոկոսադրույք</b> = անվանական − գնաճ</li><li><b>Դոլարի ինդեքս (DXY)</b>, նավթ, ոսկի՝ ռիսկի տրամադրության ցուցիչներ</li></ul>`},
+    {t:"Տնտեսական օրացույց և ակնկալիքներ", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ցուցանիշ</th><th>Ինչ է չափում</th><th>Հաճախականություն</th></tr><tr><td>CPI / PCE</td><td>Գնաճ</td><td>Ամսական</td></tr><tr><td>NFP (Non-Farm Payrolls)</td><td>ԱՄՆ աշխատատեղեր</td><td>Ամսական, սովորաբար ամսվա առաջին ուրբաթ</td></tr><tr><td>FOMC որոշում</td><td>Fed-ի տոկոսադրույք</td><td>Տարեկան 8 անգամ</td></tr><tr><td>PMI</td><td>Արտադրության/ծառայությունների ակտիվություն</td><td>Ամսական</td></tr><tr><td>GDP</td><td>Տնտեսական աճ</td><td>Եռամսյակային</td></tr><tr><td>Earnings season</td><td>Ընկերությունների շահույթ</td><td>Եռամսյակային</td></tr></table></div>
+      <p><b>Գլխավոր գաղափարը.</b> Շուկան արձագանքում է ոչ թե լավ կամ վատ լուրին, այլ <b>անակնկալին</b>՝ փաստացի թիվը ակնկալիքի (consensus) համեմատ։ Լավ թիվը կարող է գինն իջեցնել, եթե սպասվում էր ավելի լավը։ Նորությունների ժամանակ spread-ը լայնանում է, slippage-ը մեծանում. շատ պրոֆեսիոնալներ նոր դիրք չեն բացում հրապարակումից անմիջապես առաջ։</p>`},
+    {t:"Ընկերության գնահատում՝ հիմունքներ", h:"1.5 ժ", b:`<div class="formula">P/E       = Գին / Շահույթ մեկ բաժնետոմսի վրա (EPS)
+EV/EBITDA = (Կապիտալիզացիա + Զուտ պարտք) / EBITDA
+FCF yield = Ազատ դրամական հոսք / Կապիտալիզացիա
+DCF:  Արժեք = Σ FCFₜ / (1 + r)ᵗ  +  Վերջնական արժեք / (1 + r)ⁿ</div>
+      <ul><li>Համեմատիր նույն ոլորտի ընկերությունների հետ և ընկերության սեփական պատմության հետ</li><li>Որակի ցուցանիշներ՝ եկամտի աճ, մարժա, ROIC, պարտքի մակարդակ, դրամական հոսքի կայունություն</li><li>DCF-ը շատ զգայուն է ենթադրությունների նկատմամբ (աճ, զեղչման դրույք). օգտագործիր սցենարներ, ոչ թե մեկ թիվ</li><li><b>Կրիպտոյում</b> ավանդական շահույթ չկա. գնահատում են tokenomics (առաջարկ, inflation, unlock-եր), օգտագործում, ցանցի ակտիվություն, ռիսկեր</li></ul>
+      <p>Թրեյդերի համար հիմնարար վերլուծությունը օգնում է հասկանալ, թե <i>ինչ</i> գնել (որակ, արժեք), իսկ տեխնիկականը՝ <i>երբ</i> և <i>ինչքան</i>։</p>`}
+  ],
+  practice:{t:"Մակրո օրագիր և ընկերության մինի վերլուծություն", steps:["Բացիր տնտեսական օրացույց (Investing.com, ForexFactory) և նշիր հաջորդ շաբաթվա 5 կարևոր իրադարձություն","Մեկ իրադարձության համար գրանցիր consensus-ը, փաստացի թիվը և շուկայի արձագանքը (S&P 500, EUR/USD, ոսկի) 1 ժամում","Ընտրիր մեկ ընկերություն և հաշվիր P/E, EV/EBITDA, FCF yield՝ համեմատելով 2 մրցակցի հետ","Գրիր 5 նախադասությամբ՝ այն թանկ է, էժան, թե արդարացի գնահատված և ինչու"], deliverable:"Մակրո օրագիր, գնահատման աղյուսակ և եզրակացություն"},
+  quiz:[
+    ["Տոկոսադրույքները աճում են։ Առկա պարտատոմսերի գները սովորաբար...",["Աճում են","Ընկնում են","Չեն փոխվում","Կրկնապատկվում են"],1,"Գինը և եկամտաբերությունը հակադարձ են։"],
+    ["CPI-ն եկավ 3.0%, consensus-ը 2.7% էր։ Սա...",["Ակնկալվածից ցածր գնաճ","Ակնկալվածից բարձր գնաճ (բացասական անակնկալ բաժնետոմսերի համար)","Չեզոք","Անհնար է ասել"],1,"Անակնկալն է կարևոր։"],
+    ["Գինը $50, EPS = $2.5։ P/E-ն՝",["10","20","125","2.5"],1,"50 / 2.5 = 20։"],
+    ["Իրական տոկոսադրույքը, եթե անվանականը 8% է, գնաճը՝ 5%՝",["13%","3%","8%","−3%"],1,"8 − 5 = 3%։"],
+    ["DCF-ի հիմնական թուլությունը՝",["Չափազանց պարզ է","Շատ զգայուն է աճի և զեղչման դրույքի ենթադրությունների նկատմամբ","Չի օգտագործում դրամական հոսք","Միայն կրիպտոյի համար է"],1,"Օգտագործիր սցենարներ։"]
+  ]},
+{ n:6, aca:"Գործընթաց", title:"Թրեյդինգ պլան, ժուռնալ և կանոնավոր պրակտիկա", short:"Պլան",
+  goal:"Կազմել գրավոր թրեյդինգ պլան, վարել ժուռնալ և անցնել paper trading → փոքր իրական առևտուր ճիշտ հաջորդականությամբ։",
+  lessons:[
+    {t:"Թրեյդինգ պլանի կառուցվածքը", h:"1.5 ժ", b:`<div class="formula">1. Նպատակ և ժամանակ — ինչու, որքան ժամ շաբաթական, ինչ horizon
+2. Շուկաներ — որ ակտիվներ (watchlist), որ ժամերին
+3. Setup-ներ — մուտքի հստակ, ստուգելի կանոններ
+4. Ելք — stop-loss, take profit, ժամանակային ելք
+5. Դիրքի չափ — ռիսկը մեկ գործարքում (օր.՝ 0.5–1% կապիտալից)
+6. Սահմանափակումներ — օրական/շաբաթական կորստի սահման, առավելագույն բաց ռիսկ
+7. Գործընթաց — նախապատրաստում, ժուռնալ, շաբաթական review
+8. Զարգացման պլան — ինչ եմ սովորում հաջորդ ամիս</div>
+      <p>Պլանը գրված է նախքան առևտուրը, ոչ թե գործարքի ընթացքում։ Atul Gawande-ի «The Checklist Manifesto»-ի գաղափարը. նույնիսկ փորձագետները ավելի քիչ են սխալվում պարզ ստուգաթերթով։</p>`},
+    {t:"Ժուռնալ և շաբաթական review", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Դաշտ</th><th>Օրինակ</th></tr><tr><td>Ամսաթիվ, ակտիվ, ուղղություն</td><td>2026-11-10, SPY, long</td></tr><tr><td>Setup</td><td>Pullback 50-օրյա MA-ին uptrend-ում</td></tr><tr><td>Մուտք, stop, թիրախ</td><td>580 / 572 / 596</td></tr><tr><td>Ռիսկ $ և R</td><td>$100 = 1R</td></tr><tr><td>Արդյունք R-ով</td><td>+1.6R</td></tr><tr><td>Կանոնների պահպանում</td><td>Այո / Ոչ (ինչ խախտվեց)</td></tr><tr><td>Զգացմունք, վստահություն 1–5</td><td>Հանգիստ, 4</td></tr><tr><td>Screenshot</td><td>Մուտքի և ելքի պահին</td></tr></table></div>
+      <p><b>Շաբաթական review.</b> Գնահատիր ոչ թե արդյունքը, այլ որոշման որակը։ Լավ որոշումը կարող է բերել վնաս, վատը՝ շահույթ (Annie Duke, «Thinking in Bets»)։ Հարցեր. Հետևեցի՞ պլանին։ Որ setup-ն է աշխատում։ Որ սխալն է կրկնվում։ Ինչ եմ փոխում հաջորդ շաբաթ (միայն մեկ բան)։</p>`},
+    {t:"Paper trading → փոքր իրական → մասշտաբավորում", h:"1 ժ", b:`<ol><li><b>Backtest և ձեռքով ստուգում</b> պատմական գրաֆիկներում (մոդուլ «Տեխնիկական վերլուծություն»)</li><li><b>Paper trading</b>՝ առնվազն 30–50 գործարք՝ ճիշտ նույն կանոններով և ժուռնալով</li><li><b>Փոքր իրական</b>՝ կապիտալի փոքր մաս և 0.25–0.5% ռիսկ մեկ գործարքում. նպատակը կատարման և զգացմունքների ստուգումն է</li><li><b>Մասշտաբավորում</b>՝ միայն 100+ գործարքից հետո, եթե expectancy-ն դրական է ծախսերից հետո և կանոնների պահպանումը 90%+ է</li></ol>
+      <p><b>Deliberate practice</b> (Anders Ericsson)՝ զարգացումը գալիս է ոչ թե պարզապես ժամերից, այլ կոնկրետ նպատակով, արագ feedback-ով և սխալների համակարգված ուղղմամբ։ Process goals («հետևել պլանին 95%») ավելի օգտակար են, քան outcome goals («վաստակել $1000 այս ամիս»)։</p>`}
+  ],
+  practice:{t:"Քո առաջին թրեյդինգ պլանը", steps:["Գրիր թրեյդինգ պլան 8 բաժիններով","Ստեղծիր ժուռնալ Google Sheets-ում վերը նշված դաշտերով","Կատարիր 10 paper գործարք քո պլանով և լրացրու ժուռնալը","Անցկացրու շաբաթական review և գրիր մեկ փոփոխություն","Ստացիր AI գնահատում պլանի համար"], deliverable:"Թրեյդինգ պլան, ժուռնալ 10 գործարքով, review"},
+  quiz:[
+    ["Ե՞րբ պետք է որոշվի stop-loss-ի մակարդակը։",["Գործարքից հետո","Մուտքից առաջ՝ պլանում","Երբ վնասը մեծանում է","Երբեք"],1,"Ելքը պլանավորվում է նախապես։"],
+    ["Լավ որոշումը բերեց վնաս։ Ժուռնալում պետք է...",["Փոխել ամբողջ համակարգը","Գնահատել որոշման որակը, ոչ միայն արդյունքը","Չգրանցել","Կրկնապատկել ռիսկը"],1,"Outcome ≠ decision quality։"],
+    ["Մասշտաբավորման խելամիտ պայման՝",["3 շահութաբեր գործարք անընդմեջ","100+ գործարք, դրական expectancy ծախսերից հետո, կանոնների բարձր պահպանում","Լավ զգացողություն","Ընկերոջ խորհուրդ"],1,"Վիճակագրությունը և կարգապահությունը։"],
+    ["Ո՞րն է process goal։",["Վաստակել $500 այս շաբաթ","Հետևել պլանին գործարքների 95%-ում","Գնել Tesla","Կրկնապատկել հաշիվը"],1,"Վերահսկելի է քո կողմից։"],
+    ["Paper trading-ի հիմնական նպատակը՝",["Արագ հարստանալ","Ստուգել կանոնները և կատարումը առանց իրական ռիսկի","Խուսափել ժուռնալից","Փորձել լծակ"],1,"Սա անվտանգ լաբորատորիա է։"]
+  ]}
+],
+final:[
+  ["Ընկերը առաջարկում է միանալ Telegram խմբի, որը «երաշխավորում է ամսական 30%» և խնդրում է գումարը փոխանցել «մենեջերին»։ Ճիշտ գործողությունը՝",["Փորձել փոքր գումարով","Մերժել. երաշխավորված եկամուտը և գումարի փոխանցումը անհատին խարդախության նշաններ են. ստուգել լիցենզիան կարգավորողի մոտ","Ներդնել, եթե screenshot-ները լավն են","Խնդրել 20% զեղչ"],1,"Կարմիր դրոշներ։"],
+  ["Քո ռազմավարությունը տալիս է +0.03% միջին համախառն շահույթ մեկ round trip-ում, իսկ ծախսը 0.05% է։ Եզրակացություն՝",["Շարունակել և ավելացնել գործարքները","Ռազմավարությունը ծախսերից հետո բացասական է. պետք է նվազեցնել հաճախությունը կամ ծախսերը կամ հրաժարվել","Ավելացնել լծակը","Ծախսերը կարևոր չեն"],1,"Edge-ը պետք է գերազանցի ծախսերին։"],
+  ["Ինչու է stop-market պատվերը gap-ի ժամանակ կարող է կատարվել stop-ից շատ ցածր։",["Բրոքերը խաբում է","Գինը ցատկում է stop-ի մակարդակի վրայով, և պատվերը դառնում է market լավագույն հասանելի գնով","Stop-ը չի աշխատում բաժնետոմսերում","Սա անհնար է"],1,"Stop-ը երաշխավորում է կատարումը, ոչ գինը։"],
+  ["Լծակ 1:30, դիրքը շարժվում է քո դեմ 2%։ Margin-ի քանի՞ տոկոսն ես կորցրել։",["2%","30%","60%","15%"],2,"2% × 30 = 60%։"],
+  ["Եթե պրոֆեսիոնալ ակտիվ ֆոնդերի ≈ 90%-ը 15 տարում զիջում է ինդեքսին, ո՞րն է խելամիտ մոտեցումը սկսնակի համար։",["Ամբողջ կապիտալով day trading","Կապիտալի մեծ մասը ցածր ծախսով ինդեքսային ներդրում, փոքր մասը՝ ակտիվ թրեյդինգի ուսուցման համար","Միայն altcoin-ներ","Ոչինչ չանել"],1,"Core–satellite։"],
+  ["NFP-ն եկավ ակնկալվածից լավ, բայց բաժնետոմսերը ընկան։ Հնարավոր բացատրություն՝",["Տվյալները կեղծ են","Ուժեղ աշխատաշուկան մեծացնում է բարձր տոկոսադրույքների ակնկալիքը","Շուկան չի արձագանքում տվյալներին","Պատահական է միշտ"],1,"Մակրո կապերը բազմաշերտ են։"],
+  ["Ժուռնալում տեսնում ես, որ 70% դեպքերում խախտել ես stop-ը։ Ամենակարևոր քայլը՝",["Փոխել ինդիկատորները","Ավտոմատացնել stop-ը (bracket պատվեր) և նվազեցնել դիրքի չափը մինչև կարգապահության վերականգնումը","Ավելացնել գործարքները","Հրաժարվել ժուռնալից"],1,"Վարքագծային խնդիրը լուծվում է գործընթացով։"],
+  ["Ո՞ր հաջորդականությունն է ճիշտ։",["Իրական գումար → պլան → backtest","Պլան → backtest → paper trading → փոքր իրական → մասշտաբավորում","Լծակ → signal խումբ → պլան","Paper trading → մեծ իրական"],1,"Աստիճանական ռիսկ։"],
+  ["Ինչու է «անակնկալը» ավելի կարևոր, քան տվյալի բացարձակ արժեքը։",["Քանի որ ակնկալիքներն արդեն արտացոլված են գնի մեջ","Քանի որ տվյալները միշտ սխալ են","Քանի որ շուկան չի կարդում լուրերը","Դա ճիշտ չէ"],0,"Գինը արտացոլում է consensus-ը։"],
+  ["Բրազիլիայի հետազոտությունը ցույց տվեց, որ ժամանակի ընթացքում շահութաբեր day trader-ների բաժինը...",["Աճում է՝ փորձով","Նվազում է, և ուսուցման ապացույց չի գտնվել","Մնում է 50%","Կրկնապատկվում է"],1,"29.8% (1 օր) → 3% (300+ օր)։"]
+],
+sources:[
+  ["Barber & Odean (2000), Journal of Finance","https://econpapers.repec.org/RePEc:bla:jfinan:v:55:y:2000:i:2:p:773-806","Մանրածախ թրեյդերների արդյունքներ"],
+  ["Chague, De-Losso, Giovannetti — Day Trading for a Living?","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3423101","Բրազիլիայի day trader-ներ"],
+  ["ESMA — CFD և binary options միջոցառումներ","https://www.esma.europa.eu/press-news/esma-news/esma-adopts-final-product-intervention-measures-cfds-and-binary-options","Լծակի սահմանափակումներ"],
+  ["FINRA Regulatory Notice 26-10","https://www.finra.org/rules-guidance/notices/26-10","PDT կանոնի փոխարինում"],
+  ["S&P SPIVA","https://www.spglobal.com/spdji/en/research-insights/spiva/","Ակտիվ vs պասիվ"],
+  ["Yale — Financial Markets (Robert Shiller), Coursera","https://www.coursera.org/learn/financial-markets-global","Ֆինանսական շուկաների հիմունքներ"],
+  ["ՀՀ Կենտրոնական բանկ","https://www.cba.am","Լիցենզավորված կազմակերպություններ և զգուշացումներ"]
+], examExtra:15, examMin:40 };
+
+/* ========== TRADING 2: TECHNICAL & QUANT ========== */
+const TA = { id:"ta", title:"Տեխնիկական և քանակական վերլուծություն", short:"Վերլուծություն",
+lead:"Գրաֆիկներ, trend, ինդիկատորներ, ծավալ, backtesting և համակարգված ռազմավարություններ (trend following, momentum, mean reversion)՝ ակադեմիական ապացույցներով և կողմնակալությունների դեմ պաշտպանությամբ։",
+weeks:[
+{ n:1, aca:"Գրաֆիկներ", title:"Գրաֆիկներ, trend և մակարդակներ", short:"Trend",
+  goal:"Կարդալ մոմային գրաֆիկներ, օբյեկտիվ սահմանել trend-ը և աշխատել մի քանի timeframe-ով։",
+  lessons:[
+    {t:"Մոմային գրաֆիկներ և timeframe-ներ", h:"1 ժ", b:`<p>Յուրաքանչյուր մոմ ցույց է տալիս ժամանակահատվածի <b>OHLC</b>՝ Open, High, Low, Close։ Մարմինը բացման և փակման միջև է, «ստվերները»՝ ծայրահեղ գները։</p>
+      <ul><li><b>Timeframe</b>՝ 1 րոպե, 1 ժամ, 1 օր, 1 շաբաթ. ինչքան փոքր է, այնքան ավելի շատ աղմուկ</li><li><b>Լոգարիթմական սանդղակ</b>՝ օգտագործիր երկար ժամանակաշրջանների և արագ աճող ակտիվների (BTC) համար. հավասար տոկոսային շարժումները ունեն հավասար բարձրություն</li><li><b>Adjusted prices</b>՝ բաժնետոմսերի գները պետք է ճշգրտված լինեն split-երի և դիվիդենդների համար, հակառակ դեպքում backtest-ը սխալ կլինի</li><li><b>Multi-timeframe</b>՝ ավելի բարձր timeframe-ը որոշում է ուղղությունը (օր.՝ շաբաթական), ցածրը՝ մուտքի ժամանակը (օրական). տարածված հարաբերակցություն՝ 4–6 անգամ</li></ul>`},
+    {t:"Trend-ի օբյեկտիվ սահմանում", h:"1 ժ", b:`<div class="formula">Uptrend:   Higher Highs + Higher Lows   (HH, HL)
+Downtrend: Lower Highs + Lower Lows     (LH, LL)
+Մեխանիկական տարբերակ:  Close > 200-օրյա MA  և  50 MA > 200 MA  → uptrend</div>
+      <p>«Աչքով» trend-ը սուբյեկտիվ է. տարբեր մարդիկ տարբեր բաներ են տեսնում նույն գրաֆիկում։ Թրեյդերի համար օգտակար է մեխանիկական սահմանումը, որը կարելի է backtest անել։ Trend-ը կարող է լինել տարբեր timeframe-ներում տարբեր. օրական գրաֆիկում uptrend, ժամայինում՝ կարճաժամկետ downtrend (pullback)։</p>
+      <p><b>Ռեժիմներ.</b> trending, range (կողային), բարձր volatility։ Ռազմավարությունները աշխատում են տարբեր ռեժիմներում տարբեր կերպ. trend following-ը կորցնում է range-ում, mean reversion-ը՝ ուժեղ trend-ում։</p>`},
+    {t:"Support, resistance և գոտիներ", h:"1 ժ", b:`<ul><li><b>Support</b>՝ գոտի, որտեղ նախկինում գնումները կանգնեցրել են անկումը. <b>Resistance</b>՝ որտեղ վաճառքները կանգնեցրել են աճը</li><li>Դրանք <b>գոտիներ</b> են, ոչ թե ճշգրիտ գծեր</li><li>Բեկված resistance-ը հաճախ դառնում է support (role reversal)</li><li>Կլոր թվեր (100, 50 000), նախորդ օրվա/շաբաթվա high/low, all-time high</li><li>Ինչքան շատ են մասնակիցները տեսնում մակարդակը, այնքան ավելի հաճախ են այնտեղ տեղադրվում stop-եր. դրա համար էլ հաճախ լինում են «false breakout»-ներ</li></ul>
+      <p><b>Ապացույցների մասին.</b> Ակադեմիական հետազոտությունները գտնում են որոշ տեղեկատվություն գրաֆիկային օրինաչափություններում (Lo, Mamaysky, Wang, 2000), բայց սովորաբար ծախսերից հետո առավելությունը փոքր է կամ բացակայում։ Վերաբերվիր մակարդակներին որպես ռիսկի կառավարման գործիք (որտեղ դնել stop), ոչ թե որպես կանխատեսման երաշխիք։</p>`}
+  ],
+  practice:{t:"Գրաֆիկային օրագիր", steps:["TradingView-ում (անվճար) բացիր 3 ակտիվ օրական և շաբաթական timeframe-ներում","Յուրաքանչյուրի համար որոշիր trend-ը HH/HL և 200 MA մեթոդներով. համընկնու՞մ են","Նշիր 2 support և 2 resistance գոտի","Գրիր, թե որ ռեժիմում է յուրաքանչյուր ակտիվը (trend, range, բարձր volatility)","Screenshot-ները պահիր ժուռնալում"], deliverable:"3 ակտիվի վերլուծություն screenshot-ներով"},
+  quiz:[
+    ["Uptrend-ը սահմանվում է...",["Lower highs և lower lows","Higher highs և higher lows","Միայն կանաչ մոմերով","Ծավալի անկմամբ"],1,"HH + HL։"],
+    ["Ինչու օգտագործել լոգարիթմական սանդղակ BTC-ի երկարաժամկետ գրաֆիկում։",["Գեղեցիկ է","Հավասար տոկոսային շարժումները տեսանելի են հավասար չափով","Թաքցնում է volatility-ն","Պարտադիր է օրենքով"],1,"Log scale-ը համեմատում է տոկոսները։"],
+    ["Ո՞ր ռեժիմում է trend following-ը սովորաբար կորցնում։",["Ուժեղ trend","Կողային (range) շուկա","Ճգնաժամ","Ռեցեսիա"],1,"Շատ կեղծ ազդանշաններ։"],
+    ["Բեկված resistance-ը հաճախ...",["Անհետանում է","Դառնում է support","Դառնում է trend line","Ոչինչ չի նշանակում"],1,"Role reversal։"],
+    ["Ինչու է backtest-ի համար կարևոր ճշգրտված (adjusted) գինը։",["Split-երը և դիվիդենդները կեղծ շարժումներ են ստեղծում","Ավելի արագ է","Ավելի գեղեցիկ է","Կարևոր չէ"],0,"Split-ը նման է 50% անկման։"]
+  ]},
+{ n:2, aca:"Ինդիկատորներ", title:"Ինդիկատորներ՝ ինչ են իրականում չափում", short:"Ինդիկատորներ",
+  goal:"Հասկանալ հիմնական ինդիկատորների բանաձևերը, օգտագործել դրանք ըստ նպատակի և խուսափել ավելորդությունից։",
+  lessons:[
+    {t:"Moving averages և trend ինդիկատորներ", h:"1 ժ", b:`<div class="formula">SMA(n) = վերջին n փակումների միջինը
+EMA:   EMAₜ = α·Pₜ + (1 − α)·EMAₜ₋₁ ,  α = 2 / (n + 1)
+MACD = EMA(12) − EMA(26);  Signal = EMA(9) MACD-ից;  Histogram = MACD − Signal</div>
+      <ul><li>MA-ն ուշանում է (lag). ավելի կարճ MA՝ ավելի արագ, բայց ավելի շատ կեղծ ազդանշաններ</li><li>Տարածված կանոններ՝ 200-օրյա MA-ից վեր/վար, 50/200 cross (golden/death cross)</li><li>Faber (2007, «A Quantitative Approach to Tactical Asset Allocation») ցույց տվեց, որ 10-ամսյա MA կանոնը պատմականորեն նվազեցրել է խոր անկումները՝ մոտ նույն եկամտաբերությամբ, բայց կան երկար ժամանակաշրջաններ, երբ այն զիջում է buy & hold-ին</li></ul>`},
+    {t:"Momentum և oscillator-ներ", h:"1 ժ", b:`<div class="formula">RSI = 100 − 100 / (1 + RS),   RS = միջին աճ / միջին անկում (սովորաբար 14 ժամանակահատված)
+RSI > 70 «overbought»,  RSI < 30 «oversold»</div>
+      <p><b>Թակարդ.</b> Ուժեղ uptrend-ում RSI-ն կարող է շաբաթներով մնալ 70-ից վեր։ «Overbought» չի նշանակում «կընկնի»։ Oscillator-ները ավելի լավ են աշխատում range ռեժիմում կամ որպես trend-ի ներսում pullback-ի չափիչ (օր.՝ uptrend + RSI(2) < 10 → կարճաժամկետ գնման հնարավորություն, Larry Connors-ի ոճով)։</p>
+      <p>Այլ momentum չափումներ՝ Rate of Change (ROC = Pₜ / Pₜ₋ₙ − 1), Stochastic։ 12-ամսյա ROC-ը (հաճախ բացառելով վերջին ամիսը) ակադեմիական momentum-ի հիմքն է։</p>`},
+    {t:"Volatility՝ ATR և Bollinger Bands", h:"1 ժ", b:`<div class="formula">True Range = max(High − Low, |High − PrevClose|, |Low − PrevClose|)
+ATR(14) = TR-ի միջինը 14 ժամանակահատվածում
+Bollinger:  Միջին = SMA(20),  Գոտիներ = SMA ± 2σ</div>
+      <ul><li><b>ATR</b>-ը ինդիկատորներից ամենաօգտակարն է ռիսկի համար. stop-ը տեղադրիր, օրինակ, 2×ATR հեռավորությամբ, որպեսզի այն համապատասխանի ակտիվի «նորմալ աղմուկին»</li><li><b>Bollinger squeeze</b>՝ գոտիների նեղացում = ցածր volatility, որին հաճախ հաջորդում է ընդլայնում</li><li><b>Կանոն</b>. ընտրիր մեկ ինդիկատոր յուրաքանչյուր հարցի համար (trend, momentum, volatility). 5 momentum ինդիկատորը միասին չեն ավելացնում տեղեկատվություն, միայն վստահության պատրանք</li></ul>`}
+  ],
+  practice:{t:"Ինդիկատորների աղյուսակ ձեռքով", steps:["Google Sheets-ում ներբեռնիր ակտիվի օրական գները (GOOGLEFINANCE ֆունկցիա կամ CSV)","Հաշվիր SMA(20), SMA(200), EMA(20), RSI(14) և ATR(14) բանաձևերով","Համեմատիր քո արժեքները TradingView-ի հետ","Գրիր, թե ինչ է ասում յուրաքանչյուր ինդիկատոր այսօր և արդյոք նրանք իրար հակասում են"], deliverable:"Sheets ֆայլ բանաձևերով և մեկնաբանություն"},
+  quiz:[
+    ["EMA(9)-ի համար α-ն՝",["0.1","0.2","0.5","0.9"],1,"2 / (9 + 1) = 0.2։"],
+    ["RSI-ն 80 է ուժեղ uptrend-ում։ Ճիշտ մեկնաբանությունը՝",["Պարտադիր կընկնի","Momentum-ը ուժեղ է. «overbought»-ը ինքնին վաճառքի ազդանշան չէ","RSI-ն սխալ է","Պետք է short անել"],1,"Trend-ում RSI-ն երկար կարող է մնալ բարձր։"],
+    ["Ո՞ր ինդիկատորն է չափում volatility-ն։",["RSI","ATR","MACD","OBV"],1,"Average True Range։"],
+    ["MACD-ն հաշվարկվում է...",["SMA(50) − SMA(200)","EMA(12) − EMA(26)","RSI − 50","High − Low"],1,"Signal-ը EMA(9) է MACD-ից։"],
+    ["Ինչու չօգտագործել RSI, Stochastic և Williams %R միասին։",["Դրանք հակասում են","Դրանք չափում են նույն բանը (momentum) և չեն ավելացնում անկախ տեղեկատվություն","Արգելված է","TradingView-ը թույլ չի տալիս"],1,"Ավելորդություն և կեղծ վստահություն։"]
+  ]},
+{ n:3, aca:"Ծավալ և կառուցվածք", title:"Ծավալ, VWAP, breakout-ներ և պատերներ", short:"Ծավալ",
+  goal:"Օգտագործել ծավալը, VWAP-ը և breakout-ների տրամաբանությունը և քննադատաբար գնահատել գրաֆիկային պատերները։",
+  lessons:[
+    {t:"Ծավալ և VWAP", h:"1 ժ", b:`<div class="formula">VWAP = Σ (Գին × Ծավալ) / Σ Ծավալ   (հաշվարկվում է օրվա սկզբից)</div>
+      <ul><li>Ծավալը ցույց է տալիս մասնակցությունը. breakout-ը բարձր ծավալով ավելի հավաստի է, քան ցածր ծավալով</li><li><b>Relative volume</b>՝ այսօրվա ծավալը միջինի նկատմամբ (օր.՝ 2× = երկու անգամ ավելի)</li><li><b>VWAP</b>-ը ինստիտուցիոնալ թրեյդերների ելակետն է. գնից վեր VWAP-ը ցույց է տալիս, որ օրվա գնորդները միջինում շահույթի մեջ են</li><li>Ֆորեքսում կենտրոնացված ծավալ չկա. օգտագործվում է tick volume կամ ֆյուչերսների ծավալը</li><li>Կրիպտոյում ծավալը կարող է արհեստականորեն ուռճացված լինել որոշ բորսաներում (wash trading)</li></ul>`},
+    {t:"Breakout-ներ և false breakout-ներ", h:"1.5 ժ", b:`<p><b>Breakout</b>՝ գինը դուրս է գալիս range-ից կամ resistance-ից։ <b>Տրամաբանություն</b>. ակումուլյացիայից հետո նոր տեղեկատվությունը կամ պահանջարկը շարժում է գինը։</p>
+      <div class="formula">Breakout ստուգաթերթ
+□ Բարձր timeframe-ի trend-ը նույն ուղղությամբ է
+□ Range-ը տևել է բավական երկար (կոնսոլիդացիա)
+□ Ծավալը բեկման պահին ≥ 1.5× միջին
+□ Փակումը (ոչ միայն «ստվերը») մակարդակից դուրս է
+□ Stop-ը range-ի ներսում է՝ ATR-ով հաշվի առնված
+□ Ռիսկ/պարգև ≥ 1:2</div>
+      <p><b>False breakout</b>-ները շատ են, որովհետև մակարդակի վերևում կուտակված են stop-եր և պատվերներ։ Որոշ թրեյդերներ առևտուր են անում հենց false breakout-ի դեմ (fade)։ Երկու մոտեցումն էլ պահանջում են backtest քո շուկայում և timeframe-ում։</p>`},
+    {t:"Գրաֆիկային պատերներ՝ քննադատական հայացք", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Պատերն</th><th>Նկարագրություն</th><th>Ապացույցներ</th></tr><tr><td>Head & Shoulders</td><td>Երեք գագաթ, միջինը բարձր</td><td>Խառը. արդյունքը կախված է շուկայից և ծախսերից</td></tr><tr><td>Double top/bottom</td><td>Երկու փորձ բեկելու մակարդակը</td><td>Սուբյեկտիվ սահմանում</td></tr><tr><td>Flag / pennant</td><td>Կարճ կոնսոլիդացիա ուժեղ շարժումից հետո</td><td>Կապված է momentum-ի հետ</td></tr><tr><td>Candlestick patterns (doji, engulfing)</td><td>1–3 մոմի ձևեր</td><td>Թույլ ապացույցներ ինքնուրույն օգտագործման դեպքում</td></tr></table></div>
+      <p><b>Գիտական մոտեցում.</b> Ամեն պատերն վերածիր ստուգելի կանոնի («եթե X, ապա մուտք, stop Y, ելք Z») և փորձարկիր 100+ դեպքի վրա։ Եթե չես կարող ծրագրավորել կամ ձեռքով օբյեկտիվ հաշվել, դու չգիտես՝ աշխատում է, թե ոչ։ Confirmation bias-ը ստիպում է հիշել հաջողված պատերները և մոռանալ ձախողվածները։</p>`}
+  ],
+  practice:{t:"Breakout-ների ձեռքով ուսումնասիրություն", steps:["Ընտրիր մեկ ակտիվ և timeframe","Պատմական գրաֆիկում գտիր 30 breakout ըստ ստուգաթերթի (նախապես ֆիքսված կանոններով)","Յուրաքանչյուրի համար գրանցիր՝ հասավ 2R թիրախին, թե stop-ին","Հաշվիր հաջողության % -ը և միջին R-ը","Համեմատիր բարձր և ցածր ծավալով breakout-ների արդյունքները"], deliverable:"30 դեպքի աղյուսակ և եզրակացություն"},
+  quiz:[
+    ["VWAP-ը...",["Պարզ միջին գինն է","Ծավալով կշռված միջին գինն է","RSI-ի տարբերակ է","Միայն ֆորեքսի համար է"],1,"Σ(P×V)/ΣV։"],
+    ["Ո՞ր breakout-ն է ավելի հավաստի։",["Ցածր ծավալով, միայն ստվերով","Բարձր ծավալով և փակումով մակարդակից դուրս՝ բարձր timeframe-ի trend-ի ուղղությամբ","Կիրակի գիշերը","Լուրերից առաջ ցանկացած"],1,"Մասնակցություն և համահունչություն։"],
+    ["Ինչու են false breakout-ները հաճախակի։",["Բորսաները արգելում են breakout-ները","Մակարդակների շուրջ կուտակված են stop-եր և պատվերներ","Ինդիկատորները սխալ են","Ծավալը միշտ զրո է"],1,"Liquidity-ն կուտակվում է ակնհայտ մակարդակներում։"],
+    ["Ինչպես գիտականորեն ստուգել պատերնը։",["Հիշել լավագույն օրինակները","Վերածել ստուգելի կանոնի և փորձարկել 100+ դեպքի վրա","Հարցնել ֆորումում","Դիտել YouTube"],1,"Օբյեկտիվ կանոններ և ընտրանք։"],
+    ["Ֆորեքսում ծավալի մասին ճիշտ է...",["Կա կենտրոնացված ճշգրիտ ծավալ","Կենտրոնացված ծավալ չկա. օգտագործվում են tick volume կամ ֆյուչերսների տվյալներ","Ծավալ գոյություն չունի","Միայն ԿԲ-ն գիտի"],1,"FX-ը հիմնականում OTC է։"]
+  ]},
+{ n:4, aca:"Backtesting", title:"Backtesting և վիճակագրական ազնվություն", short:"Backtest",
+  goal:"Ճիշտ կառուցել backtest, հաշվել հիմնական metrics-ը և խուսափել overfitting-ից ու կողմնակալություններից։",
+  lessons:[
+    {t:"Backtest-ի գործընթացը և metrics", h:"1.5 ժ", b:`<div class="formula">Հիպոթեզ → Կանոններ (100% օբյեկտիվ) → Տվյալներ (մաքուր, ճշգրտված)
+→ In-sample փորձարկում → Out-of-sample ստուգում → Paper trading → Live</div>
+      <div class="tbl"><table><tr><th>Metric</th><th>Բանաձև / իմաստ</th></tr><tr><td>CAGR</td><td>(Վերջնական / Սկզբնական)^(1/տարիներ) − 1</td></tr><tr><td>Max drawdown</td><td>Ամենամեծ անկումը գագաթից մինչև հատակ</td></tr><tr><td>Sharpe ratio</td><td>(Եկամտաբերություն − risk-free) / σ (տարեկանացված)</td></tr><tr><td>Win rate</td><td>Շահութաբեր գործարքների %</td></tr><tr><td>Profit factor</td><td>Համախառն շահույթ / համախառն վնաս</td></tr><tr><td>Expectancy (R)</td><td>Միջին արդյունք մեկ գործարքում՝ ռիսկի միավորներով</td></tr><tr><td>Գործարքների քանակ</td><td>Քիչ գործարքներ = բարձր անորոշություն</td></tr></table></div>
+      <p>Բարձր win rate-ը ինքնին լավ չէ. 90% win rate-ով համակարգը կարող է կորցնել, եթե վնասները 10 անգամ մեծ են շահույթներից։</p>`},
+    {t:"Կողմնակալություններ, որոնք սպանում են backtest-ը", h:"1.5 ժ", b:`<ul><li><b>Look-ahead bias</b>՝ օգտագործել տվյալ, որը այդ պահին հասանելի չէր (օր.՝ մուտք օրվա բացմանը՝ օգտագործելով նույն օրվա փակումը)</li><li><b>Survivorship bias</b>՝ փորձարկել միայն այսօր գոյություն ունեցող բաժնետոմսերի վրա՝ բացառելով սնանկացածները</li><li><b>Overfitting / curve fitting</b>՝ պարամետրերը այնքան ճշգրտել, որ համակարգը «անգիր» անի անցյալը</li><li><b>Data snooping</b>՝ փորձարկել 200 տարբերակ և ընտրել լավագույնը. պատահականորեն մեկը միշտ լավ կլինի</li><li><b>Ծախսերի և slippage-ի անտեսում</b></li><li><b>Ռեժիմի կախվածություն</b>՝ ամբողջ շահույթը մեկ տարվա մեջ</li></ul>
+      <p>Bailey և López de Prado-ն («The Deflated Sharpe Ratio», 2014) ցույց են տալիս, թե ինչպես ճշգրտել Sharpe-ը փորձարկված տարբերակների քանակով։ Պարզ կանոն. ինչքան շատ ես փորձարկել, այնքան ավելի կասկածամիտ եղիր լավագույն արդյունքի նկատմամբ։</p>`},
+    {t:"Out-of-sample, walk-forward և robustness", h:"1 ժ", b:`<ul><li><b>In-sample / out-of-sample</b>՝ օր.՝ 2010–2019-ում մշակում, 2020–2025-ում մեկ անգամ ստուգում. եթե out-of-sample-ից հետո փոխում ես պարամետրերը, այն այլևս out-of-sample չէ</li><li><b>Walk-forward</b>՝ պատուհանը տեղաշարժվում է. ուսուցում 3 տարի → ստուգում 1 տարի → տեղաշարժ</li><li><b>Parameter stability</b>՝ եթե MA(50)-ը աշխատում է, բայց MA(45)-ը և MA(55)-ը՝ ոչ, դա overfitting է. լավ համակարգը ունի «սարահարթ», ոչ թե «գագաթ»</li><li><b>Տարբեր շուկաներ</b>՝ trend following-ը պետք է աշխատի բազմաթիվ ակտիվների վրա, ոչ միայն մեկի</li><li><b>Monte Carlo</b>՝ գործարքների հաջորդականության խառնում՝ drawdown-ների բաշխումը տեսնելու համար</li></ul>
+      <div class="formula">Ենթադրենք Sharpe ≈ 0.5, ապա t-stat ≈ Sharpe × √տարիներ
+5 տարի → 0.5 × 2.24 ≈ 1.1  (վիճակագրորեն թույլ)
+16 տարի → 0.5 × 4 = 2.0   (ավելի համոզիչ)</div>`}
+  ],
+  practice:{t:"Առաջին ազնիվ backtest-ը", steps:["Ընտրիր պարզ կանոն. «Գնել SPY-ը, երբ ամսական փակումը > 10-ամսյա MA-ից, հակառակ դեպքում կանխիկ»","Sheets-ում կամ TradingView Strategy Tester-ում փորձարկիր 2000–2015 (in-sample)","Գրանցիր CAGR, max drawdown, Sharpe, գործարքների քանակ՝ համեմատելով buy & hold-ի հետ","Առանց փոփոխությունների ստուգիր 2016–այսօր (out-of-sample)","Փորձիր MA 8, 10, 12 ամիս. արդյունքները կայու՞ն են","Ավելացրու 0.1% ծախս յուրաքանչյուր գործարքում"], deliverable:"Backtest հաշվետվություն in/out-of-sample և robustness ստուգումով", tools:["stats"]},
+  quiz:[
+    ["Համակարգը ունի 90% win rate, միջին շահույթ $10, միջին վնաս $120։ Expectancy-ն՝",["+$9","−$3","+$1","−$12"],1,"0.9×10 − 0.1×120 = 9 − 12 = −3։"],
+    ["Backtest-ում օգտագործվել են միայն այսօր S&P 500-ում ընդգրկված բաժնետոմսերը։ Սա...",["Look-ahead bias","Survivorship bias","Overfitting","Մաքուր թեստ"],1,"Բացառված են դուրս մնացածները և սնանկացածները։"],
+    ["MA(50)-ը տալիս է հիանալի արդյունք, բայց MA(48) և MA(52)՝ վատ։ Ամենահավանական պատճառը՝",["Գտել ես կատարյալ պարամետրը","Overfitting","Survivorship bias","Ծախսերը"],1,"Լավ համակարգը կայուն է պարամետրերի նկատմամբ։"],
+    ["Ինչ է walk-forward-ը։",["Թրեյդինգ քայլելիս","Ուսուցման և ստուգման պատուհանների հաջորդական տեղաշարժ","Միայն out-of-sample","Monte Carlo"],1,"Իրատեսական սիմուլյացիա։"],
+    ["Sharpe = 0.5, 4 տարվա տվյալ։ Մոտավոր t-stat-ը՝",["0.5","1.0","2.0","4.0"],1,"0.5 × √4 = 1.0՝ թույլ ապացույց։"]
+  ]},
+{ n:5, aca:"Ռազմավարություններ", title:"Համակարգված ռազմավարություններ և դրանց ապացույցները", short:"Ռազմավարություններ",
+  goal:"Ծանոթանալ ակադեմիապես ուսումնասիրված ռազմավարություններին՝ trend following, momentum, mean reversion, carry, և հասկանալ դրանց ռիսկերը։",
+  lessons:[
+    {t:"Trend following և time-series momentum", h:"1.5 ժ", b:`<p><b>Moskowitz, Ooi, Pedersen, «Time Series Momentum» (Journal of Financial Economics, 2012)</b>. 58 liquid ֆյուչերսների վրա (ինդեքսներ, արժույթներ, ապրանքներ, պարտատոմսեր) ակտիվի անցյալ եկամտաբերությունը կանխատեսում է ապագան 1–12 ամսվա horizon-ում, մասնակի reversal-ով ավելի երկար ժամկետում։ Դիվերսիֆիկացված պորտֆելը լավագույնս է աշխատել ծայրահեղ շուկաներում։</p>
+      <div class="formula">Պարզ TSMOM կանոն ամեն ամիս:
+Եթե 12-ամսյա եկամտաբերությունը > 0 → long,  հակառակ դեպքում → short / կանխիկ
+Դիրքի չափ ∝ 1 / volatility  (volatility targeting)</div>
+      <p><b>Ռիսկեր.</b> Երկար կողային ժամանակաշրջաններ, կտրուկ reversal-ներ, շատ փոքր կորուստներ և քիչ մեծ շահույթներ (ցածր win rate՝ 35–45%)։ Հոգեբանորեն դժվար է։</p>`},
+    {t:"Cross-sectional momentum և mean reversion", h:"1 ժ", b:`<ul><li><b>Cross-sectional momentum</b> (Jegadeesh & Titman, 1993)՝ գնել վերջին 3–12 ամսում ամենաուժեղ բաժնետոմսերը, վաճառել ամենաթույլերը։ Ռիսկ՝ «momentum crash»-ներ շուկայի կտրուկ շրջադարձերի ժամանակ (օր.՝ 2009)</li><li><b>Կարճաժամկետ reversal</b>՝ շատ կարճ horizon-ում (օրեր, շաբաթ) ծայրահեղ շարժումները հակված են մասնակիորեն վերադառնալու. առավելությունը հաճախ ուտվում է ծախսերով</li><li><b>Mean reversion trend-ի ներսում</b>՝ գնել կարճ pullback-ը (RSI(2) < 10), երբ գինը 200 MA-ից վեր է</li><li><b>Pairs trading</b>՝ երկու կապված ակտիվների գնային տարբերության վերադարձ (cointegration). կապը կարող է կոտրվել</li></ul>`},
+    {t:"Carry, value և ռազմավարությունների համադրում", h:"1 ժ", b:`<ul><li><b>Carry</b>՝ պարգև բարձր եկամտաբերությամբ ակտիվ պահելու համար (FX-ում՝ բարձր տոկոսադրույքով արժույթ, ֆյուչերսներում՝ backwardation)։ Ռիսկ՝ կտրուկ անկումներ ճգնաժամերում («աստիճաններով վեր, վերելակով վար»)</li><li><b>Value</b>՝ էժան ակտիվներ (ցածր P/B, P/E) երկարաժամկետում. կարող է զիջել տարիներով</li><li><b>Համադրում</b>՝ Asness, Moskowitz, Pedersen («Value and Momentum Everywhere», 2013) ցույց են տալիս, որ value և momentum-ը բացասաբար կորելացված են. միասին ավելի կայուն են</li></ul>
+      <p><b>Գլխավոր դաս.</b> Չկա ռազմավարություն, որը միշտ աշխատում է։ Յուրաքանչյուր հայտնի պրեմիա ունի տարիներ տևող վատ ժամանակաշրջաններ, և հենց դա է պատճառը, որ այն չի վերանում. շատերը հրաժարվում են վատ ժամանակաշրջանում։</p>`}
+  ],
+  practice:{t:"Ռազմավարության քարտ", steps:["Ընտրիր մեկ ռազմավարություն (TSMOM, cross-sectional momentum, mean reversion կամ carry)","Գրիր քարտ. հիպոթեզ, ինչու է աշխատում (ռիսկի պրեմիա, վարքագծային, կառուցվածքային), կանոններ, շուկաներ, սպասվող win rate և drawdown, երբ չի աշխատում","Փորձարկիր այն պարզեցված ձևով 3 ակտիվի վրա","Գրիր, թե ինչ պայմաններում կդադարեցնես այն օգտագործել (kill switch)"], deliverable:"Ռազմավարության քարտ և պարզ փորձարկում"},
+  quiz:[
+    ["Moskowitz, Ooi, Pedersen-ի հետազոտությունում momentum-ը պահպանվում էր...",["1 օր","1–12 ամիս","10 տարի","Միշտ"],1,"Մասնակի reversal ավելի երկար horizon-ում։"],
+    ["Trend following-ի տիպիկ win rate-ը՝",["90%","35–45%","100%","5%"],1,"Քիչ մեծ շահույթներ, շատ փոքր վնասներ։"],
+    ["Cross-sectional momentum-ի հիմնական ռիսկը՝",["Ցածր liquidity միշտ","Momentum crash-եր շուկայի կտրուկ շրջադարձերի ժամանակ","Բարձր դիվիդենդներ","Զրո volatility"],1,"Օր.՝ 2009-ի գարուն։"],
+    ["Value և momentum-ի համադրման առավելությունը՝",["Միշտ բարձր եկամուտ","Բացասական կորելյացիա, ուստի պորտֆելը ավելի կայուն է","Չկան ծախսեր","Անհնար է"],1,"Value and Momentum Everywhere։"],
+    ["Ինչու ռիսկի պրեմիաները չեն վերանում, նույնիսկ եթե հայտնի են։",["Քանի որ գաղտնի են","Քանի որ ունեն երկար վատ ժամանակաշրջաններ, և շատերը հրաժարվում են","Քանի որ արգելված են","Քանի որ միշտ աշխատում են"],1,"Ցավը պրեմիայի գինն է։"]
+  ]},
+{ n:6, aca:"Capstone", title:"Քո կանոնային համակարգը", short:"Համակարգ",
+  goal:"Կառուցել, փաստաթղթավորել և ստուգել սեփական կանոնային թրեյդինգ համակարգը։",
+  lessons:[
+    {t:"Համակարգի ճարտարապետություն", h:"1 ժ", b:`<div class="formula">Universe  — որ ակտիվներ (liquid, բավարար ծավալ)
+Filter    — երբ առևտուր չանել (trend filter, volatility, լուրեր)
+Entry     — ճշգրիտ մուտքի կանոն
+Exit      — stop (ATR), take profit / trailing, ժամանակային ելք
+Sizing    — ռիսկ % / (մուտք − stop)
+Portfolio — առավելագույն բաց ռիսկ, կորելյացված դիրքերի սահման
+Review    — ամսական metrics vs սպասվածը, kill switch</div>
+      <p>Պարզ համակարգերը ավելի հուսալի են. 3–5 կանոնով համակարգը ավելի քիչ է overfitted, քան 15 կանոնով։</p>`},
+    {t:"Օրինակ՝ ETF trend համակարգ", h:"1 ժ", b:`<div class="formula">Universe: 6 ETF — US բաժնետոմսեր, միջազգային բաժնետոմսեր, պարտատոմսեր, ոսկի, ապրանքներ, REIT
+Ամեն ամսվա վերջին:
+  1. Եթե Close > SMA(10 ամիս) → պահել, հակառակ դեպքում → կանխիկ/կարճաժամկետ պարտատոմս
+  2. Կշիռ ∝ 1 / volatility (6-ամսյա), գումարը = 100%
+  3. Rebalance ամսական
+Սպասվող վարք: ցածր drawdown-ներ, քան buy & hold-ը, բայց երբեմն ետ մնալ ուժեղ աճի ժամանակ</div>
+      <p>Սա կրթական օրինակ է, ոչ թե ներդրումային խորհուրդ։ Այն ցույց է տալիս, թե ինչպես են trend filter-ը, դիվերսիֆիկացիան և volatility sizing-ը աշխատում միասին։</p>`},
+    {t:"Live ստուգում և համակարգի մոնիթորինգ", h:"1 ժ", b:`<ul><li><b>Սպասվածի միջակայք</b>՝ backtest-ից և Monte Carlo-ից գիտես, որ սովորական drawdown-ը մինչև, օրինակ, 15% է. 25%-ը ազդանշան է վերանայման</li><li><b>Կատարման որակ</b>՝ համեմատիր իրական մուտքերը backtest-ի գների հետ (implementation shortfall)</li><li><b>Մի փոխիր համակարգը առաջին 3 վնասից հետո</b>. փոփոխությունները՝ միայն պլանավորված review-ի ժամանակ, գրավոր հիմնավորումով</li><li><b>Փաստաթղթավորում</b>՝ յուրաքանչյուր փոփոխություն ամսաթվով և պատճառով (version control)</li></ul>`}
+  ],
+  practice:{t:"Capstone՝ համակարգի փաստաթուղթ", steps:["Գրիր համակարգի փաստաթուղթ 7 բաժիններով (universe, filter, entry, exit, sizing, portfolio, review)","Backtest արա in-sample և out-of-sample՝ ծախսերով","Ստուգիր պարամետրերի կայունությունը (±20%)","Սահմանիր kill switch-ը և սպասվող drawdown-ը","Սկսիր 4-շաբաթյա paper trading և լրացրու ժուռնալը","Ստացիր AI գնահատում"], deliverable:"Համակարգի փաստաթուղթ, backtest, paper trading ժուռնալ", tools:["stats","interview"]},
+  quiz:[
+    ["Ինչու են պարզ համակարգերը հաճախ ավելի հուսալի։",["Ավելի գեղեցիկ են","Ավելի քիչ են overfitted","Ավելի շատ գործարքներ են տալիս","Չեն պահանջում stop"],1,"Ավելի քիչ ազատության աստիճաններ։"],
+    ["Volatility sizing-ում ավելի volatile ակտիվը ստանում է...",["Ավելի մեծ կշիռ","Ավելի փոքր կշիռ","Նույն կշիռ","Զրո"],1,"Կշիռ ∝ 1/σ։"],
+    ["3 վնաս անընդմեջ համակարգում, որի backtest-ում 6 վնասի շարքը նորմալ է։ Ճիշտ գործողությունը՝",["Փոխել պարամետրերը","Շարունակել և վերանայել պլանավորված ժամանակին","Կրկնապատկել ռիսկը","Դադարեցնել ընդմիշտ"],1,"Արդյունքը սպասվածի միջակայքում է։"],
+    ["Implementation shortfall-ը...",["Տարբերություն backtest-ի և իրական կատարման գների միջև","Հարկ","Դիվիդենդ","Margin call"],0,"Կատարման որակի չափում։"],
+    ["Kill switch-ը...",["Համակարգչի անջատում","Նախապես սահմանված պայման, երբ դադարեցնում ես համակարգը վերանայման համար","Stop-loss մեկ գործարքում","Բրոքերի ֆունկցիա"],1,"Օր.՝ drawdown > սպասված առավելագույնի 1.5×։"]
+  ]}
+],
+final:[
+  ["Ընկերը ցույց է տալիս backtest՝ 400% տարեկան եկամտով, 2 ամսվա տվյալներով, 12 ինդիկատորով։ Գլխավոր խնդիրը՝",["Եկամուտը փոքր է","Քիչ տվյալ և շատ պարամետրեր՝ overfitting-ի բարձր հավանականություն","Ինդիկատորները քիչ են","Չկա խնդիր"],1,"Կարճ ընտրանք + բարդ մոդել։"],
+  ["Ռազմավարությունը մտնում է օրվա բացմանը՝ օգտագործելով նույն օրվա փակման գինը ազդանշանի համար։ Սա...",["Survivorship bias","Look-ahead bias","Carry","Walk-forward"],1,"Ապագայի տվյալը հասանելի չէր։"],
+  ["RSI(14) = 25, բայց գինը 200 MA-ից ցածր է և downtrend-ում է։ Mean reversion թրեյդերը...",["Պարտադիր գնում է","Զգուշանում է, քանի որ oversold-ը downtrend-ում կարող է էլ ավելի oversold դառնալ. պետք է ֆիլտր և stop","Short է անում լծակով","Անտեսում է trend-ը"],1,"Ռեժիմը կարևոր է։"],
+  ["Stop-ը տեղադրված է 0.3×ATR հեռավորությամբ, և համակարգը անընդհատ դուրս է գալիս։ Լուծումը՝",["Հրաժարվել stop-ից","Stop-ը տեղադրել աղմուկից դուրս (օր.՝ 1.5–3×ATR) և փոքրացնել դիրքը, որ ռիսկը նույնը մնա","Մեծացնել լծակը","Փոխել ակտիվը ամեն օր"],1,"Stop-ը և sizing-ը միասին են աշխատում։"],
+  ["Trend following պորտֆելը 18 ամիս կողային շուկայում կորցրել է 12%, իսկ backtest-ում սովորական drawdown-ը մինչև 20% էր։ Եզրակացություն՝",["Համակարգը կոտրված է","Արդյունքը սպասվածի միջակայքում է. շարունակել ըստ պլանի","Անցնել day trading-ի","Ավելացնել 10 ինդիկատոր"],1,"Գնահատիր սպասվածի համեմատ։"],
+  ["Ո՞րն է ամենաճիշտը MOP (2012) time series momentum-ի մասին։",["Աշխատում է միայն բիտկոինում","Հայտնաբերվել է 58 liquid ֆյուչերսներում 1–12 ամսվա horizon-ում, մասնակի reversal-ով ավելի երկար horizon-ում","Աշխատում է միայն 1 րոպեանոց գրաֆիկում","Հերքված է"],1,"Journal of Financial Economics, 2012։"],
+  ["Փորձարկել ես 300 պարամետրի համադրություն և ընտրել լավագույնը (Sharpe 1.8)։ Ինչպե՞ս վերաբերվել այդ թվին։",["Վստահել ամբողջությամբ","Ակնկալել, որ իրական Sharpe-ը զգալիորեն ցածր կլինի (data snooping). ստուգել out-of-sample և deflated Sharpe-ով","Կրկնապատկել այն","Բազմապատկել 300-ով"],1,"Բազմակի փորձարկումների ուղղում։"],
+  ["Ո՞ր չափումն է ամենաօգտակարը stop-ի հեռավորությունը որոշելու համար։",["RSI","ATR","P/E","Դիվիդենդ"],1,"Volatility-ի չափ։"],
+  ["Breakout-ը տեղի ունեցավ 0.6× միջին ծավալով՝ կիրակի գիշերը կրիպտոյում։ Գնահատական՝",["Շատ հավաստի","Ցածր մասնակցություն՝ false breakout-ի ավելի բարձր ռիսկ","Ծավալը կարևոր չէ","Պարտադիր գնել"],1,"Ծավալը մասնակցության չափ է։"],
+  ["Ինչու value և momentum միասին։",["Միշտ նույն ուղղությամբ են շարժվում","Պատմականորեն բացասաբար կորելացված են, ուստի համադրությունը նվազեցնում է drawdown-ները","Արգելված է առանձին օգտագործել","Պատճառ չկա"],1,"Դիվերսիֆիկացիա ռազմավարությունների միջև։"]
+],
+sources:[
+  ["Moskowitz, Ooi, Pedersen — Time Series Momentum (JFE, 2012)","https://papers.ssrn.com/abstract=2089463","Trend following-ի ապացույցներ"],
+  ["AQR — Time Series Momentum տվյալներ","https://www.aqr.com/library/data-sets/time-series-momentum-factors-monthly","Ֆակտորների տվյալներ"],
+  ["Faber — A Quantitative Approach to Tactical Asset Allocation","https://papers.ssrn.com/abstract=962461","10-ամսյա MA կանոն"],
+  ["Bailey & López de Prado — The Deflated Sharpe Ratio","https://papers.ssrn.com/abstract=2460551","Backtest overfitting"],
+  ["CMT Association","https://cmtassociation.org","Տեխնիկական վերլուծության մասնագիտական ծրագիր"],
+  ["TradingView","https://www.tradingview.com","Գրաֆիկներ և Strategy Tester"]
+], examExtra:15, examMin:40 };
+
+/* ========== TRADING 3: RISK & PSYCHOLOGY ========== */
+const RM = { id:"rm", title:"Ռիսկի կառավարում և թրեյդերի հոգեբանություն", short:"Ռիսկ",
+lead:"Կորուստների մաթեմատիկա, դիրքի չափ, expectancy և Kelly, պորտֆելի ռիսկ, վարքագծային ֆինանսներ (Kahneman, Odean) և կարգապահության համակարգ՝ ինչով են տարբերվում գոյատևող թրեյդերները։",
+weeks:[
+{ n:1, aca:"Ռիսկի մաթեմատիկա", title:"Կորուստների մաթեմատիկա և R-multiples", short:"Մաթեմատիկա",
+  goal:"Հասկանալ կորուստների ասիմետրիան, volatility drag-ը և արդյունքները չափել ռիսկի միավորներով (R)։",
+  lessons:[
+    {t:"Կորուստների ասիմետրիա", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Կորուստ</th><th>Վերականգնման համար անհրաժեշտ աճ</th></tr><tr><td>−10%</td><td>+11.1%</td></tr><tr><td>−20%</td><td>+25%</td></tr><tr><td>−30%</td><td>+42.9%</td></tr><tr><td>−50%</td><td>+100%</td></tr><tr><td>−75%</td><td>+300%</td></tr><tr><td>−90%</td><td>+900%</td></tr></table></div>
+      <div class="formula">Անհրաժեշտ աճ = 1 / (1 − կորուստ) − 1</div>
+      <p><b>Volatility drag.</b> +50% և −50% հետո դու ունես 75%՝ ոչ թե 100%։ Երկրաչափական (իրական) եկամտաբերությունը ≈ թվաբանական միջին − σ²/2։ Մեծ տատանումները ուտում են կապիտալի աճը, նույնիսկ եթե միջինը նույնն է։ <b>Եզրակացություն.</b> Թրեյդերի առաջին խնդիրը գոյատևելն է. մեծ drawdown-ից հետո վերականգնումը մաթեմատիկորեն և հոգեբանորեն շատ դժվար է։</p>`},
+    {t:"R-multiple՝ արդյունքները ռիսկի միավորներով", h:"1 ժ", b:`<div class="formula">1R = (Մուտքի գին − Stop) × Քանակ   = այն գումարը, որ ռիսկի ես ենթարկում
+Արդյունքը R-ով = Շահույթ կամ վնաս / 1R
+Օրինակ: մուտք 100, stop 95, 40 բաժնետոմս → 1R = $200
+         ելք 112 → շահույթ $480 = +2.4R
+         ելք 95  → վնաս $200 = −1R</div>
+      <p>R-ը (Van Tharp-ի կողմից տարածված) թույլ է տալիս համեմատել տարբեր չափի և ակտիվների գործարքներ։ Եթե վնասները մոտ −1R են, դու վերահսկում ես ռիսկը։ −3R վնասները ցույց են տալիս, որ խախտել ես stop-ը կամ եղել է gap։ Ժուռնալում գրանցիր յուրաքանչյուր գործարքի R-ը։</p>`},
+    {t:"Expectancy", h:"1 ժ", b:`<div class="formula">Expectancy (R) = Win% × Միջին շահույթ(R) − Loss% × Միջին վնաս(R)
+Օրինակ 1: 40% × 2.5R − 60% × 1R = 1.0 − 0.6 = +0.40R մեկ գործարքում
+Օրինակ 2: 70% × 0.5R − 30% × 1.5R = 0.35 − 0.45 = −0.10R
+Սպասվող արդյունք N գործարքում ≈ N × Expectancy × 1R</div>
+      <p>Expectancy-ն ցույց է տալիս, թե միջինում որքան ես վաստակում յուրաքանչյուր ռիսկի ենթարկված դոլարի դիմաց։ <b>Win rate-ը և ռիսկ/պարգևը միասին են կարևոր</b>։ 40% win rate-ով համակարգը կարող է լինել շատ շահութաբեր, իսկ 70%-ով՝ վնասաբեր։ Expectancy-ն պետք է հաշվել ծախսերից հետո և առնվազն 30–100 գործարքի վրա։</p>`}
+  ],
+  practice:{t:"Քո ռիսկի հաշվարկները", steps:["Հաշվիր վերականգնման աճը −15%, −35%, −60% կորուստների համար","Վերցրու քո paper գործարքները (կամ 20 հիպոթետիկ) և վերածիր R-ի","Հաշվիր win rate, միջին շահույթ R, միջին վնաս R և expectancy","Օգտագործիր expectancy հաշվիչը և գրիր եզրակացություն"], deliverable:"R աղյուսակ և expectancy", tools:["expect","dd"]},
+  quiz:[
+    ["−40% կորստից հետո վերականգնման համար անհրաժեշտ է...",["+40%","+50%","+66.7%","+80%"],2,"1/0.6 − 1 = 66.7%։"],
+    ["Մուտք 50, stop 48, 100 բաժնետոմս։ 1R-ը՝",["$48","$100","$200","$5000"],2,"(50 − 48) × 100 = $200։"],
+    ["Win 45%, միջին շահույթ 2R, միջին վնաս 1R։ Expectancy-ն՝",["+0.35R","−0.10R","+0.90R","+1.0R"],0,"0.45×2 − 0.55×1 = 0.35R։"],
+    ["+30%, հետո −30%։ Արդյունքը՝",["0%","−9%","+9%","−30%"],1,"1.3 × 0.7 = 0.91։"],
+    ["Ժուռնալում շատ վնասներ −2.5R և −3R են։ Ամենահավանական պատճառը՝",["Լավ համակարգ","Stop-ի խախտում կամ gap-եր","Ցածր ծախսեր","Բարձր win rate"],1,"Կարգապահ վնասը ≈ −1R։"]
+  ]},
+{ n:2, aca:"Դիրքի չափ", title:"Position sizing, լծակ և Kelly", short:"Sizing",
+  goal:"Հաշվել դիրքի չափը ֆիքսված ռիսկով և ATR-ով և հասկանալ Kelly-ի բանաձևը և դրա վտանգները։",
+  lessons:[
+    {t:"Fixed fractional sizing", h:"1.5 ժ", b:`<div class="formula">Քանակ = (Կապիտալ × Ռիսկ%) / (Մուտք − Stop)
+Կապիտալ $20 000, ռիսկ 1% = $200, մուտք 80, stop 76
+Քանակ = 200 / 4 = 50 բաժնետոմս  (դիրքի արժեք $4 000 = կապիտալի 20%)</div>
+      <ul><li><b>Ռիսկը որոշում ես նախ, քանակը՝ հետո</b>. ոչ թե «գնեմ 100 բաժնետոմս», այլ «ռիսկի ենթարկեմ $200»</li><li>Տարածված տիրույթ՝ 0.25–1% մեկ գործարքում. սկսնակների համար՝ 0.25–0.5%</li><li>10 վնաս անընդմեջ 1% ռիսկով ≈ −9.6%. 5% ռիսկով ≈ −40%</li><li>Դիրքի արժեքը կարող է սահմանափակվել նաև ըստ liquidity-ի և կոնցենտրացիայի (օր.՝ ոչ ավելի, քան 20% մեկ ակտիվում)</li></ul>`},
+    {t:"ATR-ով stop և volatility-ի նորմալացում", h:"1 ժ", b:`<div class="formula">Stop հեռավորություն = k × ATR   (օր.՝ k = 2)
+Քանակ = (Կապիտալ × Ռիսկ%) / (k × ATR)
+Ակտիվ A: ATR = 1 → stop 2 → քանակ 100
+Ակտիվ B: ATR = 5 → stop 10 → քանակ 20     (ռիսկը նույնն է՝ $200)</div>
+      <p>Այսպես յուրաքանչյուր դիրք ունի մոտավորապես հավասար ռիսկ՝ անկախ ակտիվի volatility-ից։ Սա է պատճառը, որ պրոֆեսիոնալ trend follower-ները (Turtle Traders-ի «N» միավորը) ավելի volatile ակտիվներում ավելի փոքր դիրքեր են բացում։ <b>Լծակը</b> հետևանք է, ոչ թե նպատակ. եթե stop-ը շատ մոտ է, հաշվարկը կարող է պահանջել մեծ դիրք. ստուգիր, որ առավելագույն դիրքի և margin-ի սահմանները չեն խախտվում։</p>`},
+    {t:"Kelly criterion և ինչու օգտագործել դրա մի մասը", h:"1 ժ", b:`<div class="formula">Kelly f* = W − (1 − W) / R
+W = win rate, R = միջին շահույթ / միջին վնաս
+Օրինակ: W = 0.5, R = 2 → f* = 0.5 − 0.5/2 = 0.25 (25% ռիսկ մեկ գործարքում!)</div>
+      <p>Kelly-ն (1956) մաքսիմալացնում է կապիտալի երկարաժամկետ երկրաչափական աճը, <b>եթե ճշգրիտ գիտես</b> W-ն և R-ը։ Իրականում դրանք գնահատականներ են և փոխվում են։ Full Kelly-ն ունի շատ խոր drawdown-ներ, իսկ գնահատման սխալի դեպքում overbetting-ը կործանարար է։ Պրակտիկայում օգտագործում են <b>half կամ quarter Kelly</b> կամ ավելի պարզ 0.5–1% կանոն։ Kelly-ն օգտակար է որպես վերին սահման. եթե քո ռիսկը Kelly-ից բարձր է, դու վստահորեն overbet ես անում։</p>`}
+  ],
+  practice:{t:"Sizing աղյուսակ", steps:["Ստեղծիր Sheets աղյուսակ. կապիտալ, ռիսկ %, մուտք, stop → քանակ, դիրքի արժեք, % կապիտալից","Հաշվիր 3 ակտիվի համար՝ 2×ATR stop-ով","Հաշվիր Kelly-ն քո paper գործարքների W և R-ով և համեմատիր քո ռիսկի հետ","Որոշիր քո ստանդարտ ռիսկը մեկ գործարքում և գրավոր հիմնավորիր"], deliverable:"Sizing աղյուսակ և ռիսկի քաղաքականություն", tools:["possize","kelly"]},
+  quiz:[
+    ["Կապիտալ $10 000, ռիսկ 1%, մուտք 50, stop 48։ Քանակը՝",["20","50","100","200"],1,"$100 / $2 = 50։"],
+    ["ATR = 3, stop = 2×ATR, ռիսկ $300։ Քանակը՝",["50","100","150","300"],0,"300 / 6 = 50։"],
+    ["W = 0.4, R = 3։ Kelly f*-ը՝",["0.2","0.4","0.6","0.1"],0,"0.4 − 0.6/3 = 0.2։"],
+    ["Ինչու են պրակտիկայում օգտագործում half Kelly։",["Օրենքով պարտադիր է","W և R գնահատականները անճշտ են, իսկ full Kelly-ն ունի շատ խոր drawdown-ներ","Ավելի մեծ եկամուտ է տալիս միշտ","Kelly-ն չի աշխատում"],1,"Գնահատման սխալի և ցավի նվազեցում։"],
+    ["10 վնաս անընդմեջ 2% ռիսկով (բարդ տոկոսով)։ Մոտավոր drawdown-ը՝",["−10%","−18%","−20%","−40%"],1,"0.98¹⁰ ≈ 0.817։"]
+  ]},
+{ n:3, aca:"Պորտֆել", title:"Պորտֆելի ռիսկ, կորելյացիա և tail risk", short:"Պորտֆել",
+  goal:"Կառավարել ռիսկը ամբողջ պորտֆելի մակարդակով՝ կորելյացիա, կոնցենտրացիա, gap և tail ռիսկեր։",
+  lessons:[
+    {t:"Կորելյացիա և դիվերսիֆիկացիա", h:"1 ժ", b:`<div class="formula">Երկու ակտիվի պորտֆելի σ² = w₁²σ₁² + w₂²σ₂² + 2w₁w₂ρσ₁σ₂
+ρ = +1 → դիվերսիֆիկացիա չկա,  ρ = 0 → զգալի նվազում,  ρ < 0 → ամենաուժեղ էֆեկտը</div>
+      <ul><li>5 long դիրք տեխնոլոգիական բաժնետոմսերում + Nasdaq ֆյուչերս ≈ մեկ մեծ դիրք</li><li>Կրիպտոյում altcoin-ների մեծ մասը ուժեղ կորելացված է BTC-ի հետ</li><li><b>Ճգնաժամերում կորելյացիաները աճում են</b>. դիվերսիֆիկացիան թուլանում է հենց այն պահին, երբ ամենաշատն է պետք (2008, 2020 մարտ)</li><li>Իրական դիվերսիֆիկացիա՝ տարբեր ակտիվների դասեր, տարբեր ռազմավարություններ, տարբեր timeframe-ներ</li></ul>`},
+    {t:"Պորտֆելի սահմանափակումներ", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Սահմանափակում</th><th>Օրինակ</th></tr><tr><td>Ռիսկ մեկ գործարքում</td><td>≤ 1%</td></tr><tr><td>Ընդհանուր բաց ռիսկ (բոլոր stop-երի գումարը)</td><td>≤ 5–6%</td></tr><tr><td>Կորելացված դիրքեր (նույն ոլորտ/թեմա)</td><td>≤ 3% ընդհանուր ռիսկ</td></tr><tr><td>Կոնցենտրացիա մեկ ակտիվում</td><td>≤ 20% կապիտալի</td></tr><tr><td>Օրական կորստի սահման</td><td>−2% → դադար մինչև վաղը</td></tr><tr><td>Ամսական drawdown</td><td>−6% → ռիսկը կիսել, վերանայում</td></tr></table></div>
+      <p>Այս թվերը ելակետային օրինակներ են. ճշգրտիր ըստ քո ռազմավարության volatility-ի։ Կարևորը՝ սահմանափակումները գրավոր են և կիրառվում են ավտոմատ, ոչ թե տրամադրությամբ։</p>`},
+    {t:"Gap, tail risk և VaR-ի սահմանափակումները", h:"1 ժ", b:`<ul><li><b>Gap risk</b>՝ earnings, լուրեր, շաբաթ-կիրակի. stop-ը չի պաշտպանում gap-ից։ Լուծում՝ փոքր դիրքեր earnings-ից առաջ, օպցիոններով hedging, կամ գործարքից դուրս գալ</li><li><b>Fat tails</b>՝ ծայրահեղ շարժումները ավելի հաճախ են լինում, քան normal բաշխումն է կանխատեսում (1987-ի հոկտեմբերի 19-ին S&P 500-ը ընկավ ≈ 20% մեկ օրում)</li><li><b>VaR</b> (Value at Risk)՝ «95% հավանականությամբ օրական կորուստը չի գերազանցի X»-ը. չի ասում, թե որքան կլինի մնացած 5%-ում. լրացրու <b>Expected Shortfall</b>-ով և stress test-երով</li><li><b>Stress test</b>՝ ինչ կլինի պորտֆելին, եթե կրկնվի 2008-ը, 2020-ի մարտը, 2022-ի կրիպտո անկումը (−75% BTC)</li><li><b>Կոնտրագենտի ռիսկ</b>՝ բորսայի կամ բրոքերի սնանկություն (FTX, 2022). մի պահիր ամբողջ կապիտալը մեկ տեղում</li></ul>`}
+  ],
+  practice:{t:"Պորտֆելի stress test", steps:["Թվարկիր քո (կամ մոդելային) պորտֆելի դիրքերը և դրանց stop-երը","Հաշվիր ընդհանուր բաց ռիսկը և կորելացված խմբերը","Կիրառիր 3 սցենար (2008, 2020 մարտ, 2022 կրիպտո) և գնահատիր կորուստը","Գրիր պորտֆելի սահմանափակումների քո աղյուսակը"], deliverable:"Ռիսկի աղյուսակ, stress test, սահմանափակումներ"},
+  quiz:[
+    ["Ինչ է տեղի ունենում կորելյացիաների հետ ճգնաժամերում։",["Նվազում են","Աճում են, ուստի դիվերսիֆիկացիան թուլանում է","Դառնում են զրո","Չեն փոխվում"],1,"Ամեն ինչ վաճառվում է միասին։"],
+    ["5 դիրք, յուրաքանչյուրը 1% ռիսկով, բոլորը կրիպտո altcoin-ներ։ Իրական ռիսկը ավելի մոտ է...",["1%","5% մեկ թեմայում՝ բարձր կորելյացիայով","0.2%","0%"],1,"Կորելացված դիրքերը գումարվում են։"],
+    ["VaR-ի հիմնական թուլությունը՝",["Չափազանց պահպանողական է","Չի ասում, թե որքան մեծ կարող է լինել կորուստը ծայրահեղ 5%-ում","Չի հաշվարկվում","Միայն պարտատոմսերի համար է"],1,"Օգտագործիր Expected Shortfall և stress test։"],
+    ["Ինչպես պաշտպանվել earnings gap-ից։",["Stop-ը բավարար է","Փոքրացնել դիրքը, hedge անել կամ դուրս գալ հրապարակումից առաջ","Ավելացնել լծակը","Չանել ոչինչ"],1,"Stop-ը gap-ից չի պաշտպանում։"],
+    ["FTX-ի սնանկությունը ցույց տվեց...",["Կրիպտոն միշտ անվտանգ է","Կոնտրագենտի ռիսկը. ակտիվները բորսայում կարող են կորսվել","Լծակը լավ է","Stop-ը պաշտպանում է ամեն ինչից"],1,"Not your keys, not your coins։"]
+  ]},
+{ n:4, aca:"Վարքագծային ֆինանսներ", title:"Վարքագծային ֆինանսներ՝ ինչու ենք սխալվում", short:"Հոգեբանություն",
+  goal:"Ճանաչել թրեյդինգում ամենավնասակար ճանաչողական կողմնակալությունները և դրանց դեմ գործնական միջոցներ կիրառել։",
+  lessons:[
+    {t:"Prospect theory և loss aversion", h:"1 ժ", b:`<p><b>Kahneman & Tversky, «Prospect Theory» (Econometrica, 1979)</b>. Մարդիկ գնահատում են արդյունքները ոչ թե բացարձակ, այլ որևէ ելակետի (reference point) նկատմամբ, և կորուստը «ցավում է» մոտավորապես երկու անգամ ավելի, քան նույն չափի շահույթը ուրախացնում է։</p>
+      <ul><li>Շահույթի դաշտում մենք ռիսկից խուսափում ենք → <b>շուտ ենք փակում շահույթը</b></li><li>Կորստի դաշտում մենք ռիսկ ենք փնտրում → <b>պահում ենք վնասաբեր դիրքը</b>՝ «հետ կգա» հույսով, կամ «միջինացնում» ենք</li></ul>
+      <p>Kahneman-ի «Thinking, Fast and Slow» գիրքը բացատրում է System 1 (արագ, ինտուիտիվ) և System 2 (դանդաղ, վերլուծական) մտածողությունը։ Թրեյդինգ պլանը և checklist-ը System 2-ի գործիքներ են։</p>`},
+    {t:"Disposition effect, overconfidence և այլ թակարդներ", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Կողմնակալություն</th><th>Ինչպես է երևում</th><th>Հակաթույն</th></tr>
+      <tr><td>Disposition effect (Odean, 1998)</td><td>Վաճառում ես շահույթները, պահում վնասները</td><td>Նախապես ֆիքսված stop և ելքի կանոն</td></tr>
+      <tr><td>Overconfidence</td><td>Չափազանց հաճախ առևտուր, մեծ դիրքեր հաջողությունից հետո</td><td>Ռիսկի սահմաններ, վիճակագրություն ժուռնալից</td></tr>
+      <tr><td>Recency bias</td><td>Վերջին 3 գործարքը որոշում է ամեն ինչ</td><td>Գնահատիր 50+ գործարքով</td></tr>
+      <tr><td>Confirmation bias</td><td>Փնտրում ես միայն հաստատող լուրեր</td><td>Գրիր «ինչը կապացուցի, որ սխալ եմ»</td></tr>
+      <tr><td>Sunk cost</td><td>«Արդեն այսքան եմ կորցրել, չեմ փակի»</td><td>Հարց. «Կբացեի՞ այս դիրքը հիմա»</td></tr>
+      <tr><td>FOMO / herding</td><td>Գնում ես, որովհետև բոլորն են գնում</td><td>Միայն պլանի setup-ներ</td></tr>
+      <tr><td>Revenge trading</td><td>Վնասից անմիջապես հետո մեծ գործարք</td><td>Օրական կորստի սահման և դադար</td></tr></table></div>`},
+    {t:"Ինչպես կառավարել զգացմունքները", h:"1 ժ", b:`<ul><li><b>Pre-commitment</b>՝ որոշումները կայացրու շուկայից դուրս (երեկոյան պլան), կատարիր շուկայում (պատվերներ նախապես)</li><li><b>If-then պլաններ</b> (implementation intentions, Gollwitzer)՝ «Եթե 2 վնաս անընդմեջ, ապա 30 րոպե դադար և ժուռնալ»</li><li><b>Ավտոմատացում</b>՝ bracket պատվերներ, ալերտներ էկրանին նայելու փոխարեն</li><li><b>Դիրքի չափը որպես զգացմունքի կարգավորիչ</b>՝ եթե չես կարողանում քնել, դիրքը շատ մեծ է</li><li><b>Ֆիզիոլոգիա</b>՝ քուն, սթրես, ալկոհոլ. Coates-ի հետազոտությունները (The Hour Between Dog and Wolf) ցույց են տալիս, որ սթրեսի հորմոնները ազդում են թրեյդերների ռիսկի ընկալման վրա</li><li><b>Զգացմունքների ժուռնալ</b>՝ գրանցիր զգացմունքը գործարքից առաջ և հետո. կտեսնես օրինաչափություններ</li></ul>`}
+  ],
+  practice:{t:"Կողմնակալությունների աուդիտ", steps:["Վերանայիր քո ժուռնալը կամ անցյալի ներդրումային որոշումները և գտիր 3 կողմնակալության օրինակ","Յուրաքանչյուրի համար գրիր if-then կանոն","Ստեղծիր զգացմունքների սյունակ ժուռնալում (1–5 սանդղակ)","Գրիր քո «անձնական թակարդների» ցուցակը և կախիր աշխատանքային տեղում"], deliverable:"Աուդիտ, if-then կանոններ, անձնական թակարդների ցուցակ"},
+  quiz:[
+    ["Prospect theory-ի համաձայն կորուստը զգացվում է մոտավորապես...",["Նույնքան, որքան շահույթը","2 անգամ ավելի ուժեղ","10 անգամ թույլ","Չի զգացվում"],1,"Loss aversion ≈ 2։"],
+    ["Disposition effect-ը...",["Շահույթները պահել, վնասները արագ փակել","Շահույթները շուտ փակել, վնասները երկար պահել","Չառևտրել","Միայն ֆորեքսում է"],1,"Odean, 1998։"],
+    ["Թրեյդերը 3 վնասից հետո կրկնապատկում է դիրքը «հետ բերելու» համար։ Սա...",["Kelly","Revenge trading","Value investing","Hedging"],1,"Օրական կորստի սահմանը կանխում է սա։"],
+    ["«Կբացեի՞ այս դիրքը հիմա» հարցը օգնում է հաղթահարել...",["Sunk cost-ը","Spread-ը","Carry-ն","Liquidity-ն"],0,"Անցյալ կորուստը որոշման հիմք չէ։"],
+    ["If-then պլանի օրինակ՝",["Կփորձեմ լավ առևտրել","Եթե օրական −2%, ապա փակում եմ հարթակը մինչև վաղը","Կգնեմ, երբ զգամ","Կհետևեմ լուրերին"],1,"Կոնկրետ պայման → կոնկրետ գործողություն։"]
+  ]},
+{ n:5, aca:"Կարգապահություն", title:"Գործընթաց, ռուտին և կանոնների համակարգ", short:"Կարգապահություն",
+  goal:"Կառուցել ամենօրյա և շաբաթական ռուտին, pre-trade checklist և premortem, որոնք պաշտպանում են սխալներից։",
+  lessons:[
+    {t:"Ամենօրյա ռուտին", h:"1 ժ", b:`<div class="formula">Շուկայից առաջ (20–30 րոպե)
+  • Լուրերի և տնտեսական օրացույցի ստուգում
+  • Բաց դիրքերի և stop-երի վերանայում
+  • Watchlist և պլանավորված setup-ներ (if-then)
+  • Ինքնագնահատում՝ քուն, սթրես (1–5). եթե ≤ 2 → ռիսկը կիսել կամ չառևտրել
+Շուկայում
+  • Միայն պլանավորված setup-ներ, պատվերները՝ նախապես
+Շուկայից հետո (15 րոպե)
+  • Ժուռնալ, screenshot-ներ, զգացմունքներ
+  • Վաղվա պլան</div>`},
+    {t:"Pre-trade checklist և premortem", h:"1 ժ", b:`<div class="formula">PRE-TRADE CHECKLIST
+□ Setup-ը իմ պլանում է (անունով)
+□ Բարձր timeframe-ի trend-ը համահունչ է
+□ Stop-ը տեղադրված է տրամաբանական մակարդակում (ATR-ով)
+□ Քանակը հաշվարկված է ≤ 1% ռիսկով
+□ Ընդհանուր բաց ռիսկը ≤ սահմանի
+□ Մոտակա 24 ժամում կարևոր լուր/earnings չկա (կամ հաշվի է առնված)
+□ Ռիսկ/պարգև ≥ 1:2 կամ համակարգի expectancy-ն դրական է
+□ Ես հանգիստ եմ, ոչ թե վրեժխնդիր կամ FOMO-ի մեջ</div>
+      <p><b>Premortem</b> (Gary Klein)՝ նախքան մեծ որոշումը պատկերացրու, որ 3 ամիս անց այն ձախողվել է, և գրիր՝ ինչու։ Սա բացահայտում է ռիսկեր, որոնք լավատեսությունը թաքցնում է։</p>`},
+    {t:"Կանոնների խախտումներ և վերականգնում", h:"1 ժ", b:`<ul><li><b>Կանոնների պահպանման %</b>-ը ժուռնալի ամենակարևոր metric-ն է. թիրախ՝ 95%+</li><li>Յուրաքանչյուր խախտում ունի «գին». հաշվիր, թե որքան է կորցրել կամ վաստակել խախտումների գործարքները առանձին. սովորաբար դրանք ամենավատն են</li><li><b>Drawdown-ի պրոտոկոլ</b>՝ −5% → ռիսկը կիսել, −10% → դադար 1 շաբաթ, ամբողջական review, վերադարձ paper trading-ով</li><li><b>Խմբագրման կանոն</b>՝ պլանը փոխվում է միայն շաբաթավերջին, գրավոր հիմնավորումով, ոչ թե առևտրի ընթացքում</li><li>Accountability partner կամ mentor՝ ամսական review</li></ul>`}
+  ],
+  practice:{t:"Կարգապահության համակարգ", steps:["Գրիր քո ամենօրյա ռուտինը (առաջ, ընթացքում, հետո)","Ստեղծիր քո pre-trade checklist-ը (8–10 կետ)","Գրիր drawdown-ի պրոտոկոլը","Կատարիր premortem քո թրեյդինգ պլանի համար. 5 պատճառ, թե ինչու կարող է ձախողվել և ինչ ես անում դրանց դեմ","2 շաբաթ օգտագործիր checklist-ը և հաշվիր կանոնների պահպանման %-ը"], deliverable:"Ռուտին, checklist, drawdown պրոտոկոլ, premortem"},
+  quiz:[
+    ["Ժուռնալի ամենակարևոր կարգապահական metric-ը՝",["Ամենամեծ շահույթը","Կանոնների պահպանման %-ը","Գործարքների քանակը","Ժամերը էկրանի առաջ"],1,"Գործընթացը վերահսկելի է։"],
+    ["Premortem-ը...",["Վերլուծություն ձախողումից հետո","Ենթադրել, որ ձախողվել ենք, և նախապես գտնել պատճառները","Գնման ազդանշան","Ինդիկատոր"],1,"Gary Klein-ի մեթոդ։"],
+    ["Վատ քնից հետո (ինքնագնահատում 1/5) ճիշտ է...",["Առևտրել կրկնակի ռիսկով","Կիսել ռիսկը կամ չառևտրել","Փոխել համակարգը","Անտեսել"],1,"Վիճակը ազդում է որոշումների վրա։"],
+    ["Պլանը պետք է փոխվի...",["Գործարքի ընթացքում","Միայն պլանավորված review-ի ժամանակ՝ գրավոր հիմնավորումով","Ամեն վնասից հետո","Երբեք"],1,"Զգացմունքային փոփոխություններից խուսափում։"],
+    ["Խախտումների գործարքները սովորաբար...",["Ամենալավն են","Ամենավատն են, և դրանց գինը պետք է հաշվել","Չեզոք են","Չեն գրանցվում"],1,"Թվերը համոզում են։"]
+  ]},
+{ n:6, aca:"Գնահատում", title:"Արդյունքների գնահատում՝ բախտ, թե հմտություն", short:"Գնահատում",
+  goal:"Վիճակագրորեն գնահատել արդյունքները, հասկանալ ընտրանքի չափի կարևորությունը և կազմել ռիսկի քաղաքականություն։",
+  lessons:[
+    {t:"Բախտ vs հմտություն", h:"1 ժ", b:`<p>Michael Mauboussin-ը («The Success Equation») առաջարկում է հարց. «Կարո՞ղ ես միտումնավոր պարտվել»։ Եթե այո, հմտությունը կարևոր է։ Կարճ ժամանակահատվածում շուկայի արդյունքները հիմնականում պատահական են։</p>
+      <div class="formula">Եթե expectancy = +0.2R, σ ≈ 1.2R մեկ գործարքում:
+20 գործարք:  միջին ± 2σ/√n = 0.2 ± 0.54R  → կարող է լինել նաև բացասական
+100 գործարք: 0.2 ± 0.24R  → դեռ սահմանային
+400 գործարք: 0.2 ± 0.12R  → վստահելի դրական</div>
+      <p>Եզրակացություն. 20–30 գործարքից եզրակացություն մի արա. ոչ դրական, ոչ բացասական։ Դրա համար էլ փոքր ռիսկը սկզբում կարևոր է. այն քեզ տալիս է ժամանակ՝ հավաքելու բավարար տվյալ։</p>`},
+    {t:"Performance metrics պրոֆեսիոնալի նման", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Metric</th><th>Ինչու</th></tr><tr><td>Expectancy (R) և դրա վստահության միջակայքը</td><td>Edge-ի առկայություն</td></tr><tr><td>Max drawdown և վերականգնման ժամանակ</td><td>Գոյատևում</td></tr><tr><td>Sharpe / Sortino</td><td>Եկամուտ ռիսկի միավորի դիմաց (Sortino-ն հաշվի է առնում միայն բացասական տատանումները)</td></tr><tr><td>MAR / Calmar = CAGR / Max DD</td><td>Եկամուտ vs ցավ</td></tr><tr><td>Բենչմարկի հետ համեմատություն</td><td>Արժե՞ արդյոք ժամանակը (vs ինդեքս)</td></tr><tr><td>Ժամ/շաբաթ և «ժամային վարձատրություն»</td><td>Իրական տնտեսական արժեք</td></tr></table></div>
+      <p>Հարց, որ պրոֆեսիոնալ PM-ը կտար. «Եթե նույն ժամանակը ծախսեի աշխատանքի կամ ուսման վրա և խնայողությունները ներդնեի ինդեքսում, ավելի լա՞վ կլինեի»։</p>`},
+    {t:"Ռիսկի քաղաքականության փաստաթուղթ", h:"1 ժ", b:`<div class="formula">ԻՄ ՌԻՍԿԻ ՔԱՂԱՔԱԿԱՆՈՒԹՅՈՒՆԸ
+1. Թրեյդինգի կապիտալ — X (ընդհանուր խնայողությունների ≤ Y%), մնացածը՝ core ներդրում
+2. Ռիսկ մեկ գործարքում — 0.5% (ստանդարտ), առավելագույնը 1%
+3. Ընդհանուր բաց ռիսկ — ≤ 5%, կորելացված խումբ ≤ 2%
+4. Լծակ — առավելագույնը ...
+5. Օրական / շաբաթական / ամսական կորստի սահմաններ և գործողություններ
+6. Drawdown պրոտոկոլ
+7. Արգելված — առանց stop, averaging down վնասում, լուրերից առաջ նոր դիրքեր, signal խմբեր
+8. Review — շաբաթական (գործընթաց), ամսական (metrics), եռամսյակային (ռազմավարություն)</div>
+      <p>Երբեք մի առևտրիր այն գումարով, որը պետք է առաջիկա 3–5 տարում (բնակարան, ուսում) կամ որը վերցված է պարտքով։</p>`}
+  ],
+  practice:{t:"Capstone՝ ռիսկի քաղաքականություն և արդյունքների վերլուծություն", steps:["Գրիր քո ռիսկի քաղաքականությունը 8 բաժիններով","Վերլուծիր քո paper գործարքները. expectancy, վստահության միջակայք, max DD, համեմատություն ինդեքսի հետ","Որոշիր, թե քանի գործարքից հետո կանես հաջորդ եզրակացությունը","Ստացիր AI գնահատում և անցիր փորձնական հարցազրույցը (risk manager-ի դերում)"], deliverable:"Ռիսկի քաղաքականություն, արդյունքների վերլուծություն", tools:["expect","interview"]},
+  quiz:[
+    ["20 գործարքից հետո expectancy-ն +0.5R է։ Ճիշտ եզրակացությունը՝",["Համակարգը ապացուցված է","Տվյալը քիչ է. վստահության միջակայքը լայն է","Կրկնապատկել ռիսկը","Համակարգը վատն է"],1,"Ընտրանքը փոքր է։"],
+    ["MAR ratio-ն...",["CAGR / Max drawdown","Win rate × R","Sharpe × 2","Spread / ծախս"],0,"Եկամուտ vs ամենամեծ ցավը։"],
+    ["Sortino-ն տարբերվում է Sharpe-ից նրանով, որ...",["Չի օգտագործում եկամուտը","Հաշվի է առնում միայն բացասական volatility-ն","Չի տարեկանացվում","Միայն կրիպտոյի համար է"],1,"Downside deviation։"],
+    ["Ո՞ր գումարով չի կարելի առևտրել։",["Թրեյդինգի համար առանձնացված կապիտալով","Պարտքով վերցված կամ մոտ ժամանակում անհրաժեշտ գումարով","Paper գումարով","Փոքր գումարով"],1,"Ճնշումը քայքայում է որոշումները։"],
+    ["Mauboussin-ի «կարո՞ղ ես միտումնավոր պարտվել» հարցը ստուգում է...",["Լծակը","Հմտության դերը գործունեության մեջ","Ծախսերը","Liquidity-ն"],1,"Բախտ-հմտություն սանդղակ։"]
+  ]}
+],
+final:[
+  ["Կապիտալ $15 000, ռիսկ 1%, մուտք 120, stop 114։ Քանի՞ բաժնետոմս։",["15","25","125","150"],1,"$150 / $6 = 25։"],
+  ["Համակարգ. win rate 35%, միջին շահույթ 3R, միջին վնաս 1R։ Expectancy՝",["+0.40R","+0.05R","−0.30R","+1.05R"],0,"0.35×3 − 0.65 = 0.40R։"],
+  ["Թրեյդերը վնասաբեր դիրքին ավելացնում է («averaging down»), որովհետև «գինը արդեն շատ է ընկել»։ Ո՞ր կողմնակալություններն են։",["Momentum","Loss aversion / sunk cost / disposition effect","Diversification","Kelly"],1,"Ռիսկի աճ կորստի դաշտում։"],
+  ["Պորտֆել. 4 long Nasdaq բաժնետոմս, յուրաքանչյուրը 1% ռիսկով։ Ինչ է ճիշտ։",["Ռիսկը դիվերսիֆիկացված է","Բարձր կորելյացիա. իրական ռիսկը մոտ է 4%-ի մեկ թեմայում. պետք է սահմանափակել կորելացված խումբը","Ռիսկը 1% է","Ռիսկ չկա"],1,"Կորելացված դիրքերը գումարվում են։"],
+  ["Paper trading-ում W=0.55, R=1.5։ Kelly-ն և խելամիտ ռիսկը՝",["f*=0.25, օգտագործել 25%","f*=0.25, բայց օգտագործել դրա փոքր մասը կամ 0.5–1% կանոնը","f*=0.55","Kelly չի կիրառվում"],1,"0.55 − 0.45/1.5 = 0.25. full Kelly-ն վտանգավոր է։"],
+  ["Earnings-ից առաջ դիրքը ունի stop 3% հեռավորությամբ։ Ի՞նչ ռիսկ չի ծածկում stop-ը։",["Spread-ը","Gap-ը հրապարակումից հետո","Կոմիսիոնը","Ոչինչ"],1,"Գինը կարող է բացվել stop-ից շատ ներքև։"],
+  ["Ամսական drawdown-ը հասել է −8%, պրոտոկոլը ասում է −6%-ում ռիսկը կիսել։ Թրեյդերը ուզում է մեծացնել ռիսկը «վերականգնելու» համար։ Ճիշտ գործողությունը՝",["Մեծացնել","Կիրառել պրոտոկոլը. կիսել ռիսկը, review անել","Անցնել ուրիշ շուկա","Դադարեցնել ժուռնալը"],1,"Կանոնները ստեղծված են հենց այս պահի համար։"],
+  ["−60% կորստից հետո վերականգնման համար անհրաժեշտ է...",["+60%","+120%","+150%","+200%"],2,"1/0.4 − 1 = 150%։"],
+  ["VaR(95%) = $1 000։ Ո՞րն է ճիշտ մեկնաբանությունը։",["Կորուստը երբեք չի գերազանցի $1 000-ը","5% դեպքերում կորուստը կարող է գերազանցել $1 000-ը, և VaR-ը չի ասում որքանով","Կորուստը միշտ $1 000 է","Շահույթը $1 000 է"],1,"Tail-ը պետք է չափել առանձին։"],
+  ["Ո՞րն է ամենաուժեղ պաշտպանությունը revenge trading-ից։",["Ավելի շատ ինդիկատոր","Նախապես սահմանված օրական կորստի սահման և պարտադիր դադար","Ավելի մեծ էկրան","Լծակ"],1,"Pre-commitment։"]
+],
+sources:[
+  ["Kahneman & Tversky — Prospect Theory (1979)","https://www.jstor.org/stable/1914185","Loss aversion"],
+  ["Odean — Are Investors Reluctant to Realize Their Losses? (1998)","https://faculty.haas.berkeley.edu/odean/papers%20current%20versions/areinvestorsreluctant.pdf","Disposition effect"],
+  ["Kelly — A New Interpretation of Information Rate (1956)","https://www.princeton.edu/~wbialek/rome/refs/kelly_56.pdf","Kelly criterion"],
+  ["CFA Institute — Risk management","https://www.cfainstitute.org/insights/professional-learning","Պրոֆեսիոնալ ստանդարտներ"],
+  ["MIT OCW — Topics in Mathematics with Applications in Finance","https://ocw.mit.edu/courses/18-s096-topics-in-mathematics-with-applications-in-finance-fall-2013/","Ֆինանսական մաթեմատիկա"]
+], examExtra:15, examMin:40 };
+
+/* ========== TRADING 4: MARKETS ========== */
+const MK = { id:"mk", title:"Շուկաներ՝ բաժնետոմսեր, ETF, կրիպտո, ֆորեքս, ֆյուչերս, օպցիոններ", short:"Շուկաներ",
+lead:"Յուրաքանչյուր շուկայի կառուցվածքը, հաշվարկները և ռիսկերը՝ բաժնետոմսեր և ETF, կրիպտոարժույթներ, ֆորեքս, ֆյուչերսներ և օպցիոններ, ինչպես նաև 30-օրյա paper trading capstone։",
+weeks:[
+{ n:1, aca:"Բաժնետոմսեր և ETF", title:"Բաժնետոմսեր և ETF", short:"Stocks/ETF",
+  goal:"Հասկանալ բաժնետոմսերի և ETF-ների մեխանիզմը, ծախսերը, earnings-ի ազդեցությունը և ճիշտ ETF ընտրելը։",
+  lessons:[
+    {t:"Բաժնետոմսեր, ինդեքսներ և earnings", h:"1 ժ", b:`<ul><li><b>Ինդեքսներ</b>՝ S&P 500 (500 խոշոր ԱՄՆ ընկերություն, կշռված կապիտալիզացիայով), Nasdaq-100, Dow Jones, MSCI World, MSCI Emerging Markets</li><li><b>Ոլորտներ (GICS)</b>՝ տեխնոլոգիա, ֆինանսներ, առողջապահություն, էներգետիկա և այլն. ոլորտային rotation-ը կապված է տնտեսական ցիկլի հետ</li><li><b>Earnings</b>՝ եռամսյակային հաշվետվություն. EPS և եկամուտ vs ակնկալիք, guidance (ապագայի կանխատեսում)։ Մեծ gap-երի հիմնական աղբյուրն է</li><li><b>Կորպորատիվ գործողություններ</b>՝ դիվիդենդ (ex-dividend օրը գինը իջնում է դիվիդենդի չափով), split, buyback, M&A</li><li><b>Short selling</b>՝ փոխառված բաժնետոմսի վաճառք. տեսականորեն անսահմանափակ ռիսկ, borrow fee, short squeeze</li></ul>`},
+    {t:"ETF-ներ՝ ինչպես ընտրել", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Չափանիշ</th><th>Ինչ նայել</th></tr><tr><td>TER (տարեկան ծախս)</td><td>Լայն ինդեքսների համար 0.03–0.25%</td></tr><tr><td>Չափ և liquidity</td><td>Ակտիվներ, օրական ծավալ, spread</td></tr><tr><td>Tracking difference</td><td>Որքանով է հետ մնում ինդեքսից</td></tr><tr><td>Ֆիզիկական vs սինթետիկ</td><td>Իրական ակտիվներ vs swap պայմանագիր</td></tr><tr><td>Accumulating vs distributing</td><td>Դիվիդենդները վերաներդրվում են, թե վճարվում</td></tr><tr><td>Ռեզիդենտություն (domicile)</td><td>ԱՄՆ ETF vs Իռլանդական UCITS ETF</td></tr></table></div>
+      <p><b>Leveraged և inverse ETF-ներ</b> (2×, 3×, −1×) վերահաշվարկվում են ամեն օր. volatility-ի պատճառով երկար ժամկետում դրանց արդյունքը կարող է զգալիորեն տարբերվել «2× ինդեքս»-ից (volatility decay)։ Նախատեսված են կարճաժամկետ օգտագործման համար։</p>
+      <p><b>Հարկեր.</b> Ոչ ԱՄՆ ռեզիդենտների համար ԱՄՆ-ում գրանցված ETF-ների դիվիդենդներից պահվում է հարկ, և կարող են լինել ժառանգության հարկի հարցեր. շատ ներդրողներ նախընտրում են Իռլանդիայում գրանցված UCITS ETF-ներ։ Ստուգիր ՀՀ-ի և այլ երկրների հարկային կանոնները խորհրդատուի հետ։</p>`},
+    {t:"Core portfolio և rebalancing", h:"1 ժ", b:`<div class="formula">Օրինակ (կրթական, ոչ խորհուրդ):
+Core 85%:  60% համաշխարհային բաժնետոմսեր ETF + 25% պարտատոմսեր ETF
+Satellite 15%: ակտիվ թրեյդինգ
+Rebalance: տարին մեկ անգամ կամ երբ կշիռը շեղվում է ±5%-ով</div>
+      <p><b>Rebalancing</b>-ը ավտոմատ «վաճառել թանկացածը, գնել էժանացածը» կանոն է և պահում է ռիսկը ցանկալի մակարդակում։ <b>DCA</b> (dollar-cost averaging)՝ կանոնավոր ամսական ներդրում, նվազեցնում է ժամանակի ընտրության սխալը և զգացմունքային որոշումները։</p>`}
+  ],
+  practice:{t:"ETF ընտրության մատրից", steps:["Ընտրիր 3 ETF համաշխարհային բաժնետոմսերի համար և համեմատիր TER, չափ, spread, domicile, accumulating/distributing","Նույնը արա պարտատոմսերի ETF-ների համար","Կազմիր քո core պորտֆելի կշիռները և rebalancing կանոնը","Ընտրիր մեկ բաժնետոմս և գտիր հաջորդ earnings-ի ամսաթիվը և consensus EPS-ը"], deliverable:"ETF մատրից, core պորտֆել, earnings նոթ"},
+  quiz:[
+    ["Ex-dividend օրը բաժնետոմսի գինը սովորաբար...",["Աճում է դիվիդենդի չափով","Իջնում է մոտավորապես դիվիդենդի չափով","Չի փոխվում","Կրկնապատկվում է"],1,"Դիվիդենդը դուրս է գալիս ընկերությունից։"],
+    ["Short selling-ի տեսական առավելագույն ռիսկը՝",["Ներդրված գումարը","Անսահմանափակ","50%","Զրո"],1,"Գինը կարող է աճել անսահման։"],
+    ["Ինչու leveraged ETF-ը երկար ժամկետում կարող է չտալ «2× ինդեքս»։",["Օրական վերահաշվարկ և volatility decay","Չի պարունակում ակտիվներ","Արգելված է","Միշտ տալիս է"],0,"Path dependence։"],
+    ["Accumulating ETF-ը...",["Վճարում է դիվիդենդները","Վերաներդրում է դիվիդենդները","Չունի դիվիդենդ","Միայն պարտատոմս է"],1,"Եկամուտը մնում է ֆոնդում։"],
+    ["Rebalancing-ի հիմնական նպատակը՝",["Մաքսիմալացնել եկամուտը միշտ","Պահել ռիսկը ցանկալի մակարդակում","Խուսափել հարկերից","Գնել միայն աճողը"],1,"Ռիսկի վերահսկում։"]
+  ]},
+{ n:2, aca:"Կրիպտո", title:"Կրիպտոարժույթներ", short:"Կրիպտո",
+  goal:"Հասկանալ կրիպտոյի հիմքերը, պահպանման անվտանգությունը, perpetual ֆյուչերսների մեխանիզմը և կրիպտոյին հատուկ ռիսկերը։",
+  lessons:[
+    {t:"Բլոկչեյն, BTC, ETH և stablecoin-ներ", h:"1 ժ", b:`<ul><li><b>Bitcoin</b>՝ ապակենտրոն թվային ակտիվ, առավելագույն առաջարկ 21 միլիոն, proof-of-work, halving ≈ 4 տարին մեկ</li><li><b>Ethereum</b>՝ smart contract-ների պլատֆորմ, proof-of-stake, DeFi և token-ների հիմք</li><li><b>Stablecoin-ներ</b> (USDT, USDC)՝ կապված դոլարին. ռիսկը՝ թողարկողի պահուստները և կարգավորումը</li><li><b>Altcoin-ներ</b>՝ հազարավոր token-ներ. շատերը կորցրել են արժեքի գրեթե ամբողջը</li><li><b>Կարգավորում</b>՝ ԵՄ-ում MiCA կանոնակարգը, ԱՄՆ-ում spot BTC և ETH ETF-ներ (2024), այլ երկրներում՝ տարբեր կանոններ. ՀՀ-ում ստուգիր ԿԲ-ի ընթացիկ դիրքորոշումը</li></ul>
+      <p><b>Volatility.</b> BTC-ն պատմականորեն ունեցել է մի քանի 70–85% անկում գագաթից։ Կրիպտո պորտֆելի համար այս սցենարը պետք է նախապես հաշվարկված լինի։</p>`},
+    {t:"Պահպանում և անվտանգություն", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Տարբերակ</th><th>Առավելություն</th><th>Ռիսկ</th></tr><tr><td>Բորսայում (custodial)</td><td>Հարմար, արագ առևտուր</td><td>Բորսայի սնանկություն, սառեցում, hack (FTX 2022, Mt. Gox 2014)</td></tr><tr><td>Hardware wallet (self-custody)</td><td>Լիարժեք վերահսկողություն</td><td>Seed phrase-ի կորուստ = ակտիվների կորուստ</td></tr><tr><td>Spot ETF</td><td>Կարգավորվող բրոքեր, պարզ հարկեր</td><td>Կառավարման վճար, միայն բորսայի ժամերին</td></tr></table></div>
+      <ul><li>Seed phrase-ը երբեք չի մուտքագրվում կայքում և չի ուղարկվում որևէ մեկին. «support»-ը երբեք չի խնդրում այն</li><li>2FA հավելվածով (ոչ SMS), withdrawal whitelist</li><li>Ստուգիր հասցեն ամբողջությամբ (clipboard malware)</li><li>Փորձնական փոքր փոխանցում մեծից առաջ</li></ul>`},
+    {t:"Perpetual ֆյուչերսներ, funding և liquidation", h:"1.5 ժ", b:`<div class="formula">Perpetual-ը չունի մարման ամսաթիվ. գինը կապվում է spot-ին funding-ով
+Funding > 0 → long-երը վճարում են short-երին (շուկան «տաքացած» է long-ով)
+Funding-ը սովորաբար վճարվում է 8 ժամը մեկ
+
+Liquidation (մոտավոր, առանց վճարների): լծակ 10× long → ≈ −10% շարժում
+                                        լծակ 50× long → ≈ −2% շարժում</div>
+      <ul><li>Կրիպտոյի շարժումները մեկ օրում 5–10% սովորական են, ուստի բարձր լծակը գրեթե երաշխավորում է liquidation</li><li><b>Liquidation cascade</b>՝ զանգվածային liquidation-ները արագացնում են շարժումը (օր.՝ հանկարծակի −15% ժամերի ընթացքում)</li><li>Բարձր funding-ը և open interest-ը crowd positioning-ի ցուցիչներ են</li><li>ESMA-ի կանոնով retail CFD-ների լծակը կրիպտոյում ≤ 2:1. բազմաթիվ offshore բորսաներ առաջարկում են 100× և ավելի</li></ul>`}
+  ],
+  practice:{t:"Կրիպտո ռիսկի պլան", steps:["Որոշիր կրիպտոյի առավելագույն բաժինը քո պորտֆելում և հիմնավորիր −80% սցենարով","Ընտրիր պահպանման մոդել և գրիր անվտանգության ստուգաթերթ","Դիտիր BTC-ի funding rate-ը և open interest-ը մեկ շաբաթ և գրանցիր","Հաշվիր liquidation-ի մոտավոր հեռավորությունը 3×, 10× և 25× լծակների համար"], deliverable:"Կրիպտո քաղաքականություն, անվտանգության checklist, funding օրագիր"},
+  quiz:[
+    ["Bitcoin-ի առավելագույն առաջարկը՝",["21 միլիոն","100 միլիոն","Անսահմանափակ","1 միլիարդ"],0,"21 միլիոն։"],
+    ["Funding rate-ը դրական է։ Սա նշանակում է...",["Short-երը վճարում են long-երին","Long-երը վճարում են short-երին","Funding չկա","Բորսան վճարում է բոլորին"],1,"Perpetual-ի գինը spot-ից բարձր է։"],
+    ["20× long-ի դեպքում մոտավորապես ինչ շարժումն է բերում liquidation։",["−20%","−5%","−50%","−1%"],1,"100% / 20 = 5%։"],
+    ["«Support»-ը խնդրում է seed phrase-ը՝ հաշիվը «վերականգնելու» համար։",["Տալ","Երբեք չտալ. սա խարդախություն է","Տալ կեսը","Ուղարկել email-ով"],1,"Seed phrase = ակտիվներ։"],
+    ["FTX-ի դեպքը ցույց տվեց հիմնականում...",["Բլոկչեյնի խոցելիություն","Կենտրոնացված բորսայի (կոնտրագենտի) ռիսկ","Ֆորեքսի ռիսկ","Օպցիոնների ռիսկ"],1,"Custodial ռիսկ։"]
+  ]},
+{ n:3, aca:"Ֆորեքս", title:"Ֆորեքս (FX)", short:"Ֆորեքս",
+  goal:"Հաշվել pip-ը, lot-ը և pip value-ն, հասկանալ առևտրային սեսիաները, carry-ն և արժութային շուկայի շարժիչ ուժերը։",
+  lessons:[
+    {t:"Զույգեր, pip և lot", h:"1.5 ժ", b:`<div class="formula">EUR/USD = 1.0850 → 1 եվրո = 1.0850 դոլար   (EUR՝ base, USD՝ quote)
+1 pip = 0.0001 (JPY զույգերում՝ 0.01)
+Standard lot = 100 000 base, mini = 10 000, micro = 1 000
+Pip value (quote արժույթով) = Lot × pip
+EUR/USD, 1 standard lot → 100 000 × 0.0001 = $10 մեկ pip-ի համար
+USD/JPY, 1 lot, գին 150 → 100 000 × 0.01 = ¥1 000 ≈ $6.67</div>
+      <p><b>Sizing օրինակ.</b> Կապիտալ $5 000, ռիսկ 1% = $50, stop 25 pip EUR/USD-ում → $50 / 25 = $2 մեկ pip → 0.2 lot (2 mini)։</p>`},
+    {t:"Սեսիաներ, spread և ինչն է շարժում արժույթները", h:"1 ժ", b:`<ul><li><b>Սեսիաներ</b>՝ Սիդնեյ, Տոկիո, Լոնդոն, Նյու Յորք. ամենամեծ liquidity-ն Լոնդոն–Նյու Յորք համընկնման ժամերին է (Երևանի ժամանակով մոտավորապես երեկոյան՝ կախված ամառային/ձմեռային ժամանակից)</li><li><b>Major զույգեր</b> (EUR/USD, USD/JPY, GBP/USD) ունեն ամենանեղ spread-ը, exotic զույգերը՝ լայն</li><li><b>Շարժիչ ուժեր</b>՝ տոկոսադրույքների տարբերություն և ակնկալիքներ, գնաճ, առևտրային հաշվեկշիռ, ռիսկի տրամադրություն (USD, JPY, CHF՝ «ապաստան» արժույթներ), կենտրոնական բանկերի միջամտություն</li><li><b>AMD</b>՝ դրամը ազատ լողացող է, ՀՀ ԿԲ-ն գործում է գնաճի թիրախավորման ռեժիմով. փոխարժեքի վրա ազդում են տրանսֆերտները, արտահանումը, զբոսաշրջությունը և կապիտալի հոսքերը</li></ul>`},
+    {t:"Carry, swap և լծակի վտանգը", h:"1 ժ", b:`<p><b>Carry trade</b>՝ գնել բարձր տոկոսադրույքով արժույթ ցածր տոկոսադրույքով արժույթի դիմաց և ստանալ տարբերությունը (swap / rollover) ամեն գիշեր։ Պատմականորեն carry-ն ունեցել է դրական միջին եկամուտ, բայց կտրուկ անկումներ ճգնաժամերում (2008, 2024-ի օգոստոսի yen carry unwind)։</p>
+      <div class="formula">Swap-ը կարող է լինել և՛ դրական, և՛ բացասական. ստուգիր բրոքերի swap աղյուսակը
+Չորեքշաբթի գիշերը սովորաբար հաշվարկվում է եռակի swap (շաբաթ-կիրակիի համար)</div>
+      <p><b>Լծակ.</b> FX-ում 1:30 (ԵՄ) կամ 1:500 (offshore) լծակը թույլ է տալիս բացել շատ մեծ դիրքեր փոքր կապիտալով։ Հիշիր. 1:100 լծակով 1% շարժումը = 100% կապիտալ։ Ռիսկը որոշիր stop-ով և sizing-ով, ոչ թե հասանելի լծակով։</p>`}
+  ],
+  practice:{t:"FX հաշվարկներ և սեսիաների դիտարկում", steps:["Հաշվիր pip value-ն EUR/USD, GBP/USD, USD/JPY-ի համար 0.1 lot-ով","Քո կապիտալով և 1% ռիսկով հաշվիր lot-ը 20, 40 և 60 pip stop-երի համար","Մեկ շաբաթ գրանցիր EUR/USD-ի spread-ը Ասիական, Լոնդոնյան և NY սեսիաներում","Գտիր 2 կենտրոնական բանկի տոկոսադրույքներ և հաշվիր carry-ի տարբերությունը"], deliverable:"Pip/lot աղյուսակ, spread օրագիր, carry հաշվարկ", tools:["pip"]},
+  quiz:[
+    ["EUR/USD 1 standard lot-ի մեկ pip-ի արժեքը՝",["$1","$10","$100","$0.10"],1,"100 000 × 0.0001։"],
+    ["USD/JPY-ում 1 pip-ը՝",["0.0001","0.01","1","0.1"],1,"JPY զույգերում 2 տասնորդական։"],
+    ["Կապիտալ $2 000, ռիսկ 1%, stop 20 pip EUR/USD-ում։ Lot-ը՝",["0.1","1","0.01","0.5"],0,"$20 / 20 pip = $1/pip = 0.1 lot։"],
+    ["Ե՞րբ է FX շուկայում liquidity-ն սովորաբար ամենաբարձրը։",["Կիրակի","Լոնդոն–Նյու Յորք սեսիաների համընկնման ժամերին","Սիդնեյի սեսիայում","Կեսգիշերին GMT"],1,"Ամենամեծ ծավալներ։"],
+    ["Carry trade-ի հիմնական ռիսկը՝",["Զրո եկամուտ","Կտրուկ unwind ճգնաժամերում","Բարձր կոմիսիոն","Կարգավորման արգելք"],1,"«Աստիճաններով վեր, վերելակով վար»։"]
+  ]},
+{ n:4, aca:"Ֆյուչերսներ", title:"Ֆյուչերսներ", short:"Ֆյուչերս",
+  goal:"Կարդալ ֆյուչերսի պայմանագրի բնութագիրը, հասկանալ margin-ը, mark-to-market-ը, roll-ը և contango/backwardation-ը։",
+  lessons:[
+    {t:"Պայմանագրի բնութագիր", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Պայմանագիր (CME)</th><th>Բազմապատկիչ</th><th>Tick</th><th>Tick-ի արժեք</th></tr><tr><td>E-mini S&P 500 (ES)</td><td>$50 × ինդեքս</td><td>0.25</td><td>$12.50</td></tr><tr><td>Micro E-mini S&P 500 (MES)</td><td>$5 × ինդեքս</td><td>0.25</td><td>$1.25</td></tr><tr><td>Gold (GC)</td><td>100 ունցիա</td><td>$0.10</td><td>$10</td></tr><tr><td>Micro Gold (MGC)</td><td>10 ունցիա</td><td>$0.10</td><td>$1</td></tr></table></div>
+      <div class="formula">ES = 6 000 → պայմանագրի նոմինալ արժեք = 6 000 × $50 = $300 000
+MES-ի նոմինալը = $30 000 → micro պայմանագրերը թույլ են տալիս ավելի ճշգրիտ sizing</div>
+      <p>Միշտ ստուգիր բորսայի պաշտոնական contract specs-ը (CME Group-ի կայքում). բազմապատկիչները և tick-երը կարող են փոխվել, իսկ margin-ները փոխվում են պարբերաբար։</p>`},
+    {t:"Margin և mark-to-market", h:"1 ժ", b:`<ul><li><b>Initial margin</b>՝ գրավ դիրք բացելու համար (նոմինալի փոքր տոկոս, որը որոշում են բորսան և բրոքերը)</li><li><b>Maintenance margin</b>՝ նվազագույնը, որից ցածր → margin call</li><li><b>Mark-to-market</b>՝ շահույթն ու վնասը հաշվարկվում են ամեն օր. կանխիկը շարժվում է հաշվի մեջ և դուրս</li><li><b>Լծակը ներկառուցված է</b>. $300 000 նոմինալը կարող է պահանջել մոտ $15 000–25 000 margin. 1% շարժումը = $3 000</li><li>Ռիսկը հաշվարկիր նոմինալով և stop-ով, ոչ թե margin-ով</li></ul>
+      <div class="formula">Sizing ES-ում: ռիսկ $500, stop 10 կետ → 10 × $50 = $500 = 1 ES
+                     ռիսկ $100, stop 10 կետ → 10 × $5 = $50 → 2 MES</div>`},
+    {t:"Expiry, roll, contango և backwardation", h:"1 ժ", b:`<ul><li>Ֆյուչերսները ունեն մարման ամիս (ինդեքսներում՝ եռամսյակային. մարտ, հունիս, սեպտեմբեր, դեկտեմբեր)։ Դիրքը պահելու համար մարումից առաջ «roll» են անում հաջորդ պայմանագրին</li><li><b>Contango</b>՝ ապագա պայմանագրերը թանկ են spot-ից (պահպանման ծախս, տոկոսներ). long դիրքը roll-ի ժամանակ կորցնում է («roll yield» բացասական)</li><li><b>Backwardation</b>՝ ապագան էժան է spot-ից (սղություն). long-ը շահում է roll-ից</li><li><b>Basis</b> = Spot − Futures</li><li>Ապրանքային ETF-ները, որոնք պահում են ֆյուչերսներ (օր.՝ նավթ), կարող են երկար contango-ում զգալիորեն զիջել spot գնին (USO, 2020)</li></ul>`}
+  ],
+  practice:{t:"Ֆյուչերսների բնութագրեր և sizing", steps:["CME Group-ի կայքում գտիր ES, MES, GC, MGC պայմանագրերի specs-ը և գրանցիր բազմապատկիչը, tick-ը, ժամերը, մարման ամիսները","Հաշվիր նոմինալ արժեքը ընթացիկ գներով","Քո ռիսկով հաշվիր, թե քանի MES պայմանագիր կարող ես առևտրել 8, 15 և 25 կետ stop-երի դեպքում","Գտիր նավթի ֆյուչերսների կորը և որոշիր՝ contango է, թե backwardation"], deliverable:"Specs աղյուսակ, sizing, ֆյուչերսների կորի վերլուծություն", tools:["fut"]},
+  quiz:[
+    ["ES-ը 5 800 է։ Նոմինալ արժեքը՝",["$5 800","$29 000","$290 000","$580 000"],2,"5 800 × $50։"],
+    ["MES-ի 1 կետ շարժման արժեքը՝",["$1.25","$5","$50","$12.50"],1,"$5 × 1 կետ։"],
+    ["Contango-ի դեպքում long դիրքը roll-ի ժամանակ...",["Շահում է","Կորցնում է (բացասական roll yield)","Չի փոխվում","Փակվում է"],1,"Գնում ես ավելի թանկ պայմանագիր։"],
+    ["Mark-to-market նշանակում է...",["Շահույթը հաշվարկվում է միայն փակելիս","Շահույթն ու վնասը հաշվարկվում են ամեն օր","Գինը ֆիքսված է","Margin չկա"],1,"Ամենօրյա հաշվարկ։"],
+    ["Ռիսկ $250, stop 10 կետ ES-ում։ Ճիշտ sizing-ը՝",["1 ES","5 MES","10 ES","Չի կարելի"],1,"10 կետ × $5 = $50 մեկ MES-ի համար → 5 MES։"]
+  ]},
+{ n:5, aca:"Օպցիոններ", title:"Օպցիոններ", short:"Օպցիոններ",
+  goal:"Հասկանալ call և put օպցիոնները, payoff-ները, Greeks-ը և պարզ ռազմավարությունները (covered call, protective put, vertical spread)։",
+  lessons:[
+    {t:"Call, put և payoff", h:"1.5 ժ", b:`<div class="formula">Call — իրավունք ԳՆԵԼ strike գնով մինչև (կամ մարման օրը)
+Put  — իրավունք ՎԱՃԱՌԵԼ strike գնով
+1 ԱՄՆ բաժնետոմսի օպցիոն = 100 բաժնետոմս
+
+Long call payoff մարման օրը = max(0, S − K) − premium
+Long put payoff             = max(0, K − S) − premium
+Օրինակ: K = 100, premium = $3 → break-even = 103
+S = 110 → (110 − 100 − 3) × 100 = +$700
+S = 95  → −$300 (առավելագույն վնասը premium-ն է)</div>
+      <p><b>Intrinsic value</b>՝ որքան արժե օպցիոնը, եթե այսօր կատարվի. <b>Time value</b>՝ մնացածը, որը նվազում է մարմանը մոտենալիս։ <b>Գնորդը</b> ունի սահմանափակ ռիսկ (premium), <b>վաճառողը</b> ստանում է premium, բայց կարող է ունենալ շատ մեծ (naked call-ի դեպքում՝ անսահմանափակ) ռիսկ։</p>`},
+    {t:"Greeks և implied volatility", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Greek</th><th>Ինչ է չափում</th><th>Օրինակ</th></tr><tr><td>Delta (Δ)</td><td>Օպցիոնի գնի փոփոխությունը բաժնետոմսի $1 շարժման դեպքում</td><td>Δ = 0.5 → $0.50</td></tr><tr><td>Gamma (Γ)</td><td>Delta-ի փոփոխության արագությունը</td><td>Բարձր է ATM-ում, մարմանը մոտ</td></tr><tr><td>Theta (Θ)</td><td>Ժամանակի արժեքի կորուստ օրական</td><td>Θ = −0.05 → −$5/օր 1 պայմանագրի համար</td></tr><tr><td>Vega (ν)</td><td>Զգայունություն implied volatility-ի նկատմամբ</td><td>IV +1% → +$0.12</td></tr></table></div>
+      <p><b>Implied volatility (IV)</b>՝ շուկայի ակնկալիքը ապագա տատանումների մասին, որը «թաքնված» է օպցիոնի գնում (Black-Scholes մոդել)։ Earnings-ից առաջ IV-ն բարձրանում է, հետո կտրուկ ընկնում («IV crush»). կարող ես ճիշտ գուշակել ուղղությունը և դեռ կորցնել։ Պատմականորեն IV-ն միջինում մի փոքր բարձր է եղել իրական volatility-ից (volatility risk premium), բայց վաճառողները կրում են tail ռիսկ։</p>`},
+    {t:"Պարզ ռազմավարություններ", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ռազմավարություն</th><th>Կառուցվածք</th><th>Երբ</th><th>Ռիսկ</th></tr><tr><td>Protective put</td><td>Բաժնետոմս + long put</td><td>Պաշտպանություն անկումից (ապահովագրություն)</td><td>Premium-ի ծախս</td></tr><tr><td>Covered call</td><td>Բաժնետոմս + short call</td><td>Լրացուցիչ եկամուտ, չեզոք/թեթև աճ</td><td>Սահմանափակված վերելք, անկման ռիսկը մնում է</td></tr><tr><td>Bull call spread</td><td>Long call K1 + short call K2 (K2 > K1)</td><td>Չափավոր աճ</td><td>Սահմանափակ՝ զուտ premium</td></tr><tr><td>Bear put spread</td><td>Long put K2 + short put K1</td><td>Չափավոր անկում</td><td>Սահմանափակ</td></tr><tr><td>Cash-secured put</td><td>Short put + կանխիկ</td><td>Գնել ավելի էժան</td><td>Ստիպված գնել ընկնող բաժնետոմս</td></tr></table></div>
+      <p><b>Կանոն սկսնակի համար.</b> Միայն defined-risk ռազմավարություններ (որտեղ առավելագույն վնասը հայտնի է նախապես)։ Naked short օպցիոնները՝ միայն փորձառու և լավ կապիտալիզացված թրեյդերների համար։ Օպցիոնների գործարքները հաճախ ունեն լայն spread. օգտագործիր limit պատվերներ։</p>`}
+  ],
+  practice:{t:"Օպցիոնների payoff լաբ", steps:["Օպցիոնների payoff հաշվիչով կառուցիր long call, long put, bull call spread payoff-ները","Ընտրիր իրական բաժնետոմս և գտիր option chain-ում ATM call-ի գինը, delta-ն, theta-ն և IV-ն","Հաշվիր break-even-ը և առավելագույն շահույթ/վնասը bull call spread-ի համար","Գրիր, թե ինչ կլինի դիրքի հետ earnings-ից հետո IV crush-ի դեպքում"], deliverable:"Payoff դիագրամներ/աղյուսակներ, option chain-ի վերլուծություն", tools:["option"]},
+  quiz:[
+    ["Long call K=50, premium $2։ Break-even-ը՝",["48","50","52","54"],2,"50 + 2։"],
+    ["Long put-ի առավելագույն վնասը՝",["Անսահմանափակ","Վճարված premium-ը","Strike-ը","Զրո"],1,"Գնորդի ռիսկը սահմանափակ է։"],
+    ["Delta = 0.6, բաժնետոմսը աճում է $2-ով։ Օպցիոնը մոտավորապես աճում է...",["$0.60","$1.20","$2","$0.30"],1,"0.6 × 2 = 1.2 մեկ բաժնետոմսի համար։"],
+    ["IV crush-ը տեղի է ունենում սովորաբար...",["Earnings-ից հետո","Ամեն երկուշաբթի","Մարման հաջորդ տարի","Երբեք"],0,"Անորոշությունը վերանում է։"],
+    ["Ո՞ր ռազմավարությունն ունի սահմանված (defined) ռիսկ։",["Naked short call","Bull call spread","Short straddle","Naked short put լծակով"],1,"Վնասը սահմանափակված է զուտ premium-ով։"]
+  ]},
+{ n:6, aca:"Capstone", title:"Շուկայի ընտրություն և 30-օրյա paper trading", short:"Capstone",
+  goal:"Ընտրել քեզ համապատասխան շուկան և ոճը, անցկացնել 30-օրյա կառուցվածքային paper trading և գրել ավարտական հաշվետվություն։",
+  lessons:[
+    {t:"Շուկայի ընտրության մատրից", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Շուկա</th><th>Ժամեր</th><th>Նվազագույն կապիտալ</th><th>Բարդություն</th><th>Ռիսկի առանձնահատկություն</th></tr><tr><td>ETF / բաժնետոմսեր</td><td>Բորսայի ժամեր</td><td>Ցածր</td><td>Ցածր–միջին</td><td>Earnings gap-եր</td></tr><tr><td>Կրիպտո</td><td>24/7</td><td>Ցածր</td><td>Միջին</td><td>Բարձր volatility, custody</td></tr><tr><td>Ֆորեքս</td><td>24/5</td><td>Ցածր</td><td>Միջին</td><td>Լծակ, մակրո շոկեր</td></tr><tr><td>Micro ֆյուչերսներ</td><td>Գրեթե 24/5</td><td>Միջին</td><td>Միջին–բարձր</td><td>Ներկառուցված լծակ, roll</td></tr><tr><td>Օպցիոններ</td><td>Բորսայի ժամեր</td><td>Միջին</td><td>Բարձր</td><td>Ոչ գծային, IV, theta</td></tr></table></div>
+      <p>Ընտրիր՝ ըստ ազատ ժամերի (Երևանից ԱՄՆ բորսան բաց է երեկոյան), կապիտալի, խառնվածքի և այն ռազմավարության, որի համար ունես ապացույցներ։ Սկզբում մեկ շուկա, մեկ ռազմավարություն։</p>`},
+    {t:"30-օրյա պրոտոկոլ", h:"1 ժ", b:`<div class="formula">Շաբաթ 0: պլան, ռիսկի քաղաքականություն, watchlist, checklist
+Շաբաթ 1–4: յուրաքանչյուր գործարք՝ checklist → պատվեր → ժուռնալ
+Ամեն շաբաթ: review (կանոնների պահպանում %, R-ներ, 1 բարելավում)
+Օր 30: ամփոփում
+  • Գործարքների քանակ, win rate, միջին R, expectancy
+  • Max drawdown
+  • Կանոնների պահպանում %
+  • Լավագույն և վատագույն setup
+  • Զգացմունքային օրինաչափություններ
+  • Որոշում: շարունակել paper / անցնել փոքր իրական / փոխել ռազմավարությունը</div>`},
+    {t:"Իրավական, հարկային և էթիկական հարցեր", h:"1 ժ", b:`<ul><li><b>Հարկեր</b>՝ ՀՀ-ում և այն երկրում, որտեղ գրանցված է բրոքերը, կարող են կիրառվել տարբեր կանոններ արժեթղթերի եկամտի, դիվիդենդների և կրիպտոյի համար. վարիր գործարքների ամբողջական գրանցում և խորհրդակցիր հարկային մասնագետի հետ</li><li><b>Շուկայի մանիպուլյացիա</b>՝ pump-and-dump, spoofing, insider trading. անօրինական են և խստորեն պատժվում են</li><li><b>Ուրիշների գումարի կառավարում</b>՝ առանց լիցենզիայի ուրիշի գումարով առևտուր անելը կամ «signal» վաճառելը կարող է օրենքի խախտում լինել</li><li><b>Ֆինանսական խորհուրդ</b>՝ այս դասընթացը կրթական է և անհատական ներդրումային խորհուրդ չէ</li></ul>`}
+  ],
+  practice:{t:"Capstone՝ 30-օրյա paper trading", steps:["Լրացրու շուկայի ընտրության մատրիցը քո պայմաններով և ընտրիր 1 շուկա","Պատրաստիր պլան, ռիսկի քաղաքականություն և checklist (նախորդ դասընթացներից)","30 օր paper trading՝ ժուռնալով և շաբաթական review-ներով","Գրիր ավարտական հաշվետվություն 7 կետով և որոշում հաջորդ քայլի մասին","Ստացիր AI գնահատում և անցիր փորձնական հարցազրույցը"], deliverable:"Մատրից, 30-օրյա ժուռնալ, ավարտական հաշվետվություն", tools:["interview"]},
+  quiz:[
+    ["Երևանից աշխատող մարդը, որը ազատ է միայն երեկոյան, ամենահարմարը կարող է առևտրել...",["Միայն ասիական բաժնետոմսեր","ԱՄՆ բաժնետոմսեր/ETF, ֆորեքս կամ ֆյուչերսներ ԱՄՆ սեսիայում","Միայն Տոկիոյի բորսա","Ոչինչ"],1,"ԱՄՆ սեսիան Երևանի երեկոն է։"],
+    ["30-օրյա paper trading-ից հետո կանոնների պահպանումը 70% է, expectancy-ն՝ +0.3R։ Ամենախելամիտ որոշումը՝",["Անմիջապես մեծ իրական","Շարունակել paper կամ շատ փոքր իրական՝ կենտրոնանալով կարգապահության վրա","Լծակ","Հրաժարվել ժուռնալից"],1,"Կարգապահությունը դեռ բավարար չէ։"],
+    ["«Signal» վաճառելը կամ ուրիշի գումարը կառավարելը առանց լիցենզիայի...",["Միշտ օրինական է","Կարող է լինել օրենքի խախտում","Խրախուսվում է ԿԲ-ի կողմից","Հարկից ազատված է"],1,"Ֆինանսական ծառայությունները կարգավորվում են։"],
+    ["Ինչու սկսել մեկ շուկայով և մեկ ռազմավարությամբ։",["Ավելի քիչ ծախս","Արագ feedback և ավելի մաքուր վիճակագրություն","Օրենքով","Պատճառ չկա"],1,"Ֆոկուս և ուսուցում։"],
+    ["Ո՞ր շուկան ունի ամենաբարձր բարդությունը ոչ գծային payoff-ների պատճառով։",["ETF","Օպցիոններ","Ֆորեքս","Բաժնետոմսեր"],1,"Greeks, IV, ժամանակ։"]
+  ]}
+],
+final:[
+  ["EUR/USD, կապիտալ $8 000, ռիսկ 0.5%, stop 40 pip։ Lot-ը՝",["0.1","0.4","1","0.01"],0,"$40 / 40 pip = $1/pip = 0.1 lot։"],
+  ["Բաժնետոմսի earnings-ից առաջ գնում ես call. արդյունքը լավ էր, գինը աճեց 1%-ով, բայց call-ը էժանացավ։ Պատճառը՝",["Բրոքերի սխալ","IV crush և theta","Delta-ն բացասական էր","Դիվիդենդ"],1,"Implied volatility-ն ընկավ հրապարակումից հետո։"],
+  ["Ռիսկ $300, stop 12 կետ ES-ում։ Ամենաճշգրիտ sizing-ը՝",["1 ES","5 MES","10 MES","0.5 ES"],1,"12 × $5 = $60 մեկ MES → 5 MES = $300։"],
+  ["Կրիպտո perpetual-ում 25× long։ BTC-ն ընկնում է 4.5% մեկ ժամում։ Ամենահավանականը՝",["Ոչինչ չի լինում","Դիրքը liquidated է կամ մոտ է դրան","Ստանում ես funding","Դիրքը կրկնապատկվում է"],1,"Liquidation ≈ −4% (առանց վճարների)։"],
+  ["Ապրանքային ETF-ը, որը պահում է նավթի ֆյուչերսներ, տարիներով զիջում է spot նավթին։ Հավանական պատճառը՝",["Backwardation","Երկարատև contango և բացասական roll yield","Դիվիդենդներ","Spread"],1,"Roll-ի ծախս։"],
+  ["Ունես բաժնետոմսեր և ուզում ես պաշտպանվել հնարավոր խոր անկումից 3 ամսով։ Ո՞ր ռազմավարությունն է համապատասխանում։",["Covered call","Protective put","Naked short put","Long call"],1,"Ապահովագրություն։"],
+  ["Ոչ ԱՄՆ ռեզիդենտը մտածում է ԱՄՆ ETF-ի և Իռլանդական UCITS ETF-ի միջև։ Ամենաճիշտ քայլը՝",["Ընտրել պատահական","Համեմատել TER-ը, domicile-ի հարկային հետևանքները, liquidity-ն և ստուգել հարկային խորհրդատուի հետ","Միշտ ընտրել ԱՄՆ","Միշտ ընտրել leveraged"],1,"Domicile-ը ազդում է հարկերի վրա։"],
+  ["Կրիպտո բորսան դադարեցրել է դուրսբերումները «տեխնիկական պատճառներով»։ Ի՞նչ ռիսկ է։",["Միայն volatility","Կոնտրագենտի / custody ռիսկ","Funding","Theta"],1,"Not your keys, not your coins։"],
+  ["Covered call-ի հիմնական թերությունը՝",["Անսահմանափակ ռիսկ","Սահմանափակված վերելք, իսկ անկման ռիսկը մնում է","Պահանջում է լծակ","Չի տալիս եկամուտ"],1,"Վաճառում ես վերելքի մի մասը premium-ի դիմաց։"],
+  ["USD/JPY = 150, 1 standard lot։ Մեկ pip-ի արժեքը դոլարով մոտավորապես՝",["$10","$6.67","$1","$100"],1,"¥1 000 / 150 ≈ $6.67։"]
+],
+sources:[
+  ["CME Group — Contract specifications","https://www.cmegroup.com/markets/equities/sp/e-mini-sandp500.contractSpecs.html","ES/MES բնութագրեր"],
+  ["Options Industry Council (OIC)","https://www.optionseducation.org","Օպցիոնների անվճար կրթություն"],
+  ["Investor.gov (SEC)","https://www.investor.gov","Ներդրողների պաշտպանություն"],
+  ["ESMA — MiCA","https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica","Կրիպտոյի կարգավորում ԵՄ-ում"],
+  ["BIS Triennial Survey","https://www.bis.org/statistics/rpfx22.htm","Արժութային շուկայի կառուցվածք"],
+  ["ՀՀ Կենտրոնական բանկ","https://www.cba.am","Տոկոսադրույքներ, AMD, լիցենզիաներ"]
+], examExtra:15, examMin:40 };
+
+const ACAD={id:"trading",name:"Թրեյդինգի ակադեմիա",ls:"trading-academy-v1",db:"trading",seal:"TRA",disc:"CFA/CMT կամ այլ միջազգային",
+ colors:{tf:"#1f6f5c",ta:"#2a5db0",rm:"#b0442e",mk:"#7a4fb8"},ivOrg:"ինվեստիցիոն ընկերությունում կամ prop trading թիմում",
+ qaPh:"Օր.՝ Չհասկացա, թե ինչով է expectancy-ն տարբերվում win rate-ից։ Կարո՞ղ ես օրինակով բացատրել։",
+ homeNote:`<div class="notice"><span><b>Կարևոր.</b> Սա կրթական ծրագիր է և անհատական ներդրումային կամ ֆինանսական խորհուրդ չէ։ Ապացույցները ցույց են տալիս, որ մանրածախ թրեյդերների մեծամասնությունը կորցնում է գումար (ESMA՝ CFD հաշիվների 74–89%)։ Սկսիր paper trading-ով, իսկ իրական գումարով՝ միայն այն գումարով, որը կարող ես թույլ տալ կորցնել։</span></div>`};
+const COURSES=[TF,TA,RM,MK];
+const ROLE={tf:"Junior Trader / Investment Analyst",ta:"Quantitative Analyst (junior)",rm:"Risk Manager (junior)",mk:"Multi-asset Trader (junior)"};
+const CID=COURSES.map(c=>c.id);
+const course=id=>COURSES.find(c=>c.id===id);
+const PASS_FINAL=75, PASS_QUIZ=0.7, PRACTICE_MIN=4;
+const INTRO={}, SCHEDULE=[];
+
+function writeHubSummary(){try{let d=0,t=0,cert=0;COURSES.forEach(c=>{const k=courseStats(c);d+=k.pct;t+=100;if(st(c.id).cert)cert++;});localStorage.setItem("hub-sum-"+ACAD.id,JSON.stringify({pct:Math.round(d/Math.max(1,t)*100),cert,courses:COURSES.length,at:Date.now()}));}catch(e){}}
+function HOME(){
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:24px"});
+  const cat=el("div",{class:"catalog"});
+  COURSES.forEach(c=>{const k=courseStats(c); const s=st(c.id);
+    const a=el("a",{href:"#"+c.id,class:"course-card",style:`--cc:var(--c-${c.id})`});
+    a.innerHTML=`<span class="eyebrow">${c.weeks.length} մոդուլ · ${k.lessonsTotal} դաս · քննություն + վկայական</span><h3>${c.title}</h3><p class="small muted">${c.lead}</p>
+      <span class="fill"><i style="width:${k.pct}%"></i></span>
+      <div class="meta"><span class="mono">${k.pct}% · թեստեր ${k.quizzes}/${c.weeks.length}</span><span>${s.cert?'<span class="pill ok">Վկայական ստացված</span>':(k.pct>0?"Ընթացքում":"Չսկսված")}</span></div>`;
+    cat.appendChild(a);});
+  wrap.appendChild(cat);
+  const p=el("section",{class:"panel"});
+  p.innerHTML=`<div><span class="eyebrow">Մեթոդ</span><h2>Ինչպես է կառուցված ուսուցումը</h2></div>
+  <div class="method">
+   <div class="box"><span class="pill">1 · Պարզից բարդ</span><p>Ամեն դաս սկսվում է պարզ բացատրությամբ և կյանքից օրինակով, հետո՝ մանրամասն նյութ բանաձևերով, աղյուսակներով և աղբյուրներով։ Չհասկացածը կարող ես հարցնել հենց դասի տակ։</p></div>
+   <div class="box"><span class="pill">2 · Case method</span><p>Harvard Business School-ի ոճով. իրական իրավիճակներ, որոշումներ անորոշության պայմաններում, trade-off-ներ։ Ավարտական քննության հարցերը սցենարային են։</p></div>
+   <div class="box"><span class="pill">3 · Retrieval practice</span><p>Ինքնաստուգումը սովորեցնում է ավելի լավ, քան կրկնակի ընթերցումը (Roediger & Karpicke)։ Ամեն մոդուլ ունի թեստ, իսկ «Թեստային առաջադրանքներ» բաժնում կարող ես ստեղծել անսահմանափակ նոր հարցեր։</p></div>
+   <div class="box"><span class="pill">4 · Deliberate practice</span><p>Ամեն մոդուլ ունի գործնական առաջադրանք, որը ստանում է AI գնահատում՝ ուժեղ կողմեր, բացեր և հաջորդ քայլեր։ Աշխատանքները կառուցվում են մեկ capstone նախագծի շուրջ։</p></div>
+   <div class="box"><span class="pill ms">5 · Քննություն և վկայական</span><p>Մոդուլային թեստեր (≥70%), առնվազն ${PRACTICE_MIN} գործնական և ժամաչափված ավարտական քննություն (≥${PASS_FINAL}%)։ Դրանից հետո՝ անվանական վկայական։</p></div>
+  </div>
+  ${ACAD.homeNote}`;
+  wrap.appendChild(p);
+  return wrap;
+}
+
+/* ========== EXTRA TOOLS (trading + PM) ========== */
+function outBox(b){const o=el("div",{class:"formula"});b.appendChild(o);return o;}
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:d}):"—";
+const EXTRA_TOOLS={
+  cost(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Գործարքների տարեկան ծախսի հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("cc","Կապիտալ ($)",10000),numField("crt","Ծախս մեկ round trip-ում (%)",0.05),numField("cn","Round trip-ներ օրական",2),numField("cd","Առևտրային օրեր տարեկան",250)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#cc",b).value,r=+$("#crt",b).value/100,n=+$("#cn",b).value,d=+$("#cd",b).value;const y=C*r*n*d;
+      out.textContent=`Ծախս մեկ round trip-ում = $${fmt(C*r)}\nՏարեկան ծախս = $${fmt(y,0)}  =  ${fmt(y/C*100,1)}% կապիտալից\nՀամախառն եկամուտը պետք է գերազանցի այս թիվը, որ զուտ արդյունքը լինի դրական։`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  expect(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Expectancy և R հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("ew","Win rate (%)",40),numField("eaw","Միջին շահույթ (R)",2.5),numField("eal","Միջին վնաս (R)",1),numField("en","Գործարքների քանակ",100),numField("er","1R ($)",100)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const W=+$("#ew",b).value/100,aw=+$("#eaw",b).value,al=+$("#eal",b).value,n=+$("#en",b).value,R=+$("#er",b).value;const E=W*aw-(1-W)*al;const pf=(1-W)*al>0?(W*aw)/((1-W)*al):Infinity;const be=aw+al>0?al/(aw+al):0;
+      out.textContent=`Expectancy = ${fmt(E,3)}R մեկ գործարքում\nՍպասվող արդյունք ${n} գործարքում ≈ ${fmt(E*n,1)}R = $${fmt(E*n*R,0)}\nProfit factor = ${fmt(pf)}\nBreak-even win rate այս R-ով = ${fmt(be*100,1)}%`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  dd(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կորուստ և վերականգնում"));
+    const g=el("div",{class:"cols"}); g.append(numField("ddl","Կորուստ (%)",30),numField("ddr","Ռիսկ մեկ գործարքում (%)",1),numField("ddn","Վնասների շարք",10)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const L=+$("#ddl",b).value/100,r=+$("#ddr",b).value/100,n=+$("#ddn",b).value;const need=L<1?(1/(1-L)-1):Infinity;const streak=1-Math.pow(1-r,n);
+      out.textContent=`−${fmt(L*100,1)}% կորստից վերականգնման համար պետք է +${fmt(need*100,1)}%\n${n} վնաս անընդմեջ ${fmt(r*100,2)}% ռիսկով → drawdown ≈ −${fmt(streak*100,1)}%`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  possize(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Դիրքի չափի հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("pc","Կապիտալ ($)",20000),numField("pr","Ռիսկ (%)",1),numField("pe","Մուտքի գին",80),numField("ps","Stop գին",76),numField("pa","ATR (ըստ ցանկության)",0),numField("pk","Stop = k × ATR (k)",2)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#pc",b).value,r=+$("#pr",b).value/100,e=+$("#pe",b).value,s=+$("#ps",b).value,atr=+$("#pa",b).value,k=+$("#pk",b).value;const risk=C*r;
+      const dist=atr>0?k*atr:Math.abs(e-s);const q=dist>0?Math.floor(risk/dist):0;
+      out.textContent=`Ռիսկ = $${fmt(risk,0)}\nStop-ի հեռավորություն = ${fmt(dist)}${atr>0?" (ATR-ով)":""}\nՔանակ = ${q}\nԴիրքի արժեք = $${fmt(q*e,0)} = ${fmt(q*e/C*100,1)}% կապիտալից${q*e>C?"\nԶգուշացում. դիրքը մեծ է կապիտալից, պահանջում է լծակ":""}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  kelly(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Kelly հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("kw","Win rate (%)",50),numField("kr","R = միջին շահույթ / միջին վնաս",2)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const W=+$("#kw",b).value/100,R=+$("#kr",b).value;const f=R>0?W-(1-W)/R:0;
+      out.textContent=f<=0?`Kelly f* = ${fmt(f*100,1)}% → դրական edge չկա. մի առևտրիր այս համակարգով`:`Full Kelly = ${fmt(f*100,1)}%\nHalf Kelly = ${fmt(f*50,1)}%\nQuarter Kelly = ${fmt(f*25,1)}%\nՊրակտիկայում շատերը օգտագործում են 0.5–1%՝ գնահատման անորոշության պատճառով`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  stats(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Backtest metrics"));
+    const l=el("label",{class:"f"},"Գործարքների արդյունքները R-ով կամ %-ով (ստորակետով)"); const ta=el("textarea",{id:"stR",style:"min-height:80px"}); ta.value="1.5, -1, -1, 2.2, -1, 0.4, 3.1, -1, -0.6, 1.8, -1, 2.5"; l.appendChild(ta); b.appendChild(l);
+    const g=el("div",{class:"cols"}); g.append(numField("stY","Տարիներ",3)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const v=ta.value.split(/[,\s;]+/).map(Number).filter(x=>Number.isFinite(x)&&ta.value.trim());const n=v.length;if(!n){out.textContent="Մուտքագրիր թվեր";return;}
+      const m=v.reduce((a,x)=>a+x,0)/n;const sd=Math.sqrt(v.reduce((a,x)=>a+(x-m)**2,0)/Math.max(1,n-1));const w=v.filter(x=>x>0),lo=v.filter(x=>x<0);
+      const gp=w.reduce((a,x)=>a+x,0),gl=-lo.reduce((a,x)=>a+x,0);let eq=0,pk=0,dd=0;v.forEach(x=>{eq+=x;pk=Math.max(pk,eq);dd=Math.min(dd,eq-pk);});
+      const se=sd/Math.sqrt(n);const yrs=+$("#stY",b).value||1;
+      out.textContent=`N = ${n}\nWin rate = ${fmt(w.length/n*100,1)}%\nՄիջին (expectancy) = ${fmt(m,3)}\nՍտանդարտ շեղում = ${fmt(sd,3)}\n95% միջակայք միջինի համար ≈ ${fmt(m-1.96*se,3)} … ${fmt(m+1.96*se,3)}\nt-stat ≈ ${fmt(m/se,2)} ${Math.abs(m/se)<2?"(վիճակագրորեն թույլ)":"(ավելի համոզիչ)"}\nProfit factor = ${gl>0?fmt(gp/gl):"∞"}\nMax drawdown (գումարային) = ${fmt(dd,2)}\nԳործարքներ տարեկան ≈ ${fmt(n/yrs,0)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  pip(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Ֆորեքս՝ pip value և lot"));
+    const g=el("div",{class:"cols"}); g.append(numField("fxC","Կապիտալ ($)",5000),numField("fxR","Ռիսկ (%)",1),numField("fxS","Stop (pip)",25),numField("fxP","Զույգի գին",1.085));
+    const sl=el("label",{class:"f"},"Զույգի տեսակ"); const sel=el("select",{id:"fxT"}); [["usdq","Quote = USD (EUR/USD, GBP/USD)"],["jpy","USD/JPY"],["usdb","Base = USD (USD/CHF, USD/CAD)"]].forEach(([v,t])=>sel.appendChild(el("option",{value:v},t))); sl.appendChild(sel); g.append(sl); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#fxC",b).value,r=+$("#fxR",b).value/100,s=+$("#fxS",b).value,P=+$("#fxP",b).value,t=sel.value;
+      const pip=t==="jpy"?0.01:0.0001;let pv=100000*pip;if(t!=="usdq")pv=P>0?pv/P:0;
+      const risk=C*r;const lots=s>0&&pv>0?risk/(s*pv):0;
+      out.textContent=`1 standard lot-ի pip value ≈ $${fmt(pv,2)}\nՌիսկ = $${fmt(risk,0)}\nLot = ${fmt(lots,2)} (${fmt(lots*10,1)} mini, ${fmt(lots*100,0)} micro)\nՆոմինալ = $${fmt(lots*100000*(t==="usdq"?P:1),0)} → լծակ ≈ ${fmt(lots*100000*(t==="usdq"?P:1)/C,1)}:1`;};
+    b.addEventListener("input",calc); sel.addEventListener("change",calc); calc(); return b;},
+  fut(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Ֆյուչերսներ՝ նոմինալ և sizing"));
+    const g=el("div",{class:"cols"}); g.append(numField("fuP","Ինդեքսի գին",6000),numField("fuM","Բազմապատկիչ ($/կետ)",5),numField("fuR","Ռիսկ ($)",250),numField("fuS","Stop (կետ)",10),numField("fuC","Կապիտալ ($)",10000)); b.appendChild(g);
+    b.appendChild(el("p",{class:"small muted"},"ES՝ $50/կետ, MES՝ $5/կետ։ Ստուգիր ընթացիկ specs-ը CME-ում։"));
+    const out=outBox(b);
+    const calc=()=>{const P=+$("#fuP",b).value,M=+$("#fuM",b).value,R=+$("#fuR",b).value,S=+$("#fuS",b).value,C=+$("#fuC",b).value;const not=P*M;const per=S*M;const n=per>0?Math.floor(R/per):0;
+      out.textContent=`Մեկ պայմանագրի նոմինալ = $${fmt(not,0)}\nՌիսկ մեկ պայմանագրում = $${fmt(per,0)}\nՊայմանագրեր = ${n}\nԸնդհանուր նոմինալ = $${fmt(n*not,0)} → ${fmt(n*not/C,1)}× կապիտալ\n1% շարժում = $${fmt(n*not*0.01,0)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  option(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Օպցիոնների payoff մարման օրը"));
+    const g=el("div",{class:"cols"});
+    const sl=el("label",{class:"f"},"Ռազմավարություն"); const sel=el("select",{id:"opT"}); [["lc","Long call"],["lp","Long put"],["bcs","Bull call spread"],["cc","Covered call"],["pp","Protective put"]].forEach(([v,t])=>sel.appendChild(el("option",{value:v},t))); sl.appendChild(sel);
+    g.append(sl,numField("opS","Բաժնետոմսի ընթացիկ գին",100),numField("opK1","Strike K1",100),numField("opP1","Premium K1",3),numField("opK2","Strike K2 (spread/covered)",110),numField("opP2","Premium K2",1)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const t=sel.value,S0=+$("#opS",b).value,K1=+$("#opK1",b).value,P1=+$("#opP1",b).value,K2=+$("#opK2",b).value,P2=+$("#opP2",b).value;
+      const pay=S=>{switch(t){case"lc":return Math.max(0,S-K1)-P1;case"lp":return Math.max(0,K1-S)-P1;case"bcs":return Math.max(0,S-K1)-Math.max(0,S-K2)-P1+P2;case"cc":return (S-S0)-Math.max(0,S-K2)+P2;case"pp":return (S-S0)+Math.max(0,K1-S)-P1;}return 0;};
+      const pts=[];for(let i=0;i<=8;i++){const S=Math.round(S0*(0.6+i*0.1)*100)/100;pts.push(`S = ${String(fmt(S)).padStart(7)}  →  ${pay(S)>=0?"+":""}${fmt(pay(S)*100,0)} $ (1 պայմանագիր = 100)`);}
+      out.textContent=pts.join("\n");};
+    b.addEventListener("input",calc); sel.addEventListener("change",calc); calc(); return b;},
+  channels(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Հաղորդակցության ալիքներ"));
+    const g=el("div",{class:"cols"}); g.append(numField("chA","Մարդիկ (սկզբում)",8),numField("chB","Մարդիկ (հետո)",12)); b.appendChild(g);
+    const out=outBox(b); const c=n=>n*(n-1)/2;
+    const calc=()=>{const a=+$("#chA",b).value,z=+$("#chB",b).value;out.textContent=`n(n−1)/2:  ${c(a)} → ${c(z)}\nԱվելացել է ${c(z)-c(a)} ալիք`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  emv(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"EMV և decision tree"));
+    const mk=(p,id)=>{const g=el("div",{class:"cols"}); g.append(numField(id+"c",p+"՝ հիմնական ծախս",500000),numField(id+"p",p+"՝ ռիսկի հավանականություն (%)",30),numField(id+"i",p+"՝ ռիսկի ազդեցություն",200000)); return g;};
+    b.append(mk("Տարբերակ A","ea"),mk("Տարբերակ B","eb"));
+    const out=outBox(b);
+    const calc=()=>{const v=id=>(+$("#"+id+"c",b).value)+(+$("#"+id+"p",b).value/100)*(+$("#"+id+"i",b).value);const A=v("ea"),B=v("eb");
+      out.textContent=`A-ի սպասվող ծախս = ${fmt(A,0)}\nB-ի սպասվող ծախս = ${fmt(B,0)}\nԸստ EMV-ի ավելի լավն է՝ ${A<B?"A":A>B?"B":"հավասար"}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  cpm(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Critical Path հաշվիչ"));
+    const l=el("label",{class:"f"},"Activity-ներ՝ ամեն տողում «անուն, տևողություն, նախորդներ» (նախորդները բացատով)"); const ta=el("textarea",{id:"cpmIn",style:"min-height:150px"});
+    ta.value="A, 5, -\nB, 3, A\nC, 6, A\nD, 4, B C\nE, 2, C\nF, 3, D E"; l.appendChild(ta); b.appendChild(l);
+    const out=outBox(b);
+    const calc=()=>{try{
+      const acts={};ta.value.split("\n").map(s=>s.trim()).filter(Boolean).forEach(line=>{const p=line.split(",").map(x=>x.trim());if(p.length<2)return;acts[p[0]]={d:+p[1]||0,pre:(p[2]&&p[2]!=="-")?p[2].split(/\s+/).filter(Boolean):[]};});
+      const ids=Object.keys(acts);const order=[];const seen={};const visit=(k,st)=>{if(seen[k]===2)return;if(seen[k]===1)throw new Error("Ցիկլ "+k);seen[k]=1;acts[k].pre.forEach(p=>{if(!acts[p])throw new Error("Անհայտ նախորդ՝ "+p);visit(p);});seen[k]=2;order.push(k);};
+      ids.forEach(k=>visit(k));
+      order.forEach(k=>{const a=acts[k];a.es=a.pre.length?Math.max(...a.pre.map(p=>acts[p].ef)):0;a.ef=a.es+a.d;});
+      const end=Math.max(...ids.map(k=>acts[k].ef));
+      [...order].reverse().forEach(k=>{const a=acts[k];const succ=ids.filter(s=>acts[s].pre.includes(k));a.lf=succ.length?Math.min(...succ.map(s=>acts[s].ls)):end;a.ls=a.lf-a.d;a.fl=a.ls-a.es;});
+      const crit=order.filter(k=>acts[k].fl===0);
+      out.textContent="Activity  ES  EF  LS  LF  Float\n"+order.map(k=>{const a=acts[k];return `${k.padEnd(8)} ${String(a.es).padStart(3)} ${String(a.ef).padStart(3)} ${String(a.ls).padStart(3)} ${String(a.lf).padStart(3)} ${String(a.fl).padStart(5)}`;}).join("\n")+`\n\nՏևողություն = ${end}\nCritical activities: ${crit.join(" → ")}`;
+    }catch(e){out.textContent="Սխալ՝ "+e.message;}};
+    b.addEventListener("input",calc); calc(); return b;}
+};
+
+/* ========== STATE ========== */
+const blankC=()=>({lessons:{},practice:{},labs:{},notes:{},feedback:{},quiz:{},final:null,extra:{},extraQuiz:null,start:null,cert:null,explain:{},qa:{},gen:{},guide:{}});
+let S={v:3,name:"",c:{},migrated:false};
+let db=null, docRef=null, sample=null, downloads=null, saveTimer=null;
+const LS_KEY=ACAD.ls;
+
+function normalize(raw){
+  if(!raw||typeof raw!=="object")return;
+  if(raw.v===3){S=Object.assign({v:3,name:"",c:{},migrated:false},raw);}
+  else{ // v1 / v2: old single PM course
+    const pm=blankC(); pm.notes=raw.notes||{}; pm.start=raw.start||null;
+    S={v:3,name:"",c:{pm},migrated:true};
+  }
+  CID.forEach(id=>{S.c[id]=Object.assign(blankC(),S.c[id]||{});});
+}
+CID.forEach(id=>{S.c[id]=blankC();});
+try{const r=localStorage.getItem(LS_KEY); if(r) normalize(JSON.parse(r)); }catch(e){}
+const st=id=>S.c[id];
+
+function persist(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}
+  writeHubSummary();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    if(docRef){try{await docRef.set({state:JSON.stringify(S),updated:Date.now()}); setNote("Առաջընթացը պահպանված է քո հաշվում");}catch(e){setNote("Առաջընթացը պահպանված է միայն այս բրաուզերում");}}
+  },700);
+}
+function setNote(t){document.getElementById("saveNote").textContent=t;}
+setNote("Առաջընթացը պահպանվում է այս բրաուզերում");
+
+(async()=>{
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const [d,u,s,dl]=await Promise.all([claude.use("db"),claude.use("user"),claude.use("sample"),claude.use("downloads")]);
+    sample=s; downloads=dl;
+    if(d&&u){
+      const id=await u.id();
+      if(id){
+        docRef=d.doc("data/users/"+id+"/"+ACAD.db);
+        const snap=await docRef.get();
+        if(snap.exists){const v=snap.data(); if(v&&v.state){try{normalize(JSON.parse(v.state));}catch(e){}}}
+        await docRef.set({state:JSON.stringify(S),updated:Date.now()});
+        try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}
+        setNote("Առաջընթացը պահպանվում է քո հաշվում և հասանելի է ցանկացած սարքից");
+      }
+    }
+    render();
+  }catch(e){setNote("Առաջընթացը պահպանվում է այս բրաուզերում"); render();}
+})();
+
+/* ========== HELPERS ========== */
+const $=(s,r=document)=>r.querySelector(s);
+function el(tag,attrs={},html){const e=document.createElement(tag);for(const k in attrs){if(k==="class")e.className=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k]);}if(html!=null)e.innerHTML=html;return e;}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const quizPass=(c,w)=>{const q=st(c.id).quiz[w.n];return !!(q&&q.best>=Math.ceil(w.quiz.length*PASS_QUIZ));};
+function weekProgress(c,w){
+  const s=st(c.id); const total=w.lessons.length+2; let done=0;
+  w.lessons.forEach((_,i)=>{if(s.lessons[w.n+"-"+i])done++;});
+  if(s.practice[w.n])done++; if(quizPass(c,w))done++;
+  return {done,total,pct:Math.round(done/total*100)};
+}
+function courseStats(c){
+  const s=st(c.id); let d=0,t=0;
+  c.weeks.forEach(w=>{const p=weekProgress(c,w);d+=p.done;t+=p.total;});
+  t+=1; if(s.final&&s.final.pass)d++;
+  return {
+    pct:Math.round(d/t*100),
+    lessons:c.weeks.reduce((a,w)=>a+w.lessons.filter((_,i)=>s.lessons[w.n+"-"+i]).length,0),
+    lessonsTotal:c.weeks.reduce((a,w)=>a+w.lessons.length,0),
+    practice:c.weeks.filter(w=>s.practice[w.n]).length,
+    quizzes:c.weeks.filter(w=>quizPass(c,w)).length,
+    final:s.final
+  };
+}
+function certReady(c){const k=courseStats(c);return {quizzes:k.quizzes===c.weeks.length,practice:k.practice>=PRACTICE_MIN,final:!!(k.final&&k.final.pass)};}
+const nextWeek=c=>{for(const w of c.weeks){if(weekProgress(c,w).pct<100)return w.n;}return c.weeks.length;};
+function fmtDate(d,opt){try{return new Date(d).toLocaleDateString("hy-AM",opt||{day:"numeric",month:"long",year:"numeric"});}catch(e){return new Date(d).toDateString();}}
+function stripHtml(h){const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim();}
+
+/* ========== ROUTING ========== */
+function route(){
+  const h=(location.hash||"").slice(1);
+  const m=h.match(new RegExp("^("+CID.join("|")+")(?:-(w\\d+|exam|extra|cert))?$"));
+  if(!m)return{v:"home"};
+  const c=course(m[1]); const sub=m[2]||"";
+  if(sub.startsWith("w"))return{v:"week",c,n:Math.max(1,Math.min(+sub.slice(1),c.weeks.length))};
+  if(sub==="exam")return{v:"exam",c};
+  if(sub==="extra"&&c.extra)return{v:"extra",c};
+  if(sub==="cert")return{v:"cert",c};
+  return{v:"course",c};
+}
+window.addEventListener("hashchange",()=>{render();window.scrollTo(0,0);});
+let subTab={};
+const OPEN=new Set(), GEN=new Set();
+
+/* ========== HEADER ========== */
+function renderChips(r){
+  const ch=$("#chips"); ch.innerHTML="";
+  COURSES.forEach(c=>{const a=el("a",{href:"#"+c.id,class:(r.c&&r.c.id===c.id)?"on":"",style:`--cc:var(--c-${c.id})`},`<span class="dot"></span>${c.short}`);a.title=c.title;ch.appendChild(a);});
+}
+function renderCourseHead(r){
+  const box=$("#course"); box.innerHTML="";
+  if(!r.c)return;
+  const c=r.c, s=st(c.id), k=courseStats(c);
+  box.style.setProperty("--cc",`var(--c-${c.id})`);
+  const head=el("div",{class:"course-head"});
+  head.innerHTML=`<span class="eyebrow">Դասընթաց · ${c.weeks.length} մոդուլ</span><h2>${c.title}</h2><p class="lead">${c.lead}</p>
+   <div class="statrow"><div class="stat"><b>${k.pct}%</b><span>առաջընթաց</span></div><div class="stat"><b>${k.lessons}/${k.lessonsTotal}</b><span>դաս</span></div>
+   <div class="stat"><b>${k.practice}/${c.weeks.length}</b><span>գործնական</span></div><div class="stat"><b>${k.quizzes}/${c.weeks.length}</b><span>թեստ (≥70%)</span></div>
+   <div class="stat"><b>${k.final?k.final.score+"%":"—"}</b><span>քննություն</span></div></div>`;
+  box.appendChild(head);
+  const g=el("div",{class:"gantt",style:"margin-top:16px"}); const grid=el("div",{class:"gantt-grid",style:`grid-template-columns:repeat(${c.weeks.length},minmax(92px,1fr));min-width:${c.weeks.length*98}px`});
+  c.weeks.forEach(w=>{grid.appendChild(el("div",{class:"g-head"},"Մ"+w.n+(s.start?" · "+fmtWeek(s.start,w.n):"")));});
+  c.weeks.forEach(w=>{const p=weekProgress(c,w);
+    grid.appendChild(el("button",{class:"g-bar"+(r.v==="week"&&r.n===w.n?" active":""),onclick:()=>{location.hash=c.id+"-w"+w.n}},`<span>${w.short}</span><span class="fill"><i style="width:${p.pct}%"></i></span><span class="mono small muted">${p.done}/${p.total}</span>`));});
+  grid.appendChild(el("div",{class:"g-ms"},`<span><span class="diamond"></span>Մ${Math.ceil(c.weeks.length/2)}՝ կես ճանապարհ</span><span><span class="diamond"></span>Մ${c.weeks.length}՝ capstone</span><span><span class="diamond"></span>Ավարտական քննություն (≥${PASS_FINAL}%)</span><span><span class="diamond"></span>Սերտիֆիկատ</span>`));
+  g.appendChild(grid); box.appendChild(g);
+  const tabs=el("nav",{class:"tabs",style:"margin-top:16px"});
+  const items=[["","Ծրագիր"],["-w"+nextWeek(c),"Շարունակել ուսումը"]];
+  if(c.extra)items.push(["-extra",c.extra.title]);
+  items.push(["-exam","Ավարտական քննություն"],["-cert","Սերտիֆիկատ"]);
+  items.forEach(([h,t])=>{const on=(h===""&&r.v==="course")||(h==="-extra"&&r.v==="extra")||(h==="-exam"&&r.v==="exam")||(h==="-cert"&&r.v==="cert");tabs.appendChild(el("a",{href:"#"+c.id+h,class:on?"on":""},t));});
+  box.appendChild(tabs);
+}
+function fmtWeek(start,n){const d=new Date(start);d.setDate(d.getDate()+(n-1)*7);return fmtDate(d,{day:"numeric",month:"short"});}
+
+/* ========== RENDER ========== */
+function render(){
+  const r=route(); renderChips(r); renderCourseHead(r);
+  const v=$("#view"); v.innerHTML="";
+  if(r.c)v.style.setProperty("--cc",`var(--c-${r.c.id})`);
+  if(r.v==="home")v.appendChild(viewHome());
+  else if(r.v==="course")v.appendChild(viewCourse(r.c));
+  else if(r.v==="week")v.appendChild(viewWeek(r.c,r.c.weeks[r.n-1]));
+  else if(r.v==="exam")v.appendChild(viewExam(r.c));
+  else if(r.v==="extra")v.appendChild(viewExtra(r.c));
+  else if(r.v==="cert")v.appendChild(viewCert(r.c));
+}
+
+function viewHome(){return HOME();}
+
+function viewCourse(c){
+  const s=st(c.id);
+  const p=el("section",{class:"panel"});
+  p.appendChild(el("div",{},`<span class="eyebrow">Ծրագիր</span><h2>${c.weeks.length} մոդուլ</h2>`));
+  const row=el("div",{class:"row"});
+  row.appendChild(el("span",{class:"muted"},s.start?`Մեկնարկ՝ <b>${fmtDate(s.start)}</b>`:"Նշիր մեկնարկի օրը, որ ժամանակացույցում հայտնվեն ամսաթվերը։"));
+  row.appendChild(el("button",{class:"btn ghost small",onclick:()=>{const d=new Date();const day=d.getDay();d.setDate(d.getDate()+(day===1?0:(8-day)%7));s.start=d.toISOString();persist();render();}},s.start?"Վերսկսել հաջորդ երկուշաբթիից":"Սկսել հաջորդ երկուշաբթիից"));
+  p.appendChild(row);
+  p.appendChild(el("div",{class:"tbl"},`<table><tr><th>Մ</th><th>Թեմա</th><th>Գործնական առաքվող</th><th>Վիճակ</th></tr>${c.weeks.map(w=>{const pr=weekProgress(c,w);return `<tr><td class="mono">${w.n}</td><td><a href="#${c.id}-w${w.n}">${w.title}</a><div class="small muted">${w.aca}</div></td><td>${w.practice.deliverable}</td><td class="mono">${pr.pct}%</td></tr>`;}).join("")}</table>`));
+  const src=el("div",{class:"box"});
+  src.innerHTML=`<h3>Աղբյուրներ և լրացուցիչ նյութեր</h3><div class="tbl"><table>${c.sources.map(r=>`<tr><td><a href="${r[1]}" target="_blank" rel="noopener">${r[0]}</a></td><td class="small muted">${r[2]}</td></tr>`).join("")}</table></div>`;
+  p.appendChild(src);
+  p.appendChild(el("div",{class:"row"})).appendChild(el("a",{class:"btn",href:`#${c.id}-w${nextWeek(c)}`},`Շարունակել՝ մոդուլ ${nextWeek(c)} →`));
+  if(sample){
+    const g=el("div",{class:"box"}); g.appendChild(el("h3",{},"Հարց տուր դասախոսին"));
+    g.appendChild(el("p",{class:"small muted"},"Ցանկացած հարց այս ոլորտի մասին՝ դասերից, աշխատանքից, կարիերայից կամ հարցազրույցից։"));
+    g.appendChild(qaBox(c,c.id+"|general",`Դասընթաց՝ ${c.title}. ${c.lead}\nՄոդուլներ՝ ${c.weeks.map(w=>w.title).join("; ")}`,"Բացել զրույցը",!!(st(c.id).qa[c.id+"|general"]||[]).length));
+    p.appendChild(g);
+  }
+  return p;
+}
+
+function lessonBlock(c,key,label,l,checkedStore){
+  const L=el("div",{class:"lesson"}); const head=el("div",{class:"lesson-h"});
+  head.appendChild(el("div",{},`<span class="eyebrow">${label} · ${l.h}</span><h3>${l.t}</h3>`));
+  const lab=el("label",{class:"chk"}); const cb=el("input",{type:"checkbox",id:"l-"+c.id+"-"+key}); cb.checked=!!checkedStore[key];
+  cb.addEventListener("change",()=>{checkedStore[key]=cb.checked;persist();renderCourseHead(route());});
+  lab.append(cb,document.createTextNode("Ավարտված")); head.appendChild(lab);
+  const s=st(c.id), ek=key, ok=c.id+"|"+key;
+  L.appendChild(head);
+  const content=el("div",{class:"lesson-content"});
+  const toggle=el("button",{class:"btn small"+(OPEN.has(ok)?" ghost":"")},OPEN.has(ok)?"Փակել դասը":"Սկսել դասը");
+  head.firstChild.appendChild(el("div",{class:"row",style:"margin-top:8px"})).appendChild(toggle);
+  L.appendChild(content);
+  const build=()=>{
+    content.innerHTML="";
+    // 1. simple explanation first
+    const simple=el("div",{class:"simple"});
+    simple.appendChild(el("span",{class:"eyebrow"},"Քայլ 1 · Պարզ բացատրություն"));
+    const p=simple.appendChild(el("p",{class:"pre"}));
+    const again=el("button",{class:"btn ghost small"},"Բացատրել նորից, այլ օրինակներով");
+    const gen=async()=>{
+      if(GEN.has(ok))return; GEN.add(ok); again.disabled=true; p.textContent="Պատրաստում եմ պարզ բացատրությունը…";
+      const prompt=`Դու համբերատար և շատ պարզ բացատրող դասախոս ես (${c.title})։ Ուսանողը սկսնակ է այս ոլորտում։ Ահա դասը.
+Վերնագիր՝ ${l.t}
+Բովանդակություն՝ ${stripHtml(l.b).slice(0,4500)}
+
+Բացատրիր այս դասը հայերեն, շատ մատչելի, պարզ տեքստով (առանց markdown նշանների, առանց # և *).
+1. Մեկ նախադասությամբ՝ ինչի մասին է դասը։
+2. Հիմնական գաղափարները քայլ առ քայլ, ամեն անգլերեն տերմին բացատրիր փակագծերում։
+3. Մեկ առօրյա կյանքից համեմատություն։
+4. Մեկ իրական աշխատանքային օրինակ (հայաստանյան կամ միջազգային ընկերության կոնտեքստում)։
+5. «Հիշիր»՝ 3 ամենակարևոր բանը։
+Մինչև 400 բառ։`;
+      try{const r=await sample(prompt,{modelTier:"default",cache:false,onText:({text})=>{p.textContent=text;}});p.textContent=r.text;s.explain[ek]=r.text;persist();}
+      catch(e){p.textContent=e&&e.code==="not_granted"?"Պարզ բացատրությունը հասանելի չէ այս դիտման մեջ. կարդա ներքևի նյութը։":"Չհաջողվեց պատրաստել բացատրությունը։ Սեղմիր «Բացատրել նորից»։";}
+      GEN.delete(ok); again.disabled=false;
+    };
+    again.addEventListener("click",gen);
+    if(sample||s.explain[ek]){
+      content.appendChild(simple);
+      if(s.explain[ek])p.textContent=s.explain[ek]; else gen();
+      if(sample)simple.appendChild(again);
+    }
+    // 2. detailed material
+    content.appendChild(el("span",{class:"eyebrow"},(sample||s.explain[ek])?"Քայլ 2 · Մանրամասն նյութ":"Նյութ"));
+    content.appendChild(el("div",{class:"body"},l.b));
+    // 3. questions
+    if(sample)content.appendChild(qaBox(c,ok,`Դաս՝ ${l.t}\n${stripHtml(l.b).slice(0,4500)}`,"Քայլ 3 · Հարց տուր այն մասին, ինչ չհասկացար",!!(s.qa[ok]&&s.qa[ok].length)));
+  };
+  const setOpen=o=>{if(o){OPEN.add(ok);content.hidden=false;build();toggle.textContent="Փակել դասը";toggle.classList.add("ghost");}else{OPEN.delete(ok);content.hidden=true;content.innerHTML="";toggle.textContent="Սկսել դասը";toggle.classList.remove("ghost");}};
+  toggle.addEventListener("click",()=>setOpen(!OPEN.has(ok)));
+  if(OPEN.has(ok))build(); else content.hidden=true;
+  return L;
+}
+
+/* Q&A thread: ask anything you did not understand */
+function qaBox(c,qkey,context,label,open){
+  const s=st(c.id);
+  const d=el("details",{class:"qa"}); if(open)d.open=true;
+  d.appendChild(el("summary",{},`${label}${s.qa[qkey]&&s.qa[qkey].length?` <span class="mono small muted">(${Math.ceil(s.qa[qkey].length/2)})</span>`:""}`));
+  const thread=el("div",{class:"qa-thread"});
+  const draw=()=>{thread.innerHTML="";(s.qa[qkey]||[]).forEach(m=>{const b=el("div",{class:"msg "+(m.r==="u"?"u":"a")});b.textContent=m.t;thread.appendChild(b);});};
+  draw();
+  const ta=el("textarea",{class:"qa-in",id:"qa-"+qkey.replace(/[^a-z0-9]/gi,"-"),placeholder:ACAD.qaPh});
+  const send=el("button",{class:"btn small"},"Հարցնել");
+  const clear=el("button",{class:"btn small ghost"},"Մաքրել զրույցը");
+  const status=el("span",{class:"small muted"});
+  send.addEventListener("click",async()=>{
+    const q=ta.value.trim(); if(!q){ta.focus();return;}
+    s.qa[qkey]=(s.qa[qkey]||[]).concat({r:"u",t:q}); ta.value=""; draw();
+    const bubble=el("div",{class:"msg a"}); bubble.textContent="Մտածում եմ…"; thread.appendChild(bubble);
+    send.disabled=true; status.textContent="";
+    let hist=s.qa[qkey].slice(-12); if(hist[0].r!=="u")hist=hist.slice(1);
+    const msgs=hist.map((m,i)=>({role:m.r==="u"?"user":"assistant",content:i===0?`Դու ${c.title} ոլորտի համբերատար դասախոս ես։ Ուսանողը սկսնակ է։ Պատասխանիր հայերեն, պարզ, կոնկրետ օրինակներով, պարզ տեքստով առանց markdown նշանների։ Անգլերեն տերմինները բացատրիր։ Եթե հարցը դասից դուրս է, բայց կապված է ոլորտի հետ, միևնույն է պատասխանիր։ Եթե չգիտես կամ փաստը կարող է փոխված լինել, ասա այդ մասին։\n\nԿոնտեքստ՝\n${context}\n\nՈւսանողի հարցը՝ ${m.t}`:m.t}));
+    if(msgs[0].role!=="user")msgs.shift();
+    try{const r=await sample(msgs,{modelTier:"default",cache:false,onText:({text})=>{bubble.textContent=text;}});
+      s.qa[qkey].push({r:"a",t:r.text}); s.qa[qkey]=s.qa[qkey].slice(-30); persist(); draw();}
+    catch(e){bubble.textContent=e&&e.code==="not_granted"?"Հարց ու պատասխանը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց պատասխանել։ Փորձիր նորից։"; s.qa[qkey].pop(); ta.value=q;}
+    send.disabled=false;
+  });
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))send.click();});
+  clear.addEventListener("click",()=>{delete s.qa[qkey];persist();draw();});
+  const row=el("div",{class:"row"}); row.append(send,clear,status);
+  d.append(thread,ta,row); return d;
+}
+
+function moduleContext(w){return `Մոդուլ՝ ${w.title}\n`+w.lessons.map(l=>`• ${l.t}: ${stripHtml(l.b)}`).join("\n").slice(0,9000);}
+
+/* Test tasks: AI-generated quizzes and applied problems */
+function viewTests(c,w){
+  const s=st(c.id); const g=s.gen[w.n]=s.gen[w.n]||{taken:0,best:0};
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:18px"});
+  wrap.appendChild(el("p",{class:"muted"},`Այստեղ ամեն անգամ ստեղծվում են նոր հարցեր այս մոդուլի նյութից, որպեսզի կարողանաս մարզվել այնքան, որքան պետք է։ Անցած թեստեր՝ <b class="mono">${g.taken}</b>${g.taken?` · լավագույն արդյունք՝ <b class="mono">${g.best}%</b>`:""}`));
+  if(!sample){wrap.appendChild(el("p",{class:"small muted"},"Թեստերի ստեղծումը հասանելի չէ այս դիտման մեջ. օգտագործիր «Թեստ» բաժինը։"));return wrap;}
+  // quiz generator
+  const qb=el("div",{class:"box"}); qb.appendChild(el("h3",{},"Նոր թեստ՝ 6 հարց"));
+  const lvls=[["easy","Հեշտ","հեշտ, տերմինների և հիմնական գաղափարների ստուգում"],["mid","Միջին","միջին, կիրառական իրավիճակներ և պարզ հաշվարկներ"],["hard","Բարդ","բարդ, սցենարային հարցեր հարցազրույցի և սերտիֆիկացիոն քննության մակարդակով"]];
+  let lvl="mid"; const lr=el("div",{class:"row"});
+  lvls.forEach(([k,t])=>{const b=el("button",{class:"btn small"+(k===lvl?"":" ghost")},t);b.addEventListener("click",()=>{lvl=k;[...lr.children].forEach(x=>x.classList.add("ghost"));b.classList.remove("ghost");});lr.appendChild(b);});
+  const gen=el("button",{class:"btn"},"Ստեղծել թեստը"); const qout=el("div",{style:"display:flex;flex-direction:column;gap:12px"});
+  gen.addEventListener("click",async()=>{
+    gen.disabled=true; qout.innerHTML=""; qout.appendChild(el("p",{class:"muted"},"Ստեղծում եմ հարցերը…"));
+    const L=lvls.find(x=>x[0]===lvl);
+    const prompt=`Դու ${c.title} դասընթացի քննիչ ես։ Ստեղծիր 6 նոր multiple-choice հարց հայերեն՝ միայն այս նյութի հիման վրա։ Մակարդակ՝ ${L[2]}։ Յուրաքանչյուր հարց ունենա 4 տարբերակ, միայն մեկը ճիշտ, ճիշտ պատասխանի դիրքը տարբեր լինի հարցերում, և կարճ բացատրություն։ Մի կրկնիր այս հարցերը՝ ${w.quiz.map(q=>q[0]).join(" | ").slice(0,1500)}
+Նյութ՝
+${moduleContext(w)}
+
+Վերադարձրու միայն JSON այս ձևով՝ {"questions":[{"q":"...","options":["...","...","...","..."],"answer":0,"explanation":"..."}]}`;
+    try{
+      const data=await sample.json(prompt,{modelTier:"default",cache:false});
+      const qs=(data&&Array.isArray(data.questions)?data.questions:[]).filter(x=>x&&typeof x.q==="string"&&Array.isArray(x.options)&&x.options.length>=2&&Number.isInteger(x.answer)&&x.answer>=0&&x.answer<x.options.length).map(x=>[x.q,x.options.map(String),x.answer,String(x.explanation||"")]);
+      qout.innerHTML="";
+      if(!qs.length){qout.appendChild(el("p",{class:"muted"},"Չհաջողվեց ստեղծել հարցերը։ Փորձիր նորից։"));}
+      else qout.appendChild(quizRunner(qs,(sc)=>{const pct=Math.round(sc/qs.length*100);g.taken++;g.best=Math.max(g.best,pct);persist();},Math.ceil(qs.length*PASS_QUIZ)));
+    }catch(e){qout.innerHTML="";qout.appendChild(el("p",{class:"muted"},e&&e.code==="not_granted"?"Թեստերի ստեղծումը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց ստեղծել հարցերը։ Փորձիր նորից։"));}
+    gen.disabled=false;
+  });
+  qb.append(lr,el("div",{class:"row"}),qout); qb.children[2].appendChild(gen); wrap.appendChild(qb);
+  // applied task
+  const tb=el("div",{class:"box"}); tb.appendChild(el("h3",{},"Կիրառական առաջադրանք"));
+  tb.appendChild(el("p",{class:"small muted"},"Իրական աշխատանքային իրավիճակ, հաշվարկ կամ փոքր case։ Պատասխանիր գրավոր, և կստանաս գնահատում ու ճիշտ լուծումը։"));
+  const task=el("div",{class:"feedback"}); task.textContent=(g.task&&g.task.q)||"Սեղմիր «Նոր առաջադրանք»։";
+  const ans=el("textarea",{id:"task-"+c.id+"-"+w.n,placeholder:"Քո լուծումը…",style:"min-height:140px"}); ans.value=(g.task&&g.task.a)||"";
+  ans.addEventListener("input",()=>{if(g.task){g.task.a=ans.value;persist();}});
+  const tfb=el("div",{class:"feedback"}); tfb.hidden=!(g.task&&g.task.f); tfb.textContent=(g.task&&g.task.f)||"";
+  const nt=el("button",{class:"btn ghost"},"Նոր առաջադրանք"), gt=el("button",{class:"btn"},"Ստուգել լուծումը");
+  nt.addEventListener("click",async()=>{nt.disabled=true;task.textContent="Պատրաստում եմ…";tfb.hidden=true;ans.value="";
+    try{const r=await sample(`Դու ${c.title} ոլորտի դասախոս ես։ Ստեղծիր ՄԵԿ կիրառական թեստային առաջադրանք հայերեն այս մոդուլի նյութից՝ իրական աշխատանքային իրավիճակ, թվերով հաշվարկ կամ փոքր case (օր.՝ հայաստանյան ընկերության կոնտեքստում)։ Տուր անհրաժեշտ բոլոր տվյալները և հստակ նշիր, թե ինչ է պետք պատասխանել։ Մի տուր պատասխանը։ Պարզ տեքստ, առանց markdown, մինչև 150 բառ։ Պատահական թեմա՝ ${Math.random().toString(36).slice(2,6)}\n\nՆյութ՝\n${moduleContext(w)}`,{modelTier:"default",cache:false,onText:({text})=>{task.textContent=text;}});
+      task.textContent=r.text; g.task={q:r.text,a:"",f:""}; persist();}
+    catch(e){task.textContent="Չհաջողվեց ստեղծել առաջադրանքը։ Փորձիր նորից։";}nt.disabled=false;});
+  gt.addEventListener("click",async()=>{if(!g.task||!ans.value.trim()){tfb.hidden=false;tfb.textContent="Նախ ստացիր առաջադրանք և գրիր լուծումը։";return;}gt.disabled=true;tfb.hidden=false;tfb.textContent="Ստուգում եմ…";
+    try{const r=await sample(`Դու ${c.title} դասախոս ես։ Առաջադրանք՝\n${g.task.q}\n\nՈւսանողի լուծումը՝\n"""${ans.value.slice(0,6000)}"""\n\nԳնահատիր հայերեն, պարզ տեքստով (առանց markdown). Գնահատական X/10, ինչ է ճիշտ, ինչ է սխալ կամ պակաս, ապա «Ճիշտ լուծում»՝ քայլ առ քայլ։ Բարի և խրախուսող եղիր։`,{modelTier:"default",cache:false,onText:({text})=>{tfb.textContent=text;}});
+      tfb.textContent=r.text; g.task.f=r.text; persist();}
+    catch(e){tfb.textContent="Չհաջողվեց ստուգել։ Փորձիր նորից։";}gt.disabled=false;});
+  const tr=el("div",{class:"row"}); tr.append(nt,gt);
+  tb.append(task,ans,tr,tfb); wrap.appendChild(tb);
+  return wrap;
+}
+
+function introBox(c,w){
+  const it=INTRO[c.id]&&INTRO[c.id][w.n-1]; if(!it)return el("div");
+  const b=el("div",{class:"intro"});
+  b.innerHTML=`<span class="eyebrow">Սկսենք պարզից</span><h3>Ինչի մասին է այս մոդուլը</h3><p>${it.about}</p>
+   <div class="cols"><div class="box"><b>Օրինակ կյանքից</b><p>${it.analogy}</p></div><div class="box"><b>Ինչու է սա կարևոր աշխատանքում</b><p>${it.why}</p></div></div>
+   <div><b>Հիմնական բառեր</b><div class="tbl"><table>${it.terms.map(t=>`<tr><td class="mono" style="white-space:nowrap">${t[0]}</td><td>${t[1]}</td></tr>`).join("")}</table></div></div>
+   <p class="small muted">Ինչպես սովորել. յուրաքանչյուր դասում սեղմիր «Սկսել դասը». նախ կտեսնես պարզ բացատրությունը, հետո մանրամասն նյութը, իսկ վերջում կարող ես հարցնել այն, ինչ չհասկացար։</p>`;
+  return b;
+}
+
+function viewWeek(c,w){
+  const s=st(c.id);
+  const sec=el("section",{class:"panel"});
+  const p=weekProgress(c,w);
+  sec.appendChild(el("div",{},`<span class="eyebrow">Մոդուլ ${w.n} / ${c.weeks.length} · ${w.aca} · ${p.pct}% ավարտված</span><h2>${w.title}</h2><p class="muted" style="margin-top:6px">${w.goal}</p>`));
+  const key=c.id+w.n; const tab=subTab[key]||"theory";
+  const stb=el("div",{class:"sub-tabs",role:"tablist"});
+  [["theory","Տեսություն"],["practice","Գործնական"],["quiz","Թեստ"],["tests","Թեստային առաջադրանքներ"]].forEach(([k,t])=>{stb.appendChild(el("button",{class:tab===k?"on":"",onclick:()=>{subTab[key]=k;render();}},t));});
+  sec.appendChild(stb);
+  if(tab==="tests"){sec.appendChild(viewTests(c,w));}
+  else if(tab==="theory"){
+    sec.appendChild(introBox(c,w));
+    w.lessons.forEach((l,i)=>sec.appendChild(lessonBlock(c,w.n+"-"+i,`Դաս ${w.n}.${i+1}`,l,s.lessons)));
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{subTab[key]="practice";render();window.scrollTo(0,0);}},"Անցնել գործնականին →"));
+  } else if(tab==="practice"){
+    const pr=w.practice;
+    sec.appendChild(el("div",{},`<span class="pill ms">Գործնական առաջադրանք</span><h3 style="margin-top:8px">${pr.t}</h3>`));
+    sec.appendChild(practiceGuide(c,w));
+    sec.appendChild(el("ol",{},pr.steps.map(x=>`<li>${x}</li>`).join("")));
+    if(pr.labSteps){
+      const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Լաբ՝ քայլ առ քայլ"));
+      pr.labSteps.forEach((t,i)=>{const k=w.n+"-"+i;const lab=el("label",{class:"chk",style:"align-items:flex-start"});const cb=el("input",{type:"checkbox",id:"lab-"+c.id+"-"+k});cb.checked=!!s.labs[k];cb.addEventListener("change",()=>{s.labs[k]=cb.checked;persist();});const sp=el("span");sp.textContent=(i+1)+". "+t;lab.append(cb,sp);b.appendChild(lab);});
+      sec.appendChild(b);
+    }
+    sec.appendChild(el("p",{},`<b>Առաքվող՝</b> ${pr.deliverable}`));
+    (pr.tools||[]).forEach(t=>{const f=TOOLS[t];if(f)sec.appendChild(f(c));});
+    sec.appendChild(workBox(c,w));
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{subTab[key]="quiz";render();window.scrollTo(0,0);}},"Անցնել թեստին →"));
+  } else {
+    const q=s.quiz[w.n];
+    sec.appendChild(el("p",{class:"muted"},`${w.quiz.length} հարց · անցողիկ՝ 70% (${Math.ceil(w.quiz.length*PASS_QUIZ)}/${w.quiz.length})${q?` · լավագույն արդյունք՝ <b class="mono">${q.best}/${w.quiz.length}</b>`:""}`));
+    sec.appendChild(quizRunner(w.quiz,(score)=>{const prev=s.quiz[w.n];s.quiz[w.n]={best:Math.max(score,prev?prev.best:0),last:score};persist();renderCourseHead(route());},Math.ceil(w.quiz.length*PASS_QUIZ)));
+    const nx=w.n<c.weeks.length?`#${c.id}-w${w.n+1}`:`#${c.id}-exam`;
+    const nr=el("div",{class:"row"}); sec.appendChild(nr);
+    nr.appendChild(el("button",{class:"btn ghost",onclick:()=>{subTab[key]="tests";render();window.scrollTo(0,0);}},"Լրացուցիչ թեստեր →"));
+    nr.appendChild(el("a",{href:nx,class:"btn"},w.n<c.weeks.length?`Մոդուլ ${w.n+1} →`:"Ավարտական քննություն →"));
+  }
+  if(sample&&tab!=="theory")sec.appendChild(qaBox(c,c.id+"|m"+w.n,moduleContext(w),"Հարց տուր այս մոդուլի մասին",false));
+  return sec;
+}
+
+
+function practiceGuide(c,w){
+  const s=st(c.id), pr=w.practice, gk=c.id+"|g"+w.n;
+  s.guide=s.guide||{};
+  if(!sample&&!s.guide[w.n])return el("div");
+  const box=el("div",{class:"simple"});
+  box.appendChild(el("span",{class:"eyebrow"},"Նախ՝ ինչպես կատարել այս առաջադրանքը"));
+  const p=box.appendChild(el("p",{class:"pre"}));
+  const again=el("button",{class:"btn ghost small"},"Բացատրել նորից");
+  const gen=async()=>{
+    if(GEN.has(gk))return; GEN.add(gk); again.disabled=true; p.textContent="Պատրաստում եմ ուղեցույցը…";
+    try{const r=await sample(`Դու ${c.title} ոլորտի համբերատար դասախոս ես։ Ուսանողը սկսնակ է։ Բացատրիր հայերեն, շատ պարզ, պարզ տեքստով (առանց markdown), թե ինչպես կատարել այս գործնական առաջադրանքը.
+Առաջադրանք՝ ${pr.t}
+Քայլեր՝ ${pr.steps.concat(pr.labSteps||[]).join("; ")}
+Առաքվող՝ ${pr.deliverable}
+
+Գրիր. 1) ինչ ենք սովորում այս առաջադրանքով (1–2 նախադասություն), 2) յուրաքանչյուր քայլի համար՝ ինչ անել կոնկրետ և ինչ անվճար գործիք օգտագործել, 3) փոքր օրինակ, թե ինչպես կարող է տեսք ունենալ պատրաստի արդյունքի մի հատվածը, 4) 3 տարածված սխալ։ Մինչև 450 բառ։`,{modelTier:"default",cache:false,onText:({text})=>{p.textContent=text;}});
+      p.textContent=r.text; s.guide[w.n]=r.text; persist();}
+    catch(e){p.textContent=e&&e.code==="not_granted"?"Ուղեցույցը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց պատրաստել ուղեցույցը։ Սեղմիր «Բացատրել նորից»։";}
+    GEN.delete(gk); again.disabled=false;
+  };
+  again.addEventListener("click",gen);
+  if(s.guide[w.n])p.textContent=s.guide[w.n]; else gen();
+  if(sample)box.appendChild(again);
+  return box;
+}
+
+function workBox(c,w){
+  const s=st(c.id), pr=w.practice;
+  const box=el("div",{class:"box"});
+  box.appendChild(el("h3",{},"Իմ աշխատանքը"));
+  box.appendChild(el("p",{class:"small muted"},"Գրիր կամ տեղադրիր առաքվողի տեքստը (աղյուսակները կարող ես պատճենել տեքստով, իսկ հղումները՝ Figma, GitHub, Notion)։ Պահպանվում է ավտոմատ։"));
+  const ta=el("textarea",{id:"note-"+c.id+"-"+w.n,placeholder:"Սկսիր այստեղ…"}); ta.value=s.notes[w.n]||"";
+  ta.addEventListener("input",()=>{s.notes[w.n]=ta.value;persist();});
+  box.appendChild(ta);
+  const row=el("div",{class:"row"});
+  const fb=el("div",{class:"feedback"}); fb.hidden=!s.feedback[w.n]; fb.textContent=s.feedback[w.n]||"";
+  if(sample){
+    const ab=el("button",{class:"btn ghost"},"Ստանալ AI գնահատում");
+    ab.addEventListener("click",async()=>{
+      if(!ta.value.trim()){fb.hidden=false;fb.textContent="Նախ գրիր կամ տեղադրիր աշխատանքդ։";return;}
+      ab.disabled=true; fb.hidden=false; fb.textContent="Ստուգում եմ…";
+      const prompt=`Դու ${c.title} ոլորտի փորձառու դասախոս և պրակտիկ մասնագետ ես։ Գնահատիր ուսանողի գործնական աշխատանքը։
+Մոդուլ՝ ${w.title}
+Առաջադրանք՝ ${pr.t}
+Քայլեր՝ ${pr.steps.concat(pr.labSteps||[]).join("; ")}
+Պահանջվող առաքվող՝ ${pr.deliverable}
+
+Ուսանողի աշխատանքը՝
+"""${ta.value.slice(0,12000)}"""
+
+Պատասխանիր հայերեն, պարզ տեքստով (առանց markdown նշանների), այս կառուցվածքով.
+Գնահատական՝ X/10
+Ուժեղ կողմեր՝ 2–3 կետ
+Ինչ բացակայում է կամ սխալ է՝ կոնկրետ կետեր՝ հղելով քայլերին
+Ինչպես բարելավել՝ 3 գործնական քայլ
+Եթե գնահատականը ≥7, ավելացրու «Առաջադրանքը կարելի է համարել ավարտված»։`;
+      try{const r=await sample(prompt,{modelTier:"default",onText:({text})=>{fb.textContent=text;}}); fb.textContent=r.text; s.feedback[w.n]=r.text; persist();}
+      catch(e){fb.textContent=e&&e.code==="not_granted"?"AI գնահատումը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց ստանալ գնահատում։ Փորձիր մի փոքր ուշ։";}
+      ab.disabled=false;
+    });
+    row.appendChild(ab);
+  }
+  const lab=el("label",{class:"chk"}); const cb=el("input",{type:"checkbox",id:"p-"+c.id+"-"+w.n}); cb.checked=!!s.practice[w.n];
+  cb.addEventListener("change",()=>{s.practice[w.n]=cb.checked;persist();renderCourseHead(route());});
+  lab.append(cb,document.createTextNode("Գործնականն ավարտված է")); row.appendChild(lab);
+  box.append(row,fb); return box;
+}
+
+function quizRunner(qs,onDone,passN){
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:12px"});
+  const name="q"+Math.random().toString(36).slice(2,7);
+  qs.forEach((q,i)=>{
+    const b=el("div",{class:"q"});
+    b.appendChild(el("p",{},`<b class="mono">${i+1}.</b> ${esc(q[0])}`));
+    const o=el("div",{class:"opts"});
+    q[1].forEach((t,j)=>{const lab=el("label",{class:"opt"});const r=el("input",{type:"radio",name:name+i,value:j,id:name+i+"_"+j});const sp=el("span");sp.textContent=t;lab.append(r,sp);o.appendChild(lab);});
+    b.appendChild(o); const ex=el("p",{class:"expl"}); ex.hidden=true; ex.textContent=q[3]; b.appendChild(ex);
+    wrap.appendChild(b);
+  });
+  const res=el("p",{class:"result"}); res.hidden=true;
+  const btn=el("button",{class:"btn"},"Ստուգել պատասխանները");
+  btn.addEventListener("click",()=>{
+    let sc=0;
+    wrap.querySelectorAll(".q").forEach((b,i)=>{
+      const sel=b.querySelector("input:checked"); const right=qs[i][2];
+      b.querySelectorAll(".opt").forEach((lab,j)=>{lab.classList.remove("right","wrong");if(j===right)lab.classList.add("right");else if(sel&&+sel.value===j)lab.classList.add("wrong");});
+      b.querySelector(".expl").hidden=false;
+      if(sel&&+sel.value===right)sc++;
+    });
+    res.hidden=false; res.textContent=`Արդյունք՝ ${sc}/${qs.length} (${Math.round(sc/qs.length*100)}%) — ${sc>=passN?"Անցած է ✓":"Չի անցել. կրկնիր դասերը և փորձիր նորից"}`;
+    res.style.color=sc>=passN?"var(--ok)":"var(--bad)";
+    btn.disabled=true; onDone(sc);
+  });
+  const again=el("button",{class:"btn ghost",onclick:()=>render()},"Նորից");
+  const row=el("div",{class:"row"}); row.append(btn,again);
+  wrap.append(row,res); wrap._submit=()=>{if(!btn.disabled)btn.click();}; return wrap;
+}
+
+/* ========== EXAM ========== */
+let examState={};
+function viewExam(c){
+  const s=st(c.id);
+  const sec=el("section",{class:"panel"});
+  const total=c.final.length+c.examExtra;
+  sec.appendChild(el("div",{},`<span class="eyebrow">Ավարտական քննություն</span><h2>${c.title}</h2><p class="muted" style="margin-top:6px">${total} հարց (${c.final.length} սցենարային + ${c.examExtra} պատահական մոդուլային թեստերից) · ${c.examMin} րոպե · անցողիկ՝ ${PASS_FINAL}%</p>`));
+  if(s.final)sec.appendChild(el("p",{},`Վերջին արդյունք՝ <b class="mono">${s.final.score}%</b> ${s.final.pass?'<span class="pill ok">Անցած է</span>':'<span class="pill ms">Չի անցել</span>'}`));
+  const ready=c.weeks.filter(w=>quizPass(c,w)).length;
+  if(ready<c.weeks.length)sec.appendChild(el("p",{class:"small muted"},`Խորհուրդ է տրվում սկսել բոլոր ${c.weeks.length} մոդուլային թեստերն անցնելուց հետո (անցած է ${ready}/${c.weeks.length})։ Կարող ես փորձել նաև հիմա՝ ինքնաստուգման համար։`));
+  const ex=examState[c.id];
+  if(!ex){
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{
+      const pool=[];c.weeks.forEach(w=>w.quiz.forEach(q=>pool.push(q)));
+      for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+      examState[c.id]={qs:c.final.concat(pool.slice(0,c.examExtra)),end:Date.now()+c.examMin*60000};render();}},"Սկսել քննությունը"));
+    return sec;
+  }
+  const tm=el("p",{class:"timer"}); sec.appendChild(tm);
+  const runner=quizRunner(ex.qs,(sc)=>{clearInterval(iv);const pct=Math.round(sc/ex.qs.length*100);s.final={score:pct,pass:pct>=PASS_FINAL,date:Date.now()};persist();renderCourseHead(route());delete examState[c.id];
+    if(pct>=PASS_FINAL){const r=certReady(c);sec.appendChild(el("div",{class:"notice"},r.quizzes&&r.practice?`<span>Շնորհավորում եմ։ Բոլոր պահանջները կատարված են։</span><a class="btn small" href="#${c.id}-cert">Ստանալ սերտիֆիկատը</a>`:`<span>Քննությունն անցած է։ Սերտիֆիկատի համար ավարտիր մնացած պահանջները։</span><a class="btn small ghost" href="#${c.id}-cert">Տեսնել պահանջները</a>`));}
+  },Math.ceil(ex.qs.length*PASS_FINAL/100));
+  const tick=()=>{const left=Math.max(0,ex.end-Date.now());const m=Math.floor(left/60000),sc=Math.floor(left%60000/1000);tm.textContent=`Մնացած ժամանակ՝ ${String(m).padStart(2,"0")}:${String(sc).padStart(2,"0")}`;if(left<=0){clearInterval(iv);runner._submit();}};
+  const iv=setInterval(()=>{if(!document.body.contains(tm)){clearInterval(iv);return;}tick();},1000); tick();
+  sec.appendChild(runner);
+  return sec;
+}
+
+/* ========== EXTRA (best practices) ========== */
+let extraTab="lessons";
+function viewExtra(c){
+  const s=st(c.id), x=c.extra;
+  const sec=el("section",{class:"panel"});
+  const done=x.lessons.filter((_,i)=>s.extra["l"+i]).length;
+  sec.appendChild(el("div",{},`<span class="eyebrow">Լրացուցիչ մոդուլ · ${done}/${x.lessons.length} դաս${s.extraQuiz?` · թեստ՝ ${s.extraQuiz.best}/${x.quiz.length}`:""}</span><h2>Ինչպես են աշխատում առաջատար ընկերությունները</h2><p class="muted" style="margin-top:6px;max-width:70ch">Amazon, Google, Spotify, Atlassian, Basecamp, GOV.UK, Netflix և կարիերայի մատրիցներ։ Խորհուրդ է տրվում անցնել մեկ դաս շաբաթական՝ հիմնական մոդուլներին զուգահեռ։</p>`));
+  const stb=el("div",{class:"sub-tabs"});
+  [["lessons","Դասեր"],["practice","Գործնական"],["quiz","Թեստ"]].forEach(([k,t])=>stb.appendChild(el("button",{class:extraTab===k?"on":"",onclick:()=>{extraTab=k;render();}},t)));
+  sec.appendChild(stb);
+  if(extraTab==="lessons")x.lessons.forEach((l,i)=>sec.appendChild(lessonBlock(c,"l"+i,`Դաս ${i+1}`,l,s.extra)));
+  else if(extraTab==="practice"){
+    const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կիրառիր պրակտիկաները քո capstone-ում"));
+    x.steps.forEach((t,i)=>{const k="s"+i;const lab=el("label",{class:"chk",style:"align-items:flex-start"});const cb=el("input",{type:"checkbox",id:"ex-"+k});cb.checked=!!s.extra[k];cb.addEventListener("change",()=>{s.extra[k]=cb.checked;persist();});const sp=el("span");sp.textContent=(i+1)+". "+t;lab.append(cb,sp);b.appendChild(lab);});
+    sec.appendChild(b);
+  } else {
+    sec.appendChild(el("p",{class:"muted"},`${x.quiz.length} հարց · անցողիկ՝ 80%`));
+    sec.appendChild(quizRunner(x.quiz,(sc)=>{const p=s.extraQuiz;s.extraQuiz={best:Math.max(sc,p?p.best:0)};persist();},Math.ceil(x.quiz.length*0.8)));
+  }
+  return sec;
+}
+
+/* ========== CERTIFICATE ========== */
+function certId(c,name,date){let h=0;const str=c.id+"|"+name+"|"+date;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;}return ACAD.seal+"-"+c.id.toUpperCase()+"-"+h.toString(36).toUpperCase().padStart(7,"0").slice(0,7);}
+function viewCert(c){
+  const s=st(c.id), r=certReady(c), k=courseStats(c);
+  const sec=el("section",{class:"panel"});
+  sec.appendChild(el("div",{},`<span class="eyebrow">Սերտիֆիկատ</span><h2>Ավարտական վկայական՝ ${c.title}</h2>`));
+  const req=el("div",{class:"req"});
+  [[r.quizzes,`Բոլոր ${c.weeks.length} մոդուլային թեստերն անցած են (${k.quizzes}/${c.weeks.length})`],[r.practice,`Առնվազն ${PRACTICE_MIN} գործնական առաջադրանք ավարտված է (${k.practice}/${c.weeks.length})`],[r.final,`Ավարտական քննությունն անցած է ≥${PASS_FINAL}% (${k.final?k.final.score+"%":"դեռ չի հանձնվել"})`]]
+    .forEach(([ok,t])=>req.appendChild(el("div",{},`<span class="mark${ok?" done":""}">${ok?"✓":""}</span><span>${t}</span>`)));
+  sec.appendChild(req);
+  const all=r.quizzes&&r.practice&&r.final;
+  if(!all){sec.appendChild(el("p",{class:"muted"},"Կատարիր բոլոր պահանջները, և այստեղ կհայտնվի քո անվանական վկայականը։"));return sec;}
+  const nameRow=el("div",{class:"row"});
+  const lab=el("label",{class:"f",style:"flex:1;min-width:220px"},"Անուն Ազգանուն վկայականի համար");
+  const inp=el("input",{type:"text",id:"cert-name",placeholder:"Օր.՝ Նվեր Թորոսյան"}); inp.value=S.name||"";
+  lab.appendChild(inp); nameRow.appendChild(lab);
+  const issue=el("button",{class:"btn",style:"align-self:flex-end"},s.cert?"Թարմացնել անունը":"Տրամադրել վկայականը");
+  issue.addEventListener("click",()=>{const n=inp.value.trim(); if(!n){inp.focus();return;} S.name=n; const date=s.cert?s.cert.date:Date.now(); s.cert={name:n,date,score:s.final.score,id:certId(c,n,date)}; persist(); render();});
+  nameRow.appendChild(issue); sec.appendChild(nameRow);
+  if(!s.cert)return sec;
+  const cert=el("div",{class:"cert",style:`--cc:var(--c-${c.id})`});
+  cert.innerHTML=`<span class="eyebrow">${ACAD.name} · ինքնուսուցման ծրագիր</span>
+    <h2 style="font-size:clamp(24px,4vw,34px)">Ավարտական վկայական</h2>
+    <p class="muted">Սույնով հավաստվում է, որ</p>
+    <div class="cname">${esc(s.cert.name)}</div>
+    <p class="muted">հաջողությամբ ավարտել է ${c.weeks.length}-մոդուլային դասընթացը</p>
+    <div class="ctitle">${c.title}</div>
+    <p class="small muted" style="max-width:56ch">ներառյալ ${k.lessonsTotal} տեսական դաս, ${k.practice} գործնական առաջադրանք, ${c.weeks.length} մոդուլային թեստ և ավարտական քննություն</p>
+    <div class="cert-meta"><div>Քննության արդյունք<b>${s.cert.score}%</b></div><div>Տրման ամսաթիվ<b>${fmtDate(s.cert.date)}</b></div><div>Վկայականի ID<b>${s.cert.id}</b></div></div>
+    <div class="seal">${ACAD.seal}</div>
+    <p class="small muted" style="max-width:60ch">Վկայականը հավաստում է ինքնուսուցման ծրագրի ավարտը և չի հանդիսանում պետական, համալսարանական կամ ${ACAD.disc} հավատարմագրված սերտիֆիկատ։</p>`;
+  sec.appendChild(cert);
+  const act=el("div",{class:"row"}); const msg=el("span",{class:"small muted"});
+  if(downloads){
+    const b=el("button",{class:"btn"},"Պահպանել որպես նկար (SVG)");
+    b.addEventListener("click",async()=>{try{const res=await downloads.save({filename:`certificate-${c.id}.svg`,data:certSvg(c,s.cert,k)}); msg.textContent=res&&res.status==="saved"?"Պահպանված է":"";}catch(e){msg.textContent=e&&e.code==="unavailable"?"Պահպանումը հասանելի չէ այս դիտման մեջ. կարող ես անել screenshot։":"Պահպանումը չեղարկվեց։";}});
+    act.appendChild(b);
+  } else act.appendChild(el("span",{class:"small muted"},"Վկայականը պահպանելու համար կարող ես անել screenshot։"));
+  act.appendChild(msg); sec.appendChild(act);
+  sec.appendChild(el("p",{class:"small muted"},"LinkedIn-ում կարող ես ավելացնել որպես «Licenses & certifications» կամ «Courses»՝ նշելով, որ սա ինքնուսուցման ծրագիր է, իսկ capstone նախագիծը ավելացնել «Projects» բաժնում։"));
+  return sec;
+}
+function certSvg(c,cert,k){
+  const color=ACAD.colors[c.id];
+  const f=`font-family="Noto Serif Armenian, 'Sylfaen', 'Arial Unicode MS', serif"`, fs=`font-family="Noto Sans Armenian, 'Sylfaen', Arial, sans-serif"`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1130" viewBox="0 0 1600 1130">
+<rect width="1600" height="1130" fill="#fbfbf8"/>
+<rect x="40" y="40" width="1520" height="1050" fill="none" stroke="${color}" stroke-width="4"/>
+<rect x="58" y="58" width="1484" height="1014" fill="none" stroke="${color}" stroke-width="1.5"/>
+<text x="800" y="170" text-anchor="middle" ${fs} font-size="26" letter-spacing="4" fill="#5b6b70">${esc(ACAD.name.toUpperCase())} · ԻՆՔՆՈՒՍՈՒՑՄԱՆ ԾՐԱԳԻՐ</text>
+<text x="800" y="270" text-anchor="middle" ${f} font-size="72" font-weight="800" fill="#14232b">Ավարտական վկայական</text>
+<text x="800" y="360" text-anchor="middle" ${fs} font-size="28" fill="#5b6b70">Սույնով հավաստվում է, որ</text>
+<text x="800" y="470" text-anchor="middle" ${f} font-size="80" font-weight="700" fill="#14232b">${esc(cert.name)}</text>
+<line x1="420" y1="500" x2="1180" y2="500" stroke="#c9d2d0" stroke-width="2"/>
+<text x="800" y="570" text-anchor="middle" ${fs} font-size="28" fill="#5b6b70">հաջողությամբ ավարտել է ${c.weeks.length}-մոդուլային դասընթացը</text>
+<text x="800" y="660" text-anchor="middle" ${f} font-size="60" font-weight="700" fill="${color}">${esc(c.title)}</text>
+<text x="800" y="720" text-anchor="middle" ${fs} font-size="22" fill="#5b6b70">${k.lessonsTotal} տեսական դաս · ${k.practice} գործնական առաջադրանք · ${c.weeks.length} մոդուլային թեստ · ավարտական քննություն</text>
+<g ${fs} text-anchor="middle">
+<text x="420" y="840" font-size="20" fill="#5b6b70">Քննության արդյունք</text><text x="420" y="880" font-size="32" fill="#14232b">${cert.score}%</text>
+<text x="800" y="840" font-size="20" fill="#5b6b70">Տրման ամսաթիվ</text><text x="800" y="880" font-size="32" fill="#14232b">${esc(fmtDate(cert.date))}</text>
+<text x="1180" y="840" font-size="20" fill="#5b6b70">Վկայականի ID</text><text x="1180" y="880" font-size="28" fill="#14232b" font-family="monospace">${cert.id}</text>
+</g>
+<circle cx="800" cy="960" r="38" fill="none" stroke="${color}" stroke-width="3"/><text x="800" y="968" text-anchor="middle" font-family="monospace" font-size="20" fill="${color}">${ACAD.seal}</text>
+<text x="800" y="1045" text-anchor="middle" ${fs} font-size="17" fill="#8a9799">Վկայականը հավաստում է ինքնուսուցման ծրագրի ավարտը և չի հանդիսանում պետական, համալսարանական կամ միջազգային հավատարմագրված սերտիֆիկատ։</text>
+</svg>`;
+}
+
+/* ========== TOOLS ========== */
+function numField(id,label,val){const l=el("label",{class:"f"},label);const i=el("input",{type:"number",id,step:"any",value:val});l.appendChild(i);return l;}
+const TOOLS={
+  pert(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"PERT հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("po","Optimistic (O)",4),numField("pm","Most likely (M)",6),numField("pp","Pessimistic (P)",14)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const O=+$("#po",b).value,M=+$("#pm",b).value,P=+$("#pp",b).value;const E=(O+4*M+P)/6,T=(O+M+P)/3,sd=(P-O)/6;
+      out.textContent=`PERT E = ${E.toFixed(2)}    Triangular = ${T.toFixed(2)}    σ = ${sd.toFixed(2)}\n68%՝ ${(E-sd).toFixed(1)} – ${(E+sd).toFixed(1)}\n95%՝ ${(E-2*sd).toFixed(1)} – ${(E+2*sd).toFixed(1)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  evm(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"EVM հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("bac","BAC ($)",120000),numField("pv","PV ($)",60000),numField("ac","AC ($)",58000),numField("pc","Ավարտված %",45)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out); const f=n=>Math.round(n).toLocaleString("en-US");
+    const calc=()=>{const BAC=+$("#bac",b).value,PV=+$("#pv",b).value,AC=+$("#ac",b).value,pc=+$("#pc",b).value/100;const EV=pc*BAC,CPI=EV/AC,SPI=EV/PV,EAC=BAC/CPI;
+      out.textContent=`EV  = ${f(EV)}\nCV  = ${f(EV-AC)}   ${EV-AC<0?"(գերծախս)":"(խնայողություն)"}\nSV  = ${f(EV-PV)}   ${EV-PV<0?"(ուշացում)":"(առաջ)"}\nCPI = ${CPI.toFixed(2)}    SPI = ${SPI.toFixed(2)}\nEAC = ${f(EAC)}\nETC = ${f(EAC-AC)}\nVAC = ${f(BAC-EAC)}\nTCPI = ${((BAC-EV)/(BAC-AC)).toFixed(2)}`;};
+    b.addEventListener("input",calc); calc(); b.appendChild(el("p",{class:"small muted"},"Նախ լուծիր ձեռքով, հետո ստուգիր հաշվիչով։")); return b;},
+  forecast(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կանխատեսման հաշվիչ (velocity և Little's Law)"));
+    const vl=el("label",{class:"f"},"Վերջին sprint-երի velocity (ստորակետով)"); const vi=el("input",{type:"text",id:"vel",value:"18, 24, 21, 20"}); vl.appendChild(vi);
+    const g=el("div",{class:"cols"}); g.append(vl,numField("bl","Backlog (point)",160),numField("wip","Միջին WIP",15),numField("thr","Throughput (item/շաբաթ)",5)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const v=vi.value.split(/[,\s]+/).map(Number).filter(x=>x>0);const bl=+$("#bl",b).value;const wip=+$("#wip",b).value,thr=+$("#thr",b).value;
+      let t="";if(v.length){const avg=v.reduce((a,x)=>a+x,0)/v.length,mx=Math.max(...v),mn=Math.min(...v);t+=`Միջին velocity = ${avg.toFixed(1)}\nԿանխատեսում՝ ${Math.ceil(bl/mx)}–${Math.ceil(bl/mn)} sprint (միջինով՝ ${Math.ceil(bl/avg)})\n\n`;}
+      t+=thr>0?`Little's Law: Cycle time = ${wip} / ${thr} = ${(wip/thr).toFixed(1)} շաբաթ`:"";out.textContent=t;};
+    b.addEventListener("input",calc); calc(); return b;},
+  rice(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"RICE հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("rr","Reach (օգտատեր/եռամսյակ)",2000),numField("ri","Impact (0.25–3)",2),numField("rc","Confidence (%)",80),numField("re","Effort (person-month)",4)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const R=+$("#rr",b).value,I=+$("#ri",b).value,C=+$("#rc",b).value/100,E=+$("#re",b).value;out.textContent=E>0?`RICE = (${R} × ${I} × ${C}) / ${E} = ${(R*I*C/E).toFixed(0)}`:"Effort-ը պետք է լինի 0-ից մեծ";};
+    b.addEventListener("input",calc); calc(); return b;},
+  interview(c){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},`Փորձնական հարցազրույց՝ ${ROLE[c.id]}`));
+    if(!sample){b.appendChild(el("p",{class:"small muted"},"AI հարցազրույցը հասանելի չէ այս դիտման մեջ։ Օգտագործիր դասերում նշված հարցերը և պատասխանիր գրավոր։"));return b;}
+    const types=["վարքային (STAR)","սցենարային","տեխնիկական","case study"]; let qtext=""; let count=0;
+    const qbox=el("div",{class:"feedback"}); qbox.textContent="Սեղմիր «Նոր հարց»՝ սկսելու համար։";
+    const ta=el("textarea",{id:"iv-"+c.id,placeholder:"Քո պատասխանը…",style:"min-height:140px"});
+    const fb=el("div",{class:"feedback"}); fb.hidden=true;
+    const nq=el("button",{class:"btn ghost"},"Նոր հարց"), ev=el("button",{class:"btn"},"Գնահատել պատասխանը");
+    nq.addEventListener("click",async()=>{nq.disabled=true;fb.hidden=true;ta.value="";const t=types[count++%types.length];qbox.textContent="Պատրաստում եմ հարցը…";
+      try{const r=await sample(`Դու ${ROLE[c.id]} պաշտոնի համար հարցազրույց վարող փորձառու hiring manager ես ${ACAD.ivOrg}։ Տուր ՄԵԿ ${t} հարց junior/middle մակարդակի թեկնածուի համար։ Պատասխանիր միայն հարցով, հայերեն, առանց նախաբանի։ Պատահական թեմա՝ ${Math.random().toString(36).slice(2,6)}`,{modelTier:"quick",cache:false});qtext=r.text.trim();qbox.textContent=qtext;}
+      catch(e){qbox.textContent="Չհաջողվեց ստանալ հարց։ Փորձիր նորից։";}nq.disabled=false;});
+    ev.addEventListener("click",async()=>{if(!qtext||!ta.value.trim()){fb.hidden=false;fb.textContent="Նախ ստացիր հարց և գրիր պատասխանդ։";return;}ev.disabled=true;fb.hidden=false;fb.textContent="Գնահատում եմ…";
+      try{const r=await sample(`Դու ${ROLE[c.id]} պաշտոնի հարցազրույց վարող ես։ Հարց՝ «${qtext}»\nԹեկնածուի պատասխան՝ """${ta.value.slice(0,6000)}"""\nԳնահատիր հայերեն, պարզ տեքստով (առանց markdown). Գնահատական X/10, ինչ էր լավ, ինչ պակասեց, ինչպես կհնչեր ուժեղ պատասխանը (կարճ օրինակ)։`,{modelTier:"default",cache:false,onText:({text})=>{fb.textContent=text;}});fb.textContent=r.text;}
+      catch(e){fb.textContent="Չհաջողվեց գնահատել։ Փորձիր նորից։";}ev.disabled=false;});
+    const row=el("div",{class:"row"}); row.append(nq,ev);
+    b.append(qbox,ta,row,fb); return b;}
+};
+
+Object.assign(TOOLS,EXTRA_TOOLS);
+render();
+</script>
+</body></html>

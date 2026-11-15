@@ -1,0 +1,131 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Գիտելիքի կենտրոն</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@500;700;800&family=Noto+Sans+Armenian:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f4f2ec; --sheet:#ffffff; --ink:#1b2126; --muted:#5f6870; --line:#dcd8cd; --accent:#1f5c7a; --accent-soft:#e1ebf0;
+  --c-lang:#b0442e; --c-cap:#2f7d3a; --c-it:#0f7a6c; --c-tr:#2a5db0; --c-pm:#7a4fb8;
+  --f-display:"Noto Serif Armenian",Georgia,serif; --f-body:"Noto Sans Armenian","Segoe UI",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#12161a; --sheet:#1a2026; --ink:#e7ebee; --muted:#9aa5ad; --line:#2c353d; --accent:#7ab6d4; --accent-soft:#1c2f39;
+  --c-lang:#ec8a72; --c-cap:#6cc27a; --c-it:#4cc2ad; --c-tr:#7aa6ec; --c-pm:#b394e6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12161a; --sheet:#1a2026; --ink:#e7ebee; --muted:#9aa5ad; --line:#2c353d; --accent:#7ab6d4; --accent-soft:#1c2f39;
+  --c-lang:#ec8a72; --c-cap:#6cc27a; --c-it:#4cc2ad; --c-tr:#7aa6ec; --c-pm:#b394e6; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+h1,h2,h3,p,li,b{overflow-wrap:break-word}
+.step,.panel,.card{min-width:0}
+@media (max-width:480px){.panel{padding:18px}h2{font-size:21px}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px;display:flex;flex-direction:column;gap:32px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(30px,5.5vw,46px);font-weight:800}
+h2{font-size:clamp(22px,3.4vw,28px)}
+h3{font-size:20px}
+p{margin:0}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lead{color:var(--muted);max-width:68ch;font-size:17px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.card{background:var(--sheet);border:1px solid var(--line);border-top:4px solid var(--cc);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;cursor:pointer;text-align:left;font:inherit;transition:transform .15s,box-shadow .15s;min-width:0}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.card:focus-visible{outline:3px solid var(--cc);outline-offset:2px}
+.card .tag{font-family:var(--f-mono);font-size:12px;color:var(--cc);font-weight:500}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+.bar{height:6px;border-radius:4px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--cc)}
+.stat{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}
+.step{border-left:3px solid var(--accent);padding:4px 0 4px 14px}
+.step b{display:block;margin-bottom:4px}
+.step p{font-size:15px;color:var(--muted)}
+.small{font-size:14px}.muted{color:var(--muted)}
+a{color:var(--accent)}
+/* viewer */
+.viewer{position:fixed;inset:0;background:var(--paper);display:flex;flex-direction:column;z-index:20}
+.vbar{display:flex;align-items:center;gap:10px;padding-top:env(safe-area-inset-top,0px);padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));min-height:52px;background:var(--sheet);border-bottom:1px solid var(--line);flex-wrap:nowrap;overflow-x:auto}
+.vbar button,.vbar a{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;text-decoration:none}
+.vbar button.on{border-color:var(--cc);color:var(--cc);font-weight:600}
+.vbar .home{font-weight:600}
+.vbar .sp{flex:1}
+.viewer iframe{flex:1;width:100%;border:0;background:var(--paper)}
+.fallback{padding:24px;max-width:60ch}
+</style>
+
+<div class="wrap" id="hub">
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">5 ակադեմիա · 20+ դասընթաց · քննություններ, վկայականներ և AI ուսուցիչ</span>
+    <h1>Գիտելիքի կենտրոն</h1>
+    <p class="lead">Լեզուներ, անձնական ֆինանսներ, IT, թրեյդինգ և նախագծերի կառավարում մեկ տեղում։ Յուրաքանչյուր դասընթաց կառուցված է նույն մեթոդով՝ պարզ բացատրություն, իրական case-եր, ինքնաստուգում և գործնական աշխատանք՝ գնահատմամբ։</p>
+  </header>
+
+  <section class="grid" id="cards"></section>
+
+  <section class="panel">
+    <div><span class="eyebrow">Մեթոդ</span><h2>Ինչ ենք վերցրել լավագույն համալսարաններից</h2></div>
+    <div class="steps">
+      <div class="step"><b>Case method</b><p>Harvard Business School-ի մոտեցում. սովորում ես իրական իրավիճակներում որոշումներ կայացնելով, ոչ թե սահմանումներ անգիր անելով։</p></div>
+      <div class="step"><b>Retrieval practice</b><p>Ինքնաստուգումը ավելի ամուր է պահում գիտելիքը, քան կրկնակի ընթերցումը (Roediger & Karpicke, 2006)։ Ամեն մոդուլ ունի թեստ և անսահմանափակ նոր հարցեր։</p></div>
+      <div class="step"><b>Spaced repetition</b><p>Կրկնություն աճող ընդմիջումներով. լեզուների բառաքարտերը աշխատում են Leitner համակարգով։</p></div>
+      <div class="step"><b>Deliberate practice</b><p>Կոնկրետ առաջադրանք, արագ feedback և սխալների ուղղում (Ericsson)։ Գործնական աշխատանքները ստանում են AI գնահատում։</p></div>
+      <div class="step"><b>Supervision (Oxbridge)</b><p>Cambridge-ի և Oxford-ի tutorial-ների ոգով. ամեն դասի տակ կարող ես հարցնել չհասկացածը և ստանալ ավելի պարզ բացատրություն։</p></div>
+      <div class="step"><b>Ապացույցներ, ոչ թե կարծիքներ</b><p>Թրեյդինգը՝ ակադեմիական հետազոտություններով և կարգավորողների տվյալներով, PM-ը՝ PMI-ի, PeopleCert-ի և Scrum Guide-ի պաշտոնական աղբյուրներով։</p></div>
+    </div>
+  </section>
+
+  <p class="small muted">Առաջընթացը պահվում է այս կայքում (քո բրաուզերում և, երբ հասանելի է, քո հաշվում)։ Նախորդ առանձին կայքերի առաջընթացը ավտոմատ չի տեղափոխվել։ Վկայականները հավաստում են ինքնուսուցման ծրագրի ավարտը և պաշտոնական սերտիֆիկատներ չեն։ Թրեյդինգի և ֆինանսների նյութերը կրթական են և անհատական ներդրումային խորհուրդ չեն։</p>
+</div>
+
+<div class="viewer" id="viewer" hidden>
+  <div class="vbar" id="vbar"></div>
+  <iframe id="frame" title="Ակադեմիա"></iframe>
+</div>
+
+<script>
+window.HUB=true;
+const ACADS=[
+  {id:"languages",file:"languages.html",c:"--c-lang",tag:"EN · RU · TR",title:"Լեզուների աշխատանոց",desc:"Անգլերեն B1→B2+, ռուսերեն և թուրքերեն A1–A2-ից, մակարդակի քննություն, IELTS/ТРКИ/TYS համարժեք քննություններ, AI ուսուցիչ։",items:["Քերականություն, բառաքարտեր, լսողություն, խոսք, գրավոր","Սերտիֆիկացման փորձնական քննություններ"]},
+  {id:"capital",file:"capital.html",c:"--c-cap",tag:"Ֆինանսներ",title:"Կապիտալի ակադեմիա",desc:"Կրիպտո ազդանշաններ (թարմացվում են ամեն առավոտ), ֆինանսական գրագիտություն, պասիվ եկամուտ, հաշվիչներ, պորտֆել և ժուռնալ։",items:["Ամենօրյա շուկայական ազդանշաններ","Ադապտիվ գրագիտության թեստ"]},
+  {id:"it",file:"it.html",c:"--c-it",tag:"IT · 4 դասընթաց",title:"IT ակադեմիա",desc:"IT Project Management, Product Management, Data Analytics և Cybersecurity՝ 8 մոդուլով, քննություններով և վկայականներով։",items:["Լավագույն պրակտիկաներ (Amazon, Google, Spotify…)","AI փորձնական հարցազրույց"]},
+  {id:"trading",file:"trading.html",c:"--c-tr",tag:"Թրեյդինգ · 4 դասընթաց",title:"Թրեյդինգի ակադեմիա",desc:"Շուկաների հիմունքներ, տեխնիկական և քանակական վերլուծություն, ռիսկ և հոգեբանություն, բաժնետոմսեր/ETF, կրիպտո, ֆորեքս, ֆյուչերսներ, օպցիոններ։",items:["Backtesting, expectancy, Kelly, sizing հաշվիչներ","30-օրյա paper trading capstone"]},
+  {id:"pm",file:"pm.html",c:"--c-pm",tag:"PM · 4 դասընթաց",title:"Project Management ակադեմիա",desc:"PMP (PMBOK 8, 2026 ECO), PRINCE2 7 Foundation, Scrum PSM I և նախագծերի կառավարում շինարարությունում, պետական հատվածում, ՀԿ-ներում և միջոցառումներում։",items:["CPM, EVM, EMV հաշվիչներ","Սերտիֆիկացման ձևաչափով քննություններ"]}
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function summary(id){
+  if(id==="languages"){const s=get("langs_state_v1");if(!s)return{pct:null,text:"Դեռ չսկսված"};const days=Object.keys(s.log||{}).length;const ex=["en","ru","tr"].reduce((a,l)=>a+((s.L&&s.L[l]&&s.L[l].exams)||[]).length,0);return{pct:Math.min(100,Math.round(days/182*100)),text:`${days} ակտիվ օր · ${ex} քննություն`};}
+  if(id==="capital"){const d=get("ka-done")||[];return{pct:Math.round(Math.min(1,d.length/7)*100),text:`${d.length}/7 դաս ավարտված`};}
+  const s=get("hub-sum-"+id);if(!s)return{pct:null,text:"Դեռ չսկսված"};return{pct:s.pct,text:`${s.pct}% · վկայականներ ${s.cert}/${s.courses}`};
+}
+function renderCards(){
+  const box=$("#cards");box.innerHTML="";
+  ACADS.forEach(a=>{const s=summary(a.id);
+    const c=document.createElement("a");c.className="card";c.href="#"+a.id;c.style.setProperty("--cc",`var(${a.c})`);
+    c.innerHTML=`<span class="tag">${esc(a.tag)}</span><h3>${esc(a.title)}</h3><p class="small muted">${esc(a.desc)}</p><ul>${a.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+      <div class="bar"><i style="width:${s.pct||0}%"></i></div><div class="stat"><span>${esc(s.text)}</span><span>Բացել →</span></div>`;
+    box.appendChild(c);});
+}
+function renderBar(cur){
+  const bar=$("#vbar");bar.innerHTML="";
+  const h=document.createElement("button");h.className="home";h.textContent="← Կենտրոն";h.onclick=()=>{location.hash="";};bar.appendChild(h);
+  ACADS.forEach(a=>{const b=document.createElement("button");b.textContent=a.title;b.style.setProperty("--cc",`var(${a.c})`);if(a.id===cur)b.className="on";b.onclick=()=>{location.hash=a.id;};bar.appendChild(b);});
+  const sp=document.createElement("span");sp.className="sp";bar.appendChild(sp);
+  const a=ACADS.find(x=>x.id===cur);const o=document.createElement("a");o.href=a.file;o.textContent="Բացել առանձին ↗";o.title="Եթե բովանդակությունը չի երևում, բացիր ակադեմիան առանձին էջում";bar.appendChild(o);
+}
+let current=null;
+function route(){
+  const id=(location.hash||"").slice(1);const a=ACADS.find(x=>x.id===id);
+  if(!a){$("#viewer").hidden=true;$("#hub").hidden=false;current=null;renderCards();document.title="Գիտելիքի կենտրոն";return;}
+  $("#hub").hidden=true;$("#viewer").hidden=false;renderBar(a.id);
+  if(current!==a.id){const f=$("#frame");f.src=a.file;current=a.id;}
+}
+window.addEventListener("hashchange",route);
+window.addEventListener("storage",()=>{if(!current)renderCards();});
+route();
+</script>
+
+</body></html>

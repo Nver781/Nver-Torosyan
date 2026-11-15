@@ -1,0 +1,1001 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script>(function(){try{if(window.parent!==window&&window.parent.claude&&window.parent.claude.use){window.claude=window.parent.claude;}}catch(e){}})();</script></head><body>
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Կապիտալի ակադեմիա</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@500;700&family=Noto+Sans+Armenian:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: ledger-style shell — sticky top nav, one view per hash, cards on a 12-col grid that collapses to one column on phones */
+:root{
+  --paper:#f5f3ee; --surface:#ffffff; --ink:#14232b; --muted:#5b6a70; --line:#dcd8cd;
+  --accent:#1f5f5b; --accent-soft:#e3efec; --brass:#a87b2d; --brass-soft:#f4ead6;
+  --good:#2f7d4a; --warn:#b07a10; --bad:#b0412e;
+  --display:"Noto Serif Armenian", Georgia, serif;
+  --body:"Noto Sans Armenian", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f1719; --surface:#162124; --ink:#e7ecea; --muted:#9aa9ab; --line:#283639;
+    --accent:#5fb3a8; --accent-soft:#1b3433; --brass:#d6a957; --brass-soft:#33291a;
+    --good:#5fbf7d; --warn:#e0a83a; --bad:#e2715c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1719; --surface:#162124; --ink:#e7ecea; --muted:#9aa9ab; --line:#283639;
+  --accent:#5fb3a8; --accent-soft:#1b3433; --brass:#d6a957; --brass-soft:#33291a;
+  --good:#5fbf7d; --warn:#e0a83a; --bad:#e2715c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+h1,h2,h3{font-family:var(--display);line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.5vw,44px)}
+h2{font-size:clamp(22px,3vw,30px)}
+h3{font-size:19px}
+p{margin:0}
+a{color:var(--accent)}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header.top{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.topin{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:19px;display:flex;gap:8px;align-items:center;text-decoration:none;color:var(--ink)}
+.brand i{display:inline-block;width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--brass))}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.tabs a{padding:7px 12px;border-radius:8px;text-decoration:none;color:var(--muted);font-weight:500;font-size:15px}
+nav.tabs a:hover{background:var(--accent-soft);color:var(--ink)}
+nav.tabs a.on{background:var(--accent);color:var(--surface)}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 64px}
+section.view{display:none;flex-direction:column;gap:24px}
+section.view.on{display:flex}
+.lead{color:var(--muted);max-width:68ch;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.c4{grid-column:span 4}.c6{grid-column:span 6}.c8{grid-column:span 8}.c12{grid-column:span 12}.c3{grid-column:span 3}
+@media (max-width:900px){.c3,.c4{grid-column:span 6}.c8,.c6{grid-column:span 12}}
+@media (max-width:560px){.c3,.c4,.c6,.c8{grid-column:span 12}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.accent{border-top:3px solid var(--accent)}
+.card.brass{border-top:3px solid var(--brass)}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--brass);text-transform:uppercase}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid currentColor;white-space:nowrap}
+.p-good{color:var(--good)}.p-warn{color:var(--warn)}.p-bad{color:var(--bad)}.p-acc{color:var(--accent)}
+.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:stretch}
+@media (max-width:900px){.hero{grid-template-columns:1fr}}
+.hero .card{justify-content:center}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.steps{grid-template-columns:1fr}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.step:hover{border-color:var(--accent)}
+.step b{font-family:var(--mono);color:var(--brass);font-size:13px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .v{font-family:var(--mono);font-size:24px;font-weight:600}
+.stat .l{font-size:13px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+label{font-size:14px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+input,select,textarea{font:inherit;font-family:var(--mono);font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);width:100%;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+button{font:inherit;font-weight:600;font-size:15px;border-radius:8px;padding:9px 16px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button.sm{padding:4px 10px;font-size:13px}
+button:hover{filter:brightness(1.08)}
+.out{background:var(--accent-soft);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.out.brass{background:var(--brass-soft)}
+.big{font-family:var(--mono);font-size:28px;font-weight:600}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details+details{margin-top:10px}
+summary{cursor:pointer;padding:14px 16px;font-weight:600;display:flex;gap:10px;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";margin-left:auto;font-family:var(--mono);color:var(--brass);font-size:20px}
+details[open] summary::after{content:"−"}
+.lesson{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;max-width:78ch}
+.lesson ul,.lesson ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px}
+.lesson .tip{border-left:3px solid var(--brass);padding:8px 12px;background:var(--brass-soft);border-radius:0 8px 8px 0}
+.lesson .warnbox{border-left:3px solid var(--bad);padding:8px 12px;background:var(--paper);border-radius:0 8px 8px 0}
+.done-tag{font-size:12px;color:var(--good);font-weight:600}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.meter{display:flex;gap:3px}
+.meter i{width:14px;height:8px;border-radius:2px;background:var(--line)}
+.meter i.f{background:var(--brass)}
+svg.chart{width:100%;height:auto;display:block}
+.disclaimer{font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.quizq{display:flex;flex-direction:column;gap:6px}
+.quizq label{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-weight:400;cursor:pointer}
+.quizq input{width:auto}
+.ok{color:var(--good);font-weight:600}.no{color:var(--bad);font-weight:600}
+.zone{font-family:var(--display);font-size:22px;font-weight:700}
+.gauge{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--bad),var(--warn),var(--line),var(--good))}
+.gauge b{position:absolute;top:-5px;width:4px;height:24px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left .3s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+footer{border-top:1px solid var(--line);padding:20px 16px;max-width:1180px;margin:0 auto;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <a class="brand" href="#home"><i></i>Կապիտալի ակադեմիա</a>
+  <nav class="tabs" aria-label="Բաժիններ">
+    <a href="index.html" id="backlink">← Կենտրոն</a>
+    <a href="#home" data-v="home">Գլխավոր</a>
+    <a href="#signals" data-v="signals">Ազդանշաններ</a>
+    <a href="#learn" data-v="learn">Ակադեմիա</a>
+    <a href="#literacy" data-v="literacy">Գրագիտություն</a>
+    <a href="#passive" data-v="passive">Պասիվ եկամուտ</a>
+    <a href="#tools" data-v="tools">Գործիքներ</a>
+    <a href="#analysis" data-v="analysis">Վերլուծություն</a>
+    <a href="#portfolio" data-v="portfolio">Իմ պորտֆելը</a>
+  </nav>
+</div></header>
+
+<main>
+<!-- ================= HOME ================= -->
+<section class="view" id="v-home">
+  <div class="hero">
+    <div class="card accent">
+      <span class="kicker">Ֆինանսական գրագիտության հարթակ</span>
+      <h1>Սովորեք ներդնել այնպես, ինչպես Բաֆեթը՝ համբերությամբ, թվերով և առանց ազարտի</h1>
+      <p class="lead">Այստեղ կա ամբողջական ուղի՝ հիմունքներից մինչև կրիպտոարժույթների վերլուծություն, հաշվիչներ, պասիվ եկամտի պլան և ձեր պորտֆելի հաշվառում։ Բոլոր գործիքներն աշխատում են անմիջապես էջում։</p>
+      <div class="row"><a href="#learn"><button>Սկսել ուսուցումը</button></a><a href="#analysis"><button class="ghost">Բացել վերլուծությունը</button></a></div>
+    </div>
+    <div class="card brass">
+      <span class="kicker" id="home-snap-k">Շուկայի պատկերը</span>
+      <div class="stats" id="home-snap"></div>
+      <p class="small muted">Մեկ տարվա ընթացքում (նոյ 2025 → նոյ 2026) BTC −26%, ETH −35%, SOL −44%, մինչդեռ S&amp;P 500-ը՝ +10.5%։ Աղբյուրներ՝ CoinGecko, CoinMarketCap, Coinpaprika։</p>
+    </div>
+  </div>
+
+  <div class="card accent">
+    <div class="row" style="justify-content:space-between"><div><span class="kicker">Այսօրվա ազդանշանները</span><h2 id="home-sig-h">Ի՞նչ է ցույց տալիս մոդելը հիմա</h2></div><a href="#signals"><button class="ghost">Բոլոր ազդանշանները և ամսական պլանը</button></a></div>
+    <p id="home-regime" class="muted"></p>
+    <div class="grid" id="home-sig"></div>
+  </div>
+
+  <h2>Ձեր ուղին չորս քայլով</h2>
+  <div class="steps">
+    <a class="step" href="#learn"><b>01</b><strong>Սովորել</strong><span class="small muted">7 դաս՝ բարդ տոկոսից մինչև կրիպտոյի անվտանգություն, և ստուգողական թեստ։</span></a>
+    <a class="step" href="#tools"><b>02</b><strong>Հաշվարկել</strong><span class="small muted">Որքա՞ն կապիտալ է պետք ձեր նպատակային ամսական եկամտի համար։</span></a>
+    <a class="step" href="#analysis"><b>03</b><strong>Վերլուծել</strong><span class="small muted">Ազդանշանների մոդել և մետաղադրամի գնահատման աղյուսակ։</span></a>
+    <a class="step" href="#portfolio"><b>04</b><strong>Հետևել</strong><span class="small muted">Պորտֆելի և գործարքների օրագիր, որը պահվում է ձեր դիտարկիչում։</span></a>
+  </div>
+
+  <div class="grid">
+    <div class="card c4"><span class="kicker">Կանոն 1</span><h3>Մի կորցրու գումար</h3><p class="muted">Բաֆեթի առաջին կանոնը. նախ պաշտպանիր կապիտալը։ 50% կորուստը վերականգնելու համար պետք է 100% աճ։</p></div>
+    <div class="card c4"><span class="kicker">Կանոն 2</span><h3>Ժամանակը ամենաուժեղ ակտիվն է</h3><p class="muted">Ամսական 100,000 դրամ, տարեկան 8%, 25 տարի՝ մոտ 95 միլիոն դրամ։ Ներդրածը ընդամենը 30 միլիոն է։</p></div>
+    <div class="card c4"><span class="kicker">Կանոն 3</span><h3>Վախեցիր, երբ ուրիշներն ագահ են</h3><p class="muted">Շուկան հիմա վախի գոտում է։ Վերլուծության բաժնում կա մոդել, որը այդ սկզբունքը վերածում է թվերի։</p></div>
+  </div>
+  <p class="disclaimer">Այս կայքը ուսուցողական է և ֆինանսական խորհրդատվություն չէ։ Կրիպտոարժույթները կարող են կորցնել արժեքի 70–90%-ը։ Ներդրեք միայն այն գումարը, որի կորուստը կարող եք թույլ տալ, և խոշոր որոշումներից առաջ խորհրդակցեք լիցենզավորված մասնագետի հետ։</p>
+</section>
+
+<!-- ================= SIGNALS ================= -->
+<section class="view" id="v-signals">
+  <div class="row" style="justify-content:space-between;align-items:flex-end">
+    <div><span class="kicker" id="sig-date">Ազդանշաններ</span><h2>Ինչ գնել, ինչ պահել, ինչ վաճառել՝ ըստ մոդելի</h2>
+    <p class="lead">Մոդելն ինքն է ստուգում ցուցակի բոլոր մետաղադրամները և դասավորում դրանք ըստ գրավչության։ Յուրաքանչյուր ազդանշանի կողքին նշված են պատճառները, ռիսկը և այն մակարդակը, որի դեպքում ազդանշանը չեղարկվում է։</p></div>
+  </div>
+  <div id="sig-stale"></div>
+
+  <div class="card brass">
+    <span class="kicker">Շուկայի ռեժիմը</span>
+    <div class="zone" id="regime-title"></div>
+    <p id="regime-text"></p>
+    <ul id="regime-facts" class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px"></ul>
+  </div>
+
+  <div class="grid" id="sig-cards"></div>
+
+  <div class="grid">
+    <div class="card c6 accent">
+      <span class="kicker">Ամսական գնումների պլան</span>
+      <h3>Ինչպես բաշխել այս ամսվա կրիպտո բյուջեն</h3>
+      <p class="small muted">Հիմքային բաշխումը՝ BTC 50%, ETH 25%, այլ մետաղադրամներ 25%։ Մոդելը ավելացնում է այն մետաղադրամների մասնաբաժինը, որոնք էժան են, և զրոյացնում է այն մետաղադրամներինը, որոնք վաճառքի գոտում են։</p>
+      <label for="plan-b">Ամսական կրիպտո բյուջե, $<input id="plan-b" type="number" value="200"></label>
+      <div class="tbl"><table id="plan-t"></table></div>
+    </div>
+    <div class="card c6 brass">
+      <span class="kicker">Իմ պորտֆելի ազդանշանները</span>
+      <h3>Ինչ անել ձեր ունեցածի հետ</h3>
+      <p class="small muted">Համեմատվում է «Իմ պորտֆելը» բաժնում ձեր գրանցած ակտիվների հետ։</p>
+      <div id="pf-alerts" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="row"><button class="ghost sm" id="pf-sync">Թարմացնել պորտֆելի գները այսօրվա տվյալներով</button><span class="small muted" id="pf-sync-msg"></span></div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Ինչպես է մոդելը որոշում</summary>
+    <div class="lesson">
+      <p><b>1. Արժեքի միավոր (−6-ից +6).</b> Գումարվում են չորս ցուցանիշ. գինը ÷ 200-օրյա միջին (Մայերի բազմապատկիչ), RSI, վախի և ագահության ինդեքս, անկումը պատմական առավելագույնից։ Դրական միավորը նշանակում է էժան, բացասականը՝ թանկ։</p>
+      <p><b>2. Միտում.</b> Գինը 200-օրյա միջինից վերև է, թե ներքև։ Էժան, բայց ներքև գնացող ակտիվը «ընկնող դանակ» է, ուստի մոդելը առաջարկում է գնել մասերով, ոչ միանգամից։</p>
+      <p><b>3. Որակ.</b> Bitcoin-ը և Ethereum-ը ավելի բարձր են դասվում, քանի որ ունեն ամենաերկար պատմությունը, ամենամեծ իրացվելիությունը և ինստիտուցիոնալ ընդունումը։</p>
+      <div class="tbl"><table><thead><tr><th>Արժեք</th><th>Միտում</th><th>Ազդանշան</th></tr></thead><tbody>
+        <tr><td>+3 և ավելի</td><td>Վերև</td><td><span class="pill p-good">Գնել</span></td></tr>
+        <tr><td>+3 և ավելի</td><td>Ներքև</td><td><span class="pill p-good">Գնել մասերով</span></td></tr>
+        <tr><td>+1 / +2</td><td>Վերև</td><td><span class="pill p-acc">Կուտակել DCA-ով</span></td></tr>
+        <tr><td>+1 / +2</td><td>Ներքև</td><td><span class="pill p-acc">Փոքր կուտակում</span></td></tr>
+        <tr><td>−1 / 0</td><td>Ցանկացած</td><td><span class="pill" style="color:var(--muted)">Պահել</span></td></tr>
+        <tr><td>−2 / −3</td><td>Ցանկացած</td><td><span class="pill p-warn">Մասնակի վաճառել</span></td></tr>
+        <tr><td>−4 և պակաս</td><td>Ցանկացած</td><td><span class="pill p-bad">Վաճառել մեծ մասը</span></td></tr>
+      </tbody></table></div>
+    </div>
+  </details>
+  <p class="disclaimer">Ազդանշանները ավտոմատ կանոնների արդյունք են, ոչ թե անհատական ֆինանսական խորհուրդ։ Մոդելը չի կանխատեսում նորություններ, հաքեր կամ կարգավորման որոշումներ, և էժան ակտիվը կարող է էլ ավելի էժանանալ։ Ներդրեք միայն այն, ինչի կորուստը կարող եք թույլ տալ։</p>
+</section>
+
+<!-- ================= LITERACY ================= -->
+<section class="view" id="v-literacy">
+  <div><span class="kicker">Հաշվապահություն և ֆինանսական գրագիտություն</span><h2>Սովորեք և չափեք ձեր գիտելիքը</h2>
+  <p class="lead">Երկու դասընթաց՝ յուրաքանչյուրը վեց դասով։ Թեստը հարմարվում է ձեզ. ճիշտ պատասխանից հետո հարցերը դժվարանում են, սխալից հետո՝ հեշտանում։ Յուրաքանչյուր պատասխանից հետո ինդեքսը թարմացվում է։</p></div>
+
+  <div class="grid">
+    <div class="card c4 accent">
+      <span class="kicker">Ձեր գրագիտության ինդեքսը</span>
+      <div class="row" style="align-items:baseline;gap:12px"><span class="big" id="li-idx" style="font-size:52px">—</span><span class="mono muted">/ 100</span><span class="mono small" id="li-delta"></span></div>
+      <span class="pill p-acc" id="li-level" style="align-self:flex-start">Դեռ չափված չէ</span>
+      <p class="small muted" id="li-conf"></p>
+      <div id="li-hist"></div>
+    </div>
+    <div class="card c8">
+      <div class="grid" style="gap:12px">
+        <div class="c6" style="display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><b>Հաշվապահություն</b><span class="mono" id="li-A">—</span></div><div class="bar"><span id="li-Ab" style="width:0;background:var(--accent)"></span></div></div>
+        <div class="c6" style="display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><b>Ֆինանսական գրագիտություն</b><span class="mono" id="li-F">—</span></div><div class="bar"><span id="li-Fb" style="width:0;background:var(--brass)"></span></div></div>
+      </div>
+      <div class="tbl"><table id="li-topics"></table></div>
+      <p class="small" id="li-rec"></p>
+    </div>
+  </div>
+
+  <div class="card brass" id="li-quiz">
+    <div class="row" style="justify-content:space-between">
+      <div><span class="kicker">Հարմարվող թեստ</span><h3 id="lq-meta"></h3></div>
+      <div class="row" id="lq-mode">
+        <button class="sm" data-m="mix">Խառը</button>
+        <button class="sm ghost" data-m="A">Հաշվապահություն</button>
+        <button class="sm ghost" data-m="F">Ֆինանսներ</button>
+      </div>
+    </div>
+    <p id="lq-q" style="font-size:18px;font-weight:500;max-width:70ch"></p>
+    <div id="lq-o" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div id="lq-fb"></div>
+    <div class="row"><button id="lq-next" style="display:none">Հաջորդ հարցը</button><button class="ghost sm" id="lq-reset">Սկսել զրոյից</button></div>
+  </div>
+
+  <div class="grid" style="align-items:start">
+    <div class="c6" style="display:flex;flex-direction:column;gap:10px">
+      <div><span class="kicker">Դասընթաց 1</span><h3>Հաշվապահության հիմունքներ</h3></div>
+      <div id="li-lessA"></div>
+    </div>
+    <div class="c6" style="display:flex;flex-direction:column;gap:10px">
+      <div><span class="kicker">Դասընթաց 2</span><h3>Անձնական ֆինանսներ</h3></div>
+      <div id="li-lessF"></div>
+    </div>
+  </div>
+
+  <div class="card accent">
+    <span class="kicker">Գործնական վարժություն</span>
+    <h3>Գործարքների սիմուլյատոր. ինչպես է պահպանվում հավասարակշռությունը</h3>
+    <p class="small muted">Սեղմեք գործարքը։ Կտեսնեք ձևակերպումը (դեբետ/կրեդիտ) և թե ինչպես է փոխվում հավասարումը Ակտիվներ = Պարտավորություններ + Կապիտալ։</p>
+    <div class="row" id="sim-btns"></div>
+    <div class="grid" style="align-items:start">
+      <div class="c6 out" id="sim-eq"></div>
+      <div class="c6"><div class="tbl"><table id="sim-log"></table></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LEARN ================= -->
+<section class="view" id="v-learn">
+  <div class="row" style="justify-content:space-between">
+    <div><span class="kicker">Ակադեմիա</span><h2>Յոթ դաս՝ զրոյից մինչև ինքնուրույն որոշում</h2></div>
+    <div class="card" style="padding:12px 16px;min-width:220px"><span class="small muted">Առաջընթաց</span><div class="bar"><span id="progbar" style="width:0;background:var(--accent)"></span></div><span class="small num" id="progtxt">0 / 7</span></div>
+  </div>
+  <div id="lessons"></div>
+
+  <div class="card brass">
+    <span class="kicker">Ստուգողական թեստ</span>
+    <h3>Ստուգեք ինքներդ ձեզ</h3>
+    <form id="quiz" class="grid" style="gap:18px"></form>
+    <div class="row"><button type="button" id="quizBtn">Ստուգել պատասխանները</button><span id="quizRes" class="mono"></span></div>
+  </div>
+</section>
+
+<!-- ================= PASSIVE ================= -->
+<section class="view" id="v-passive">
+  <div><span class="kicker">Պասիվ եկամուտ</span><h2>Պասիվ եկամտի աղբյուրներն ըստ ռիսկի</h2>
+  <p class="lead">«Պասիվ» եկամուտը սովորաբար պահանջում է կամ կապիտալ, կամ նախնական աշխատանք։ Ստորև տարբերակները դասավորված են ցածրից բարձր ռիսկ։ Եկամտաբերությունները մոտավոր պատմական միջակայքեր են, ոչ երաշխիք։</p></div>
+  <div class="row" id="pfilter">
+    <button class="sm" data-f="all">Բոլորը</button>
+    <button class="sm ghost" data-f="low">Ցածր ռիսկ</button>
+    <button class="sm ghost" data-f="mid">Միջին ռիսկ</button>
+    <button class="sm ghost" data-f="high">Բարձր ռիսկ</button>
+    <button class="sm ghost" data-f="work">Աշխատանքով</button>
+  </div>
+  <div class="grid" id="pcards"></div>
+
+  <div class="card accent">
+    <span class="kicker">Պասիվ եկամտի կառուցման կարգը</span>
+    <h3>Ճիշտ հերթականությունը</h3>
+    <ol class="lesson" style="padding-left:22px">
+      <li><b>Փակեք թանկ պարտքերը։</b> 20%+ տոկոսով վարկը մարելը երաշխավորված «20% եկամուտ» է։</li>
+      <li><b>Ստեղծեք անվտանգության բարձիկ։</b> 3–6 ամսվա ծախսեր՝ դեպոզիտում կամ խնայողական հաշվում։</li>
+      <li><b>Կառուցեք հիմքը։</b> Լայն ինդեքսային ֆոնդեր և պարտատոմսեր՝ պորտֆելի 70–90%-ը։</li>
+      <li><b>Ավելացրեք աճի հատվածը։</b> Կրիպտո և ռիսկային ակտիվներ՝ 0–15%, կախված ձեր պրոֆիլից։</li>
+      <li><b>Վերաներդրեք եկամուտը։</b> Մինչև կապիտալը հասնի նպատակին, շահաբաժինները վերաներդրվում են։</li>
+      <li><b>Անցեք դուրսբերման փուլի։</b> Տարեկան մոտ 3.5–4% դուրսբերումը պատմականորեն պահպանել է կապիտալը տասնամյակներով։</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= TOOLS ================= -->
+<section class="view" id="v-tools">
+  <div><span class="kicker">Աշխատանքային գործիքներ</span><h2>Հաշվիչներ, որոնք պատասխանում են իրական հարցերին</h2></div>
+  <div class="grid">
+    <div class="card c8 accent">
+      <h3>Բարդ տոկոսի հաշվիչ</h3>
+      <div class="form">
+        <label for="ci-p">Սկզբնական գումար<input id="ci-p" type="number" value="1000000"></label>
+        <label for="ci-m">Ամսական ներդրում<input id="ci-m" type="number" value="100000"></label>
+        <label for="ci-r">Տարեկան եկամտաբերություն, %<input id="ci-r" type="number" value="8" step="0.1"></label>
+        <label for="ci-y">Տարիներ<input id="ci-y" type="number" value="20"></label>
+        <label for="ci-i">Գնաճ, %<input id="ci-i" type="number" value="3" step="0.1"></label>
+      </div>
+      <div class="stats" id="ci-out"></div>
+      <div id="ci-chart"></div>
+    </div>
+    <div class="card c4 brass">
+      <h3>Պասիվ եկամտի նպատակ</h3>
+      <label for="g-inc">Ցանկալի ամսական եկամուտ<input id="g-inc" type="number" value="500000"></label>
+      <label for="g-wr">Դուրսբերման տոկոս, տարեկան<input id="g-wr" type="number" value="4" step="0.1"></label>
+      <label for="g-have">Արդեն ունեք<input id="g-have" type="number" value="2000000"></label>
+      <label for="g-mon">Ամսական ներդրում<input id="g-mon" type="number" value="150000"></label>
+      <label for="g-ret">Սպասվող եկամտաբերություն, %<input id="g-ret" type="number" value="7" step="0.1"></label>
+      <div class="out brass" id="g-out"></div>
+    </div>
+
+    <div class="card c6">
+      <h3>DCA հաշվիչ (պարբերական գնումներ)</h3>
+      <p class="small muted">Մուտքագրեք ամսական գները ստորակետով։ Օրինակը BTC-ի մոտավոր ամսական գներն են, ստուգեք և փոխարինեք։</p>
+      <label for="dca-a">Ամսական գումար, $<input id="dca-a" type="number" value="200"></label>
+      <label for="dca-p">Գներ, $<textarea id="dca-p" rows="3">95000, 88000, 84000, 76000, 68000, 72000, 64000, 67000, 60000, 70000, 78000, 75600</textarea></label>
+      <div class="out" id="dca-out"></div>
+    </div>
+
+    <div class="card c6">
+      <h3>Դիրքի չափ և ռիսկ</h3>
+      <p class="small muted">Մասնագետների կանոն. մեկ գործարքում մի՛ ռիսկի դրեք պորտֆելի 1–2%-ից ավելին։</p>
+      <div class="form">
+        <label for="ps-c">Պորտֆել, $<input id="ps-c" type="number" value="10000"></label>
+        <label for="ps-r">Ռիսկ, %<input id="ps-r" type="number" value="1" step="0.1"></label>
+        <label for="ps-e">Մուտքի գին<input id="ps-e" type="number" value="75000"></label>
+        <label for="ps-s">Stop-loss գին<input id="ps-s" type="number" value="68000"></label>
+        <label for="ps-t">Թիրախ գին<input id="ps-t" type="number" value="90000"></label>
+      </div>
+      <div class="out" id="ps-out"></div>
+    </div>
+
+    <div class="card c12 accent">
+      <h3>Ձեր ներդրողի պրոֆիլը և մոդելային բաշխում</h3>
+      <div class="form" id="prof"></div>
+      <div class="grid" style="align-items:start">
+        <div class="c6 out" id="prof-out"></div>
+        <div class="c6" id="prof-bars"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ANALYSIS ================= -->
+<section class="view" id="v-analysis">
+  <div><span class="kicker">Վերլուծական սեղան</span><h2>Ե՞րբ կուտակել, ե՞րբ ամրագրել շահույթը</h2>
+  <p class="lead">Ոչ ոք չի կարող հուսալիորեն կանխատեսել կարճաժամկետ գինը։ Դրա փոխարեն այստեղ կա կանոնների վրա հիմնված մոդել, որը գնահատում է՝ ակտիվը պատմականորեն էժա՞ն է, թե՞ գերտաքացած։ Թվերը մուտքագրեք դուք, մոդելը ցույց կտա գոտին և պատճառները։</p></div>
+
+  <div class="grid">
+    <div class="card c6 accent">
+      <h3>Կուտակման / ամրագրման մոդել</h3>
+      <div class="form">
+        <label for="s-coin">Ակտիվ<select id="s-coin"><option>BTC</option><option>ETH</option><option>SOL</option><option>Այլ</option></select></label>
+        <label for="s-price">Ընթացիկ գին<input id="s-price" type="number" value="75620"></label>
+        <label for="s-ma">200-օրյա միջին (MA200)<input id="s-ma" type="number" value="92000"></label>
+        <label for="s-ath">Պատմական առավելագույն (ATH)<input id="s-ath" type="number" value="126000"></label>
+        <label for="s-rsi">RSI (14, օրական)<input id="s-rsi" type="number" value="38"></label>
+        <label for="s-fg">Վախ/ագահություն (0–100)<input id="s-fg" type="number" value="28"></label>
+      </div>
+      <p class="small muted">Ընտրված մետաղադրամի համար դաշտերը լրացվում են ազդանշանների վերջին տվյալներով։ Ստուգելու կամ այլ մետաղադրամ գնահատելու համար թարմ թվերը վերցրեք <a href="https://www.tradingview.com/symbols/BTCUSD/" rel="noopener">TradingView</a>-ից և <a href="https://alternative.me/crypto/fear-and-greed-index/" rel="noopener">alternative.me</a>-ից։</p>
+    </div>
+    <div class="card c6 brass">
+      <span class="kicker">Մոդելի եզրակացությունը</span>
+      <div class="zone" id="s-zone"></div>
+      <div class="gauge" aria-hidden="true"><b id="s-needle"></b></div>
+      <div class="row small muted" style="justify-content:space-between"><span>Ամրագրել շահույթը</span><span>Չեզոք</span><span>Կուտակել</span></div>
+      <div class="tbl"><table id="s-table"></table></div>
+      <p class="small muted" id="s-action"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="kicker">Ֆունդամենտալ գնահատում</span>
+    <h3>Մետաղադրամի գնահատման աղյուսակ</h3>
+    <p class="small muted">Գնահատեք նախագիծը 1–5 սանդղակով։ Ընտրեք պատրաստի օրինակ կամ գնահատեք ձեր ուսումնասիրած մետաղադրամը։</p>
+    <div class="row" id="sc-presets"></div>
+    <div class="grid" style="align-items:start">
+      <div class="c8" id="sc-sliders" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="c4 out" id="sc-out"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="kicker">Ռիսկի աստիճաններ</span>
+    <h3>Կրիպտոյի կատեգորիաները և դրանց դերը պորտֆելում</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Կատեգորիա</th><th>Օրինակներ</th><th>Ռիսկ</th><th>Դերը</th><th>Ինչին հետևել</th></tr></thead>
+      <tbody>
+        <tr><td><b>Bitcoin</b></td><td>BTC</td><td><span class="pill p-warn">Բարձր</span></td><td>Կրիպտո հատվածի հիմքը, «թվային ոսկի»</td><td>ETF հոսքեր, MA200, հալվինգի ցիկլ</td></tr>
+        <tr><td><b>Խոշոր պլատֆորմներ</b></td><td>ETH, SOL</td><td><span class="pill p-bad">Շատ բարձր</span></td><td>Աճի հատված, DeFi էկոհամակարգ</td><td>Ակտիվ օգտատերեր, վճարներ, մրցակցություն</td></tr>
+        <tr><td><b>Ստեյբլքոյններ</b></td><td>USDC, USDT</td><td><span class="pill p-good">Ցածր գնային</span></td><td>Կանխիկ դիրք կրիպտոյում</td><td>Թողարկողի պահուստներ, կարգավորում</td></tr>
+        <tr><td><b>DeFi և ալթքոյններ</b></td><td>Լեդինգ, DEX տոկեններ</td><td><span class="pill p-bad">Շատ բարձր</span></td><td>Փոքր սպեկուլյատիվ մաս</td><td>Տոկենոմիկա, աուդիտ, ապակողպումներ</td></tr>
+        <tr><td><b>Մեմքոյններ</b></td><td>Շան և կատվի տոկեններ</td><td><span class="pill p-bad">Ծայրահեղ</span></td><td>Խաղ, ոչ ներդրում</td><td>Մեծ մասը կորցնում է 90%+</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="grid">
+    <div class="card c6 accent">
+      <h3>Գնելուց առաջ՝ ստուգաթերթ</h3>
+      <div id="buyck" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="out" id="buyck-out"></div>
+    </div>
+    <div class="card c6 brass">
+      <h3>Վաճառելուց առաջ՝ ստուգաթերթ</h3>
+      <div id="sellck" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="out brass" id="sellck-out"></div>
+    </div>
+  </div>
+  <p class="disclaimer">Մոդելը հիմնված է պատմական օրինաչափությունների վրա (Մայերի բազմապատկիչ, RSI, տրամադրությունների ինդեքս, անկումը ATH-ից)։ Այն չի հաշվի առնում նորություններ, հաքեր կամ կարգավորման փոփոխություններ և կարող է սխալվել։ Դա ձեր որոշման գործիքն է, ոչ թե խորհուրդ գնել կամ վաճառել։</p>
+</section>
+
+<!-- ================= PORTFOLIO ================= -->
+<section class="view" id="v-portfolio">
+  <div><span class="kicker">Իմ պորտֆելը</span><h2>Ակտիվներ, արդյունք և գործարքների օրագիր</h2>
+  <p class="lead">Տվյալները պահվում են միայն ձեր դիտարկիչում։ Գները թարմացրեք ձեռքով։ Օրինակային տողերը կարող եք ջնջել։</p></div>
+  <div class="stats card" id="pf-sum"></div>
+  <div class="card">
+    <h3>Ավելացնել ակտիվ</h3>
+    <div class="form">
+      <label for="pf-n">Անվանում<input id="pf-n" placeholder="BTC" style="font-family:var(--body)"></label>
+      <label for="pf-q">Քանակ<input id="pf-q" type="number" step="any"></label>
+      <label for="pf-b">Միջին գնման գին, $<input id="pf-b" type="number" step="any"></label>
+      <label for="pf-c">Ընթացիկ գին, $<input id="pf-c" type="number" step="any"></label>
+      <label for="pf-t">Տեսակ<select id="pf-t" style="font-family:var(--body)"><option>Կրիպտո</option><option>Բաժնետոմս/ETF</option><option>Պարտատոմս</option><option>Կանխիկ/Դեպոզիտ</option><option>Այլ</option></select></label>
+    </div>
+    <div class="row"><button id="pf-add">Ավելացնել</button><span class="small muted" id="pf-msg"></span></div>
+    <div class="tbl"><table id="pf-table"></table></div>
+    <div id="pf-alloc"></div>
+  </div>
+  <div class="card brass">
+    <h3>Գործարքների օրագիր</h3>
+    <p class="small muted">Լավ ներդրողները գրում են՝ ինչու են գնել։ Վեց ամիս անց դա ամենաօգտակար ուսուցիչն է։</p>
+    <div class="form">
+      <label for="j-d">Ամսաթիվ<input id="j-d" type="date"></label>
+      <label for="j-a">Գործողություն<select id="j-a" style="font-family:var(--body)"><option>Գնում</option><option>Վաճառք</option></select></label>
+      <label for="j-n">Ակտիվ<input id="j-n" style="font-family:var(--body)"></label>
+      <label for="j-w">Պատճառ<input id="j-w" style="font-family:var(--body)" placeholder="Ինչու եմ սա անում"></label>
+    </div>
+    <div class="row"><button id="j-add">Գրանցել</button></div>
+    <div class="tbl"><table id="j-table"></table></div>
+  </div>
+</section>
+</main>
+<footer>Կապիտալի ակադեմիա · Ուսուցողական նախագիծ · Շուկայական տվյալները՝ CoinGecko, CoinMarketCap, alternative.me և վերլուծական հրապարակումներ, թարմացվում են ամեն օր։ Սա ֆինանսական խորհրդատվություն չէ։</footer>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const fmt=(n,d=0)=>isFinite(n)?Number(n).toLocaleString("en-US",{maximumFractionDigits:d,minimumFractionDigits:d}):"—";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const val=id=>parseFloat(document.getElementById(id).value)||0;
+
+/* ---------- market data (updated daily) ---------- */
+/*SIGNALS-DATA-START*/
+const DATA={
+  updated:"2026-11-15",
+  fg:10, mcap:"$2.14T", btcDom:58.0,
+  facts:[
+    "Վախի և ագահության ինդեքսը նոյեմբերի 15-ին իջել է 10-ի (ծայրահեղ վախ)՝ նախորդ օրվա 13-ից և երկու օր առաջվա 20-ից։ Շուկայի ընդհանուր կապիտալը մեկ օրում նվազել է մոտ 10%-ով՝ մինչև $2.14 տրլն։",
+    "ԱՄՆ սփոթ BTC ETF-ներից նոյեմբերի 9–13-ը արտահոսել է մոտ $1.07 մլրդ (որից IBIT-ից՝ մոտ $908 մլն), ETH ETF-ներից՝ $399 մլն, XRP ETF-ներից՝ $19 մլն։ Ստեյբլքոինների առաջարկը 30 օրում կրճատվել է ռեկորդային $11.5 մլրդ-ով։",
+    "Մեկ ժամում լիկվիդացվել է մոտ $691 մլն-ի դիրք, որի մոտ 97%-ը՝ լոնգեր։ Bitcoin-ը իջավ մինչև մոտ $62.2K՝ հուլիսի սկզբից ի վեր ամենացածր մակարդակին, ATH-ից մոտ 50% ցածր։",
+    "Մակրո ճնշումը ուժեղանում է. հոկտեմբերի CPI-ն աճել է 0.4% (սպասվում էր 0.3%), ոչ գյուղատնտեսական զբաղվածությունը՝ 165 հազ. (սպասվում էր ~65 հազ.)։ CME FedWatch-ը դեկտեմբերին տոկոսադրույքի բարձրացման հավանականությունը գնահատում է 88.5%, իսկ Brent նավթը $100-ից բարձր է։"
+  ],
+  coins:[
+    {s:"BTC",n:"Bitcoin",p:62200,ma:73170,ath:126080,rsi:17.3,q:2,w:50,risk:"Բարձր",news:"Իջավ մինչև մոտ $62.2K, օրական RSI-ն խորը գերվաճառվածության գոտում է։ Աջակցությունը՝ $62K, $60K և $58.6K (տարեկան նվազագույն), դիմադրությունը՝ $66–68K։"},
+    {s:"ETH",n:"Ethereum",p:1718,ma:2174,ath:4950,rsi:24.7,q:1.5,w:25,risk:"Շատ բարձր",news:"Մեկ օրում ընկավ մոտ 11%-ով՝ մինչև $1,718՝ վերադառնալով հունիսյան նվազագույնների գոտի։ Աջակցությունը՝ $1,500, ապա $1,385, դիմադրությունը՝ $1,850 և $2,000։"},
+    {s:"SOL",n:"Solana",p:67.8,ma:88.9,ath:293,rsi:19.7,q:0.5,w:10,risk:"Շատ բարձր",news:"Օրվա ընթացքում իջավ մոտ 12%-ով՝ մինչև $67.8։ Աջակցությունը՝ $62 (հունիսյան նվազագույն), դիմադրությունը՝ $75 և $80։"},
+    {s:"XRP",n:"XRP",p:0.90,ma:1.27,ath:3.65,rsi:21.5,q:0,w:7.5,risk:"Շատ բարձր",news:"Իջավ մինչև $0.89՝ 2024-ի նոյեմբերից ի վեր ամենացածր մակարդակին, եռամսյակում՝ -36%։ Աջակցությունը՝ $0.90 և $0.80, դիմադրությունը՝ $1.00 և $1.20–1.25։"},
+    {s:"BNB",n:"BNB",p:594,ma:659,ath:1370,rsi:27.7,q:0,w:7.5,risk:"Շատ բարձր",news:"Ընկավ մոտ 8%-ով՝ մինչև $580–595 գոտի, մնում է 200-օրյա միջինից (~$659) ցածր։ Աջակցությունը՝ $580, դիմադրությունը՝ $613 և $644։"}
+  ]
+};
+/*SIGNALS-DATA-END*/
+
+const ACT={
+  buy:{l:"Գնել",c:"p-good",m:2,t:"Էժան է, և միտումը վերև է։ Պատմականորեն ամենաուժեղ համադրությունը։"},
+  buyParts:{l:"Գնել մասերով",c:"p-good",m:1.5,t:"Պատմականորեն էժան է, բայց միտումը դեռ ներքև է։ Գնեք 3–4 մասով մի քանի շաբաթվա ընթացքում, ոչ միանգամից։"},
+  dca:{l:"Կուտակել DCA-ով",c:"p-acc",m:1,t:"Միջինից էժան է, միտումը պահպանվում է։ Շարունակեք պլանային ամսական գնումները։"},
+  dcaSmall:{l:"Փոքր կուտակում",c:"p-acc",m:0.6,t:"Միջինից էժան է, բայց միտումը կոտրված է։ Կրճատված չափով գնումներ, մինչև գինը վերադառնա 200-օրյա միջինից վերև։"},
+  hold:{l:"Պահել",c:"",m:0.4,t:"Հստակ առավելություն չկա։ Պահեք ունեցածը, նոր գնումները՝ նվազագույն։"},
+  trim:{l:"Մասնակի վաճառել",c:"p-warn",m:0,t:"Գինը տաքացած է։ Ամրագրեք շահույթի մի մասը և վերադարձրեք մասնաբաժինը թիրախային տոկոսին։"},
+  sell:{l:"Վաճառել մեծ մասը",c:"p-bad",m:0,t:"Գերտաքացած է։ Պատմականորեն նման պայմանները նախորդել են խոշոր անկումների։"}
+};
+function evaluate(c,fg){
+  const rows=[];let V=0;
+  const mm=c.ma>0?c.p/c.ma:1;
+  {let s,t;if(mm<0.8){s=2;t="Հազվադեպ էժան"}else if(mm<1){s=1;t="200-օրյա միջինից ցածր"}else if(mm<1.5){s=0;t="Նորմալ գոտի"}else if(mm<2.4){s=-1;t="Տաքացած"}else{s=-2;t="Գերտաքացած"}rows.push(["Մայերի բազմապատկիչ",mm.toFixed(2),s,t]);V+=s}
+  {const r=c.rsi;const s=r<30?1:r>70?-1:0;rows.push(["RSI (14)",fmt(r,1),s,r<30?"Գերվաճառված":r>70?"Գերգնված":r<40?"Թույլ, բայց ոչ ծայրահեղ":"Չեզոք"]);V+=s}
+  {const s=fg<25?1:fg>75?-1:0;rows.push(["Վախ/ագահություն",fmt(fg),s,fg<25?"Ծայրահեղ վախ":fg<45?"Վախ":fg>75?"Ծայրահեղ ագահություն":fg>55?"Ագահություն":"Չեզոք"]);V+=s}
+  const dd=c.ath>0?(1-c.p/c.ath)*100:0;
+  {const s=dd>60?2:dd>35?1:dd<10?-1:0;rows.push(["Անկում ATH-ից",fmt(dd,1)+"%",s,dd>60?"Խորը անկում":dd>35?"Զգալի զեղչ":dd<10?"Մոտ է գագաթին":"Միջին"]);V+=s}
+  const up=mm>=1;
+  let a;if(V>=3)a=up?"buy":"buyParts";else if(V>=1)a=up?"dca":"dcaSmall";else if(V>=-1)a="hold";else if(V>=-3)a="trim";else a="sell";
+  return {V,rows,up,mm,dd,a,act:ACT[a],rank:V+(c.q||0)+(up?1:0)};
+}
+const pfmt=p=>p>=1000?"$"+fmt(p):p>=10?"$"+fmt(p,2):"$"+fmt(p,4);
+const amDate=d=>{const m=["հունվարի","փետրվարի","մարտի","ապրիլի","մայիսի","հունիսի","հուլիսի","օգոստոսի","սեպտեմբերի","հոկտեմբերի","նոյեմբերի","դեկտեմբերի"];const x=new Date(d+"T00:00:00");return `${x.getDate()} ${m[x.getMonth()]} ${x.getFullYear()}`};
+const EV=DATA.coins.map(c=>({c,e:evaluate(c,DATA.fg)})).sort((a,b)=>b.e.rank-a.e.rank);
+const scoreBar=V=>{const pct=(V+6)/12*100;return `<div class="gauge" style="height:8px"><b style="left:${pct}%;top:-4px;height:16px"></b></div>`};
+function sigCard(x,compact){const {c,e}=x;const inv=e.up?`Ազդանշանը թուլանում է, եթե օրական փակումը լինի ${pfmt(c.ma)}-ից (200-օրյա միջին) ցածր։`:`Միտումը կհաստատվի ${pfmt(c.ma)}-ից (200-օրյա միջին) վերև փակումով։`;
+  return `<div class="card ${compact?"c4":"c6"}" style="border-left:4px solid ${e.act.c==="p-good"?"var(--good)":e.act.c==="p-warn"?"var(--warn)":e.act.c==="p-bad"?"var(--bad)":e.act.c==="p-acc"?"var(--accent)":"var(--line)"}">
+  <div class="row" style="justify-content:space-between"><div><h3>${c.n} <span class="mono muted small">${c.s}</span></h3><span class="mono">${pfmt(c.p)}</span></div><span class="pill ${e.act.c}" style="font-size:15px;padding:4px 14px">${e.act.l}</span></div>
+  <p class="small">${e.act.t}</p>
+  ${compact?"":`<div class="tbl"><table><tbody>${e.rows.map(r=>`<tr><td class="small">${r[0]}</td><td class="num">${r[1]}</td><td class="num" style="color:${r[2]>0?"var(--good)":r[2]<0?"var(--bad)":"var(--muted)"}">${r[2]>0?"+":""}${r[2]}</td><td class="small muted">${r[3]}</td></tr>`).join("")}<tr><td class="small"><b>Արժեքի միավոր</b></td><td></td><td class="num"><b>${e.V>0?"+":""}${e.V}</b></td><td class="small muted">Միտում՝ ${e.up?"վերև ↑":"ներքև ↓"}</td></tr></tbody></table></div>
+  ${scoreBar(e.V)}
+  <p class="small"><b>Նորություն.</b> ${c.news}</p>
+  <p class="small muted">${inv} Ռիսկ՝ ${c.risk}։</p>`}
+  ${compact?`<p class="small muted">Արժեք <span class="mono">${e.V>0?"+":""}${e.V}</span> · միտում ${e.up?"↑":"↓"} · ATH-ից −${fmt(e.dd,0)}%</p>`:""}
+  </div>`;}
+function regime(){const fg=DATA.fg;const downs=EV.filter(x=>!x.e.up).length;const n=EV.length;
+  const fearTxt=fg<25?"Ծայրահեղ վախ":fg<45?"Վախ":fg>75?"Ծայրահեղ ագահություն":fg>55?"Ագահություն":"Չեզոք տրամադրություն";
+  const trendTxt=downs>n/2?"մետաղադրամների մեծ մասը 200-օրյա միջինից ցածր է":downs?"միտումը խառն է":"միտումը վերև է";
+  const sells=EV.filter(x=>x.e.a==="trim"||x.e.a==="sell").length;
+  return {title:`${fearTxt}, ${trendTxt}`,text:sells?`Մոդելը վաճառքի ազդանշան է տալիս ${sells} մետաղադրամի համար։`:`Այս պահին մոդելը ոչ մի մետաղադրամի համար վաճառքի ազդանշան չի տալիս, քանի որ ոչինչ թանկ չէ։ Վախի շուկաներում հիմնական ռիսկը վաղաժամ միանվագ գնումն է, ոչ թե ուշացած վաճառքը։ Գնեք մասերով և պահեք կանխիկի պաշար։`};}
+function renderSignals(){
+  const days=Math.floor((Date.now()-new Date(DATA.updated+"T00:00:00").getTime())/864e5);
+  $("#sig-date").textContent=`Ազդանշաններ · ${amDate(DATA.updated)}`;
+  $("#sig-stale").innerHTML=days>2?`<div class="disclaimer" style="border-color:var(--warn);color:var(--ink)">Տվյալները ${days} օրվա վաղեմության են։ Գները կարող էին փոխվել. ստուգեք <a href="https://www.coingecko.com" rel="noopener">CoinGecko</a>-ում կամ օգտագործեք «Վերլուծություն» բաժնի մոդելը թարմ թվերով։</div>`:"";
+  const R=regime();$("#regime-title").textContent=R.title;$("#regime-text").textContent=R.text;
+  $("#regime-facts").innerHTML=DATA.facts.map(f=>`<li>${f}</li>`).join("");
+  $("#sig-cards").innerHTML=EV.map(x=>sigCard(x,false)).join("");
+  $("#home-snap-k").textContent=`Շուկայի պատկերը · ${amDate(DATA.updated)}`;
+  const g=s=>DATA.coins.find(c=>c.s===s);
+  $("#home-snap").innerHTML=`<div class="stat"><span class="v">${pfmt(g("BTC").p)}</span><span class="l">Bitcoin (BTC)</span></div><div class="stat"><span class="v">${pfmt(g("ETH").p)}</span><span class="l">Ethereum (ETH)</span></div><div class="stat"><span class="v">${DATA.mcap}</span><span class="l">Կրիպտո շուկայի կապիտալ</span></div><div class="stat"><span class="v">${DATA.fg}</span><span class="l">Վախի և ագահության ինդեքս</span></div>`;
+  $("#home-sig-h").textContent=`Մոդելի ընտրությունը ${amDate(DATA.updated)}-ի համար`;
+  $("#home-regime").textContent=R.title+"։ "+R.text;
+  $("#home-sig").innerHTML=EV.slice(0,3).map(x=>sigCard(x,true)).join("");
+  plan();
+}
+function plan(){const b=val("plan-b");const raw=EV.map(x=>({x,w:x.c.w*x.e.act.m}));const tot=raw.reduce((s,r)=>s+r.w,0)||1;
+  $("#plan-t").innerHTML=`<caption style="caption-side:bottom;text-align:left;padding-top:8px" class="small muted">${EV.some(x=>x.e.a==="buyParts")?"«Գնել մասերով» մետաղադրամների գումարը բաժանեք 2–4 գնման ամսվա ընթացքում։":""}</caption><thead><tr><th>Մետաղադրամ</th><th>Ազդանշան</th><th class="num">Մասնաբաժին</th><th class="num">Գումար</th><th class="num">Մետ.</th></tr></thead><tbody>${raw.map(r=>{const amt=b*r.w/tot;return `<tr><td><b>${r.x.c.s}</b></td><td><span class="pill ${r.x.e.act.c}">${r.x.e.act.l}</span></td><td class="num">${fmt(r.w/tot*100,1)}%</td><td class="num">$${fmt(amt,2)}</td><td class="num">${amt>0?(amt/r.x.c.p).toFixed(r.x.c.p>1000?5:r.x.c.p>10?3:1):"—"}</td></tr>`}).join("")}<tr><td colspan="3"><b>Ընդամենը</b></td><td class="num"><b>$${fmt(b,2)}</b></td><td></td></tr></tbody>`;}
+let sigReady=false;
+function renderAlerts(){if(!sigReady)return;const out=[];let tot=0,cr=0;
+  H.forEach(h=>{const v=h.q*h.c;tot+=v;if(h.t==="Կրիպտո")cr+=v});
+  H.forEach(h=>{const sym=String(h.n).toUpperCase().trim();const m=EV.find(x=>sym===x.c.s||sym.startsWith(x.c.s+" ")||sym===x.c.n.toUpperCase());if(!m)return;
+    const r=h.b?(m.c.p/h.b-1)*100:0;const e=m.e;
+    let msg=e.a==="buy"||e.a==="buyParts"?`Մոդելը առաջարկում է ավելացնել։ Ձեր միջին գինը ${pfmt(h.b)} է, ներկայիսը՝ ${pfmt(m.c.p)} (${r>=0?"+":""}${fmt(r,1)}%)։`:
+      e.a==="dca"||e.a==="dcaSmall"?`Շարունակեք պլանային գնումները։ Ձեր արդյունքը՝ ${r>=0?"+":""}${fmt(r,1)}%։`:
+      e.a==="hold"?`Պահեք։ Նոր գնումները՝ նվազագույն։ Արդյունք՝ ${r>=0?"+":""}${fmt(r,1)}%։`:
+      `Վաճառքի ազդանշան։ Ամրագրեք շահույթի մի մասը։ Արդյունք՝ ${r>=0?"+":""}${fmt(r,1)}%։`;
+    out.push(`<div class="out ${e.act.c==="p-warn"||e.act.c==="p-bad"?"brass":""}"><div class="row" style="justify-content:space-between"><b>${esc(h.n)}</b><span class="pill ${e.act.c}">${e.act.l}</span></div><span class="small">${msg}</span></div>`);});
+  if(tot>0){const share=cr/tot*100;
+    if(share>20)out.push(`<div class="out brass"><b class="p-warn">Վերահավասարակշռում</b><span class="small">Կրիպտոն ձեր պորտֆելի ${fmt(share,1)}%-ն է։ Մոդելային պրոֆիլներում առավելագույնը 15% է։ Վաճառեք ավելցուկի մի մասը և տեղափոխեք ավելի կայուն ակտիվներ։</span></div>`);
+    H.forEach(h=>{const v=h.q*h.c/tot*100;if(h.t==="Կրիպտո"&&v>25)out.push(`<div class="out brass"><b class="p-warn">Կենտրոնացման ռիսկ</b><span class="small">${esc(h.n)}-ը պորտֆելի ${fmt(v,1)}%-ն է։ Մեկ կրիպտո ակտիվը 25%-ից ավելի լինելու դեպքում մեկ անկումը կարող է խիստ վնասել ամբողջ կապիտալին։</span></div>`)});}
+  $("#pf-alerts").innerHTML=out.length?out.join(""):`<p class="small muted">Ձեր պորտֆելում ազդանշանների ցուցակի մետաղադրամներ չկան (BTC, ETH, SOL, XRP, BNB)։ Ավելացրեք դրանք «Իմ պորտֆելը» բաժնում՝ նույն անվանումով։</p>`;}
+
+/* ---------- routing ---------- */
+const views=["home","signals","learn","literacy","passive","tools","analysis","portfolio"];
+function route(){const h=location.hash.slice(1);const v=views.includes(h)?h:"home";
+  $$("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
+  $$("nav.tabs a").forEach(a=>a.classList.toggle("on",a.dataset.v===v));window.scrollTo(0,0);}
+addEventListener("hashchange",route);route();
+
+/* ---------- lessons ---------- */
+const L=[
+{t:"Ներդրումների հիմունքներ",b:`<p>Ներդրումը փողի աշխատեցումն է այնպիսի ակտիվներում, որոնք ժամանակի ընթացքում արժեք կամ եկամուտ են ստեղծում։ Երեք հիմնական ուժ կա.</p>
+<ul><li><b>Բարդ տոկոս.</b> Եկամուտը վերաներդրվում և ինքն է եկամուտ բերում։ 72-ի կանոն. 72-ը բաժանեք տարեկան տոկոսի վրա և կստանաք կրկնապատկման տարիները (8% → 9 տարի)։</li>
+<li><b>Ռիսկ և եկամտաբերություն.</b> Ավելի բարձր սպասվող եկամուտը միշտ գալիս է ավելի մեծ տատանումներով։ «Երաշխավորված բարձր եկամուտը» խարդախության առաջին նշանն է։</li>
+<li><b>Գնաճ.</b> 3% գնաճի դեպքում բարձի տակ պահված փողը 23 տարում կորցնում է գնողունակության կեսը։</li></ul>
+<div class="tip">Սկսելուց առաջ. փակեք բարձր տոկոսով պարտքերը և ունեցեք 3–6 ամսվա ծախսերի չափով անվտանգության բարձիկ։</div>`},
+{t:"Ակտիվների դասեր",b:`<div class="tbl"><table><thead><tr><th>Ակտիվ</th><th>Պատմական եկամտաբերություն</th><th>Տատանողականություն</th></tr></thead><tbody>
+<tr><td>Դեպոզիտ</td><td>Բանկի տոկոսադրույք</td><td>Շատ ցածր</td></tr>
+<tr><td>Պետական պարտատոմսեր</td><td>Ցածր-միջին</td><td>Ցածր</td></tr>
+<tr><td>Բաժնետոմսերի ինդեքս (S&amp;P 500)</td><td>~10% անվանական, երկարաժամկետ միջին</td><td>Միջին, անկումներ մինչև −50%</td></tr>
+<tr><td>Անշարժ գույք</td><td>Վարձ + արժեքի աճ</td><td>Միջին, ցածր իրացվելիություն</td></tr>
+<tr><td>Ոսկի</td><td>Գնաճից պաշտպանություն</td><td>Միջին</td></tr>
+<tr><td>Կրիպտոարժույթ</td><td>Շատ բարձր և շատ անկայուն</td><td>Ծայրահեղ, անկումներ −75–85%</td></tr></tbody></table></div>
+<p><b>Դիվերսիֆիկացիա</b> նշանակում է ունենալ ակտիվներ, որոնք միաժամանակ չեն ընկնում։ Ինդեքսային ETF-ը (օրինակ՝ VOO, VT) մեկ գնումով տալիս է հարյուրավոր ընկերություններ։</p>`},
+{t:"Կրիպտոարժույթների հիմունքներ",b:`<ul><li><b>Բլոկչեյն.</b> Բաշխված մատյան, որը պահում են հազարավոր համակարգիչներ. գրառումը հնարավոր չէ գաղտնի փոխել։</li>
+<li><b>Bitcoin.</b> Սահմանափակ առաջարկ՝ 21 միլիոն։ Մոտ չորս տարին մեկ նոր թողարկումը կրճատվում է կիսով (հալվինգ)։ Գլխավոր գաղափարը արժեքի պահպանումն է։</li>
+<li><b>Ethereum.</b> Ծրագրավորվող բլոկչեյն՝ սմարթ-կոնտրակտներ, DeFi, տոկեններ։ Գազի վճար է գանձվում յուրաքանչյուր գործողության համար։</li>
+<li><b>Ստեյբլքոյններ.</b> Դոլարին կապված տոկեններ (USDC, USDT)։ Ռիսկը կախված է թողարկողի պահուստներից։</li>
+<li><b>Դրամապանակներ.</b> «Տաք»՝ ինտերնետին միացված (հավելված), «սառը»՝ ապարատային սարք (Ledger, Trezor)։ Seed-արտահայտությունը (12–24 բառ) ձեր փողի բանալին է։</li>
+<li><b>Բորսաներ.</b> Կենտրոնացված (CEX՝ Binance, Coinbase, Kraken) և ապակենտրոնացված (DEX՝ Uniswap)։ «Not your keys, not your coins». բորսայում պահված միջոցները բորսայի ռիսկի տակ են։</li></ul>`},
+{t:"Անվտանգություն և խարդախություններ",b:`<div class="warnbox"><b>Երբեք</b> մի՛ ասեք ձեր seed-արտահայտությունը ոչ մեկին՝ ոչ «աջակցության ծառայությանը», ոչ «ադմինին», ոչ կայքին։ Իրական ծառայությունները երբեք այն չեն խնդրում։</div>
+<ul><li><b>Ֆիշինգ.</b> Կեղծ կայքեր, որոնք նման են բորսայի։ Էջանշեք իրական հասցեն և բացեք միայն այդտեղից։</li>
+<li><b>«Երաշխավորված» եկամուտ.</b> Ամսական 10–30% խոստումը գրեթե միշտ ֆինանսական բուրգ է։</li>
+<li><b>Pump & dump և rug pull.</b> Telegram-ի խմբերում «հաջորդ 100x»-ը սովորաբար կազմակերպիչների վաճառքն է ձեզ։</li>
+<li><b>Լծակ (leverage).</b> 10x լծակով 10% շարժումը ոչնչացնում է ամբողջ դիրքը։ Սկսնակների մեծ մասը հենց այդպես է կորցնում։</li>
+<li><b>Պաշտպանություն.</b> Ապարատային 2FA կամ հավելված (ոչ SMS), առանձին էլ. փոստ, սառը դրամապանակ խոշոր գումարների համար, փորձնական փոքր փոխանցում։</li></ul>`},
+{t:"Վերլուծության մեթոդներ",b:`<ul><li><b>Ֆունդամենտալ.</b> Ի՞նչ խնդիր է լուծում նախագիծը, ով է օգտագործում, ինչպես է բաշխված տոկենը, կա՞ գնաճ, ով է թիմը։</li>
+<li><b>Տեխնիկական.</b> MA200՝ երկարաժամկետ միտումը. գինը վերևում՝ բուլիշ, ներքևում՝ բեարիշ։ RSI՝ 30-ից ցածր գերվաճառված, 70-ից բարձր գերգնված։ Աջակցության և դիմադրության մակարդակներ։</li>
+<li><b>On-chain.</b> Բորսաներից դուրս բերվող մետաղադրամներ, խոշոր դրամապանակների շարժ, ակտիվ հասցեներ։</li>
+<li><b>Տրամադրություն.</b> Վախի և ագահության ինդեքս, ֆինանսավորման տոկոսադրույքներ, լրատվական աղմուկ։</li>
+<li><b>Մայերի բազմապատկիչ.</b> Գին ÷ MA200։ Պատմականորեն 0.8-ից ցածրը եղել է հազվադեպ էժան, 2.4-ից բարձրը՝ գերտաքացած։</li></ul>
+<div class="tip">Այս բոլոր մեթոդները միասին են օգտագործվում «Վերլուծություն» բաժնի մոդելում։</div>`},
+{t:"Բաֆեթի սկզբունքները և ներդրողի հոգեբանությունը",b:`<ul><li><b>Կոմպետենտության շրջանակ.</b> Ներդրեք միայն այն, ինչ հասկանում եք և կարող եք բացատրել մեկ նախադասությամբ։</li>
+<li><b>Անվտանգության պաշար.</b> Գնեք իրական արժեքից զգալիորեն ցածր, որպեսզի սխալը չկործանի ձեզ։</li>
+<li><b>Երկար հորիզոն.</b> Եթե պատրաստ չեք 10 տարի պահել, մի պահեք 10 րոպե։</li>
+<li><b>Ցածր ծախսեր.</b> Բաֆեթը սովորական ներդրողին խորհուրդ է տալիս ցածր միջնորդավճարով S&amp;P 500 ինդեքսային ֆոնդ։</li>
+<li><b>Հույզերի կառավարում.</b> FOMO-ն և խուճապը ամենաթանկ սխալներն են։ Կանոնները գրեք նախօրոք։</li></ul>
+<div class="tip">Ազնիվ փաստ. Բաֆեթն ինքը թերահավատ է կրիպտոյի նկատմամբ, քանի որ այն շահույթ կամ դրամական հոսք չի ստեղծում։ Նրա մեթոդը կրիպտոյում կիրառելը նշանակում է կարգապահություն, փոքր չափաբաժին և ռիսկի խիստ կառավարում։</div>`},
+{t:"Հարկեր, օրենք և հաշվառում",b:`<ul><li>Կրիպտոյի և արտասահմանյան ներդրումների հարկումը տարբեր երկրներում տարբեր է և հաճախ փոխվում է։ Հայաստանում գործող կանոնները ճշտեք Պետական եկամուտների կոմիտեում կամ հարկային խորհրդատուի մոտ։</li>
+<li>Պահեք բոլոր գործարքների գրառումները՝ ամսաթիվ, քանակ, գին, միջնորդավճար։ «Իմ պորտֆելը» բաժնի օրագիրը դրա համար է։</li>
+<li>Ընտրեք լիցենզավորված միջնորդներ և բորսաներ, ստուգեք՝ արդյոք նրանք աշխատում են ձեր երկրի բնակիչների հետ։</li></ul>`}
+];
+let done=store.get("ka-done",[]);
+function renderLessons(){
+  $("#lessons").innerHTML=L.map((l,i)=>`<details ${i===0?"open":""}><summary><span class="mono" style="color:var(--brass)">${String(i+1).padStart(2,"0")}</span>${l.t}${done.includes(i)?' <span class="done-tag">✓ անցած</span>':""}</summary><div class="lesson">${l.b}<div><button class="sm ${done.includes(i)?"ghost":""}" data-l="${i}">${done.includes(i)?"Նշել որպես չանցած":"Նշել որպես անցած"}</button></div></div></details>`).join("");
+  $("#progbar").style.width=(done.length/L.length*100)+"%";$("#progtxt").textContent=done.length+" / "+L.length;
+}
+$("#lessons").addEventListener("click",e=>{const b=e.target.closest("button[data-l]");if(!b)return;const i=+b.dataset.l;
+  done=done.includes(i)?done.filter(x=>x!==i):[...done,i];store.set("ka-done",done);
+  const openIdx=$$("#lessons details").map((d,j)=>d.open?j:-1).filter(j=>j>=0);renderLessons();$$("#lessons details").forEach((d,j)=>d.open=openIdx.includes(j));});
+renderLessons();
+
+const Q=[
+{q:"Տարեկան 9% եկամտաբերությամբ մոտավորապես քանի՞ տարում կկրկնապատկվի կապիտալը։",o:["4","8","15"],a:1},
+{q:"Ո՞րն է seed-արտահայտության ճիշտ պահպանումը։",o:["Էկրանի նկար հեռախոսում","Թղթի վրա, անվտանգ տեղում, ոչ ոքի չասել","Ուղարկել աջակցության ծառայությանը ստուգման"],a:1},
+{q:"Գինը 200-օրյա միջինից 35% ցածր է, ինդեքսը՝ 20։ Ի՞նչ է սա պատմականորեն ցույց տվել։",o:["Գերտաքացած շուկա","Վախ և հնարավոր էժան գոտի","Ոչինչ"],a:1},
+{q:"Ի՞նչ է կատարվում 10x լծակով դիրքի հետ, երբ գինն ընկնում է 10%-ով։",o:["Կորցնում եք 10%","Կորցնում եք 1%","Դիրքը լիկվիդացվում է"],a:2},
+{q:"Ամսական 15% «երաշխավորված» եկամուտ խոստացող նախագիծը.",o:["Լավ հնարավորություն","Խարդախության բարձր հավանականություն","Նորմալ DeFi եկամուտ"],a:1},
+{q:"Որքա՞ն կապիտալ է պետք ամսական 400,000 դրամի համար՝ 4% դուրսբերման կանոնով։",o:["12 միլիոն","120 միլիոն","48 միլիոն"],a:1}
+];
+$("#quiz").innerHTML=Q.map((x,i)=>`<fieldset class="c6 quizq" style="border:0;padding:0;margin:0"><legend style="font-weight:600;margin-bottom:6px">${i+1}. ${x.q}</legend>${x.o.map((o,j)=>`<label for="q${i}_${j}"><input type="radio" id="q${i}_${j}" name="q${i}" value="${j}">${o}</label>`).join("")}<span id="qr${i}" class="small"></span></fieldset>`).join("");
+$("#quizBtn").onclick=()=>{let s=0;Q.forEach((x,i)=>{const c=document.querySelector(`input[name=q${i}]:checked`);const ok=c&&+c.value===x.a;if(ok)s++;
+  $("#qr"+i).innerHTML=ok?'<span class="ok">Ճիշտ է</span>':`<span class="no">Ճիշտ պատասխանը՝ ${x.o[x.a]}</span>`});
+  $("#quizRes").textContent=`Արդյունք՝ ${s} / ${Q.length}`;};
+
+/* ---------- passive income ---------- */
+const P=[
+{n:"Բանկային դեպոզիտ",r:"low",y:"Բանկի տոկոսադրույք",cap:"Ցանկացած",eff:1,risk:1,d:"Ամենապարզ սկիզբը և անվտանգության բարձիկի տեղը։ Համեմատեք բանկերի դրույքները, ստուգեք ավանդների երաշխավորման սահմանը։",h:"Բացեք ժամկետային դեպոզիտ երկու-երեք բանկում։"},
+{n:"Պետական պարտատոմսեր",r:"low",y:"Կայուն տոկոս",cap:"Ցածր",eff:1,risk:1,d:"Պետությանը փող եք պարտք տալիս ֆիքսված տոկոսով։ Կանխատեսելի կուպոնային եկամուտ։",h:"Լիցենզավորված բրոքերի կամ բանկի միջոցով։"},
+{n:"Ինդեքսային ETF-ներ",r:"mid",y:"~7–10% երկարաժամկետ",cap:"$50-ից",eff:1,risk:3,d:"Լայն շուկայի ինդեքս (S&P 500, համաշխարհային)։ Բաֆեթի գլխավոր խորհուրդը սովորական ներդրողին։",h:"Միջազգային բրոքեր, ամսական ավտոմատ գնում։"},
+{n:"Շահաբաժնային ֆոնդեր",r:"mid",y:"2–4% շահաբաժին + աճ",cap:"$100-ից",eff:1,risk:3,d:"Հաստատուն ընկերություններ, որոնք կանոնավոր շահաբաժին են վճարում։ Դրամական հոսք առանց վաճառքի։",h:"Ընտրեք ցածր միջնորդավճարով շահաբաժնային ETF։"},
+{n:"Անշարժ գույքի վարձակալություն",r:"mid",y:"Վարձ + արժեքի աճ",cap:"Բարձր",eff:3,risk:3,d:"Կայուն եկամուտ, բայց պահանջում է կառավարում, վերանորոգում և ցածր իրացվելիություն ունի։ Այլընտրանքը REIT ֆոնդերն են։",h:"Հաշվեք զուտ եկամտաբերությունը՝ բոլոր ծախսերից հետո։"},
+{n:"Կրիպտո սթեյքինգ",r:"high",y:"~2–6% տոկենով",cap:"Ցածր",eff:2,risk:4,d:"ETH, SOL և այլ ցանցերում մետաղադրամները կողպում եք ցանցն ապահովելու համար։ Եկամուտը տոկենով է, իսկ տոկենի գինը կարող է ընկնել։",h:"Սկսեք խոշոր բորսայի կամ հեղուկ սթեյքինգի հայտնի ծառայությունից։"},
+{n:"Ստեյբլքոյնների լենդինգ",r:"high",y:"~3–8%, փոփոխական",cap:"Ցածր",eff:2,risk:4,d:"USDC-ի փոխառու տալը DeFi-ում կամ պլատֆորմներում։ Ռիսկեր՝ սմարթ-կոնտրակտի հաք, պլատֆորմի սնանկացում։",h:"Միայն աուդիտ անցած, երկար պատմություն ունեցող պրոտոկոլներ։"},
+{n:"Լիկվիդության տրամադրում (DEX)",r:"high",y:"Շատ փոփոխական",cap:"Միջին",eff:3,risk:5,d:"Վճարներից եկամուտ, բայց «անմշտական կորուստը» կարող է գերազանցել եկամուտը։ Սկսնակների համար չէ։",h:"Նախ ուսումնասիրեք impermanent loss հասկացությունը։"},
+{n:"Թվային արտադրանք և կուրսեր",r:"work",y:"Անսահմանափակ",cap:"Ժամանակ",eff:5,risk:2,d:"Էլ. գիրք, դասընթաց, շաբլոններ, ծրագրային գործիք։ Մեկ անգամ ստեղծում եք, վաճառում բազմաթիվ անգամներ։",h:"Ընտրեք թեմա, որում արդեն փորձ ունեք։"},
+{n:"Կոնտենտ և ռեֆերալներ",r:"work",y:"Կախված լսարանից",cap:"Ժամանակ",eff:5,risk:2,d:"YouTube, բլոգ, նյուզլեթեր։ Լսարանը դառնում է ակտիվ, որը եկամուտ է բերում գովազդից և գործընկերային ծրագրերից։",h:"Հրապարակեք կանոնավոր առնվազն 12 ամիս։"}
+];
+const RL={low:["Ցածր ռիսկ","p-good"],mid:["Միջին ռիսկ","p-warn"],high:["Բարձր ռիսկ","p-bad"],work:["Աշխատանք","p-acc"]};
+const meter=(n)=>`<span class="meter">${[1,2,3,4,5].map(i=>`<i class="${i<=n?"f":""}"></i>`).join("")}</span>`;
+function renderP(f){$("#pcards").innerHTML=P.filter(p=>f==="all"||p.r===f).map(p=>`<div class="card c4"><div class="row" style="justify-content:space-between"><h3>${p.n}</h3><span class="pill ${RL[p.r][1]}">${RL[p.r][0]}</span></div><p class="small">${p.d}</p>
+<div class="small" style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center"><span class="muted">Եկամուտ</span><span class="mono">${p.y}</span><span class="muted">Կապիտալ</span><span>${p.cap}</span><span class="muted">Ռիսկ</span>${meter(p.risk)}<span class="muted">Ջանք</span>${meter(p.eff)}</div>
+<p class="small" style="border-top:1px solid var(--line);padding-top:8px"><b>Ինչպես սկսել.</b> ${p.h}</p></div>`).join("");}
+$("#pfilter").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;$$("#pfilter button").forEach(x=>x.classList.toggle("ghost",x!==b));renderP(b.dataset.f);});
+renderP("all");
+
+/* ---------- chart helper ---------- */
+function lineChart(el,series,labels){
+  const W=720,H=260,pl=70,pr=16,pt=14,pb=30;const all=series.flatMap(s=>s.d);const mx=Math.max(...all)*1.05||1;
+  const x=i=>pl+(W-pl-pr)*i/(labels.length-1||1), y=v=>pt+(H-pt-pb)*(1-v/mx);
+  const ticks=[0,.25,.5,.75,1].map(t=>mx*t);
+  const short=v=>v>=1e9?(v/1e9).toFixed(1)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
+  let g=ticks.map(t=>`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${pl-8}" y="${y(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono">${short(t)}</text>`).join("");
+  const step=Math.ceil(labels.length/8);
+  g+=labels.map((l,i)=>i%step===0||i===labels.length-1?`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono">${l}</text>`:"").join("");
+  series.forEach(s=>{const pts=s.d.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+    if(s.fill)g+=`<polygon points="${pl},${y(0)} ${pts} ${x(s.d.length-1)},${y(0)}" fill="${s.c}" opacity=".12"/>`;
+    g+=`<polyline points="${pts}" fill="none" stroke="${s.c}" stroke-width="2.5" ${s.dash?'stroke-dasharray="5 4"':""}/>`;
+    const L=s.d.length-1;g+=`<circle cx="${x(L)}" cy="${y(s.d[L])}" r="4" fill="${s.c}"/>`;});
+  el.innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Կապիտալի աճի գրաֆիկ">${g}</svg><div class="row small">${series.map(s=>`<span class="row" style="gap:6px"><i style="width:14px;height:3px;background:${s.c};display:inline-block"></i>${s.n}</span>`).join("")}</div>`;
+}
+
+/* ---------- compound ---------- */
+function ci(){const P0=val("ci-p"),m=val("ci-m"),r=val("ci-r")/100,yrs=Math.min(Math.max(Math.round(val("ci-y")),1),60),inf=val("ci-i")/100;
+  let bal=P0,inv=P0;const B=[P0],I=[P0],lab=["0"];
+  for(let y=1;y<=yrs;y++){for(let k=0;k<12;k++){bal=bal*(1+r/12)+m;inv+=m}B.push(bal);I.push(inv);lab.push(String(y))}
+  const real=bal/Math.pow(1+inf,yrs);
+  $("#ci-out").innerHTML=`<div class="stat"><span class="v">${fmt(bal)}</span><span class="l">Վերջնական գումար</span></div><div class="stat"><span class="v">${fmt(inv)}</span><span class="l">Ներդրված</span></div><div class="stat"><span class="v" style="color:var(--good)">${fmt(bal-inv)}</span><span class="l">Բարդ տոկոսի շահույթ</span></div><div class="stat"><span class="v">${fmt(real)}</span><span class="l">Այսօրվա գնողունակությամբ</span></div>`;
+  const css=getComputedStyle(document.documentElement);
+  lineChart($("#ci-chart"),[{n:"Կապիտալ",d:B,c:css.getPropertyValue("--accent").trim(),fill:1},{n:"Ներդրված գումար",d:I,c:css.getPropertyValue("--brass").trim(),dash:1}],lab);}
+["ci-p","ci-m","ci-r","ci-y","ci-i"].forEach(id=>document.getElementById(id).addEventListener("input",ci));ci();
+
+/* ---------- goal ---------- */
+function goal(){const inc=val("g-inc"),wr=val("g-wr")/100,have=val("g-have"),mon=val("g-mon"),r=val("g-ret")/100;
+  const need=wr>0?inc*12/wr:Infinity;let b=have,mth=0;while(b<need&&mth<1200){b=b*(1+r/12)+mon;mth++}
+  $("#g-out").innerHTML=`<span class="small muted">Անհրաժեշտ կապիտալ</span><span class="big">${fmt(need)}</span><span class="small">${mth>=1200?"Այս պարամետրերով նպատակը 100 տարում հասանելի չէ. ավելացրեք ամսական ներդրումը։":`Կհասնեք մոտ <b class="mono">${(mth/12).toFixed(1)}</b> տարում (${fmt(mth)} ամիս)։`}</span>`;}
+["g-inc","g-wr","g-have","g-mon","g-ret"].forEach(id=>document.getElementById(id).addEventListener("input",goal));goal();
+
+/* ---------- DCA ---------- */
+function dca(){const a=val("dca-a");const p=$("#dca-p").value.split(/[,\s]+/).map(Number).filter(x=>x>0);
+  if(!p.length){$("#dca-out").textContent="Մուտքագրեք առնվազն մեկ գին։";return}
+  const coins=p.reduce((s,x)=>s+a/x,0),spent=a*p.length,avgCost=spent/coins,avgPrice=p.reduce((s,x)=>s+x,0)/p.length,now=p[p.length-1],valNow=coins*now;
+  $("#dca-out").innerHTML=`<div class="stats"><div class="stat"><span class="v">${coins.toFixed(5)}</span><span class="l">Կուտակված մետաղադրամ</span></div><div class="stat"><span class="v">$${fmt(avgCost)}</span><span class="l">Ձեր միջին գինը</span></div><div class="stat"><span class="v">$${fmt(avgPrice)}</span><span class="l">Գների միջինը</span></div><div class="stat"><span class="v" style="color:${valNow>=spent?"var(--good)":"var(--bad)"}">${valNow>=spent?"+":""}${fmt((valNow/spent-1)*100,1)}%</span><span class="l">Արդյունք վերջին գնով</span></div></div><span class="small">Ներդրված $${fmt(spent)}, այժմ արժե $${fmt(valNow)}։ DCA-ն ավտոմատ ավելի շատ է գնում էժան ամիսներին, ուստի ձեր միջին գինը ցածր է գների միջինից։</span>`;}
+["dca-a","dca-p"].forEach(id=>document.getElementById(id).addEventListener("input",dca));dca();
+
+/* ---------- position size ---------- */
+function ps(){const c=val("ps-c"),r=val("ps-r")/100,e=val("ps-e"),s=val("ps-s"),t=val("ps-t");
+  const risk=c*r,per=Math.abs(e-s);if(!per){$("#ps-out").textContent="Մուտքի և stop-loss գները չպետք է համընկնեն։";return}
+  const q=risk/per,pos=q*e,rr=Math.abs(t-e)/per;
+  $("#ps-out").innerHTML=`<div class="stats"><div class="stat"><span class="v">${q.toFixed(5)}</span><span class="l">Քանակ</span></div><div class="stat"><span class="v">$${fmt(pos)}</span><span class="l">Դիրքի չափ (${fmt(pos/c*100,1)}%)</span></div><div class="stat"><span class="v">$${fmt(risk)}</span><span class="l">Առավելագույն կորուստ</span></div><div class="stat"><span class="v" style="color:${rr>=2?"var(--good)":"var(--warn)"}">1 : ${rr.toFixed(2)}</span><span class="l">Ռիսկ / շահույթ</span></div></div><span class="small">${rr>=2?"Հարաբերակցությունը ողջամիտ է։":"1:2-ից ցածր հարաբերակցությունը երկար ժամանակում սովորաբար անշահավետ է։"}${pos>c?" Դիրքը գերազանցում է պորտֆելը, կնշանակի լծակ. խորհուրդ չի տրվում։":""}</span>`;}
+["ps-c","ps-r","ps-e","ps-s","ps-t"].forEach(id=>document.getElementById(id).addEventListener("input",ps));ps();
+
+/* ---------- profile ---------- */
+const PQ=[
+{id:"age",t:"Տարիքը",o:[["Մինչև 30",3],["30–45",2],["45–60",1],["60+",0]]},
+{id:"hor",t:"Ներդրման հորիզոն",o:[["10+ տարի",3],["5–10 տարի",2],["2–5 տարի",1],["Մինչև 2 տարի",0]]},
+{id:"drop",t:"Եթե պորտֆելն ընկնի 30%",o:[["Կգնեմ ավելին",3],["Կսպասեմ",2],["Կանհանգստանամ",1],["Կվաճառեմ ամեն ինչ",0]]},
+{id:"exp",t:"Փորձը",o:[["Ակտիվ ներդրող",3],["Որոշ փորձ",2],["Սկսնակ",1],["Փորձ չունեմ",0]]},
+{id:"cush",t:"Անվտանգության բարձիկ",o:[["6+ ամիս",3],["3–6 ամիս",2],["1–3 ամիս",1],["Չունեմ",0]]}];
+$("#prof").innerHTML=PQ.map(q=>`<label for="pq-${q.id}">${q.t}<select id="pq-${q.id}" style="font-family:var(--body)">${q.o.map((o,i)=>`<option value="${o[1]}" ${i===1?"selected":""}>${o[0]}</option>`).join("")}</select></label>`).join("");
+const MODELS=[
+{n:"Պահպանողական",d:"Կապիտալի պահպանումն առաջնային է։",a:[["Պարտատոմսեր",45],["Դեպոզիտ/կանխիկ",20],["Բաժնետոմսերի ինդեքս",30],["Ոսկի",5],["Կրիպտո",0]]},
+{n:"Հավասարակշռված",d:"Աճ՝ չափավոր տատանումներով։",a:[["Պարտատոմսեր",30],["Դեպոզիտ/կանխիկ",10],["Բաժնետոմսերի ինդեքս",50],["Ոսկի",5],["Կրիպտո",5]]},
+{n:"Աճի",d:"Երկար հորիզոն, պատրաստ եք խոշոր անկումների։",a:[["Պարտատոմսեր",15],["Դեպոզիտ/կանխիկ",5],["Բաժնետոմսերի ինդեքս",65],["Ոսկի",5],["Կրիպտո",10]]},
+{n:"Ագրեսիվ",d:"Բարձր ռիսկ, փորձառու ներդրողի համար։",a:[["Պարտատոմսեր",5],["Դեպոզիտ/կանխիկ",5],["Բաժնետոմսերի ինդեքս",70],["Ոսկի",5],["Կրիպտո",15]]}];
+const COLS=["var(--accent)","var(--muted)","var(--brass)","var(--warn)","var(--bad)"];
+function prof(){const s=PQ.reduce((t,q)=>t+(+document.getElementById("pq-"+q.id).value),0);const cush=+$("#pq-cush").value;
+  let k=s<=4?0:s<=8?1:s<=12?2:3;if(cush===0)k=0;const m=MODELS[k];
+  $("#prof-out").innerHTML=`<span class="small muted">Միավոր՝ <span class="mono">${s} / 15</span></span><span class="zone">${m.n} պրոֆիլ</span><span>${m.d}</span>${cush===0?'<span class="small no">Առանց անվտանգության բարձիկի նախ այն ստեղծեք, հետո ներդրեք։</span>':""}<span class="small muted">Սա ուսուցողական մոդել է. ձեր իրական բաշխումը կախված է եկամուտներից, պարտքերից և նպատակներից։</span>`;
+  $("#prof-bars").innerHTML=`<div class="bar" style="height:22px;border-radius:6px">${m.a.map((x,i)=>`<span style="width:${x[1]}%;background:${COLS[i]}"></span>`).join("")}</div><table style="margin-top:8px">${m.a.map((x,i)=>`<tr><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLS[i]};margin-right:8px"></i>${x[0]}</td><td class="num">${x[1]}%</td></tr>`).join("")}</table>`;}
+$("#prof").addEventListener("change",prof);prof();
+
+/* ---------- signal model ---------- */
+function sig(){const c={p:val("s-price"),ma:val("s-ma"),ath:val("s-ath"),rsi:val("s-rsi")};const e=evaluate(c,val("s-fg"));
+  const col=e.act.c==="p-good"?"var(--good)":e.act.c==="p-warn"?"var(--warn)":e.act.c==="p-bad"?"var(--bad)":e.act.c==="p-acc"?"var(--accent)":"var(--muted)";
+  $("#s-zone").textContent=e.act.l;$("#s-zone").style.color=col;
+  $("#s-needle").style.left=Math.max(0,Math.min(100,(e.V+6)/12*100))+"%";
+  $("#s-table").innerHTML=`<thead><tr><th>Ցուցանիշ</th><th class="num">Արժեք</th><th class="num">Միավոր</th><th>Մեկնաբանություն</th></tr></thead><tbody>${e.rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num" style="color:${r[2]>0?"var(--good)":r[2]<0?"var(--bad)":"var(--muted)"}">${r[2]>0?"+":""}${r[2]}</td><td class="small">${r[3]}</td></tr>`).join("")}<tr><td><b>Ընդամենը</b></td><td></td><td class="num"><b>${e.V>0?"+":""}${e.V}</b></td><td class="small muted">Միտում՝ ${e.up?"վերև ↑":"ներքև ↓"}</td></tr></tbody>`;
+  $("#s-action").textContent=e.act.t;}
+["s-price","s-ma","s-ath","s-rsi","s-fg"].forEach(id=>document.getElementById(id).addEventListener("input",sig));
+$("#s-coin").innerHTML=DATA.coins.map(c=>`<option>${c.s}</option>`).join("")+"<option>Այլ</option>";
+function loadCoin(s){const c=DATA.coins.find(x=>x.s===s);if(c){[c.p,c.ma,c.ath,c.rsi,DATA.fg].forEach((v,i)=>document.getElementById(["s-price","s-ma","s-ath","s-rsi","s-fg"][i]).value=v)}sig();}
+$("#s-coin").addEventListener("change",e=>loadCoin(e.target.value));
+loadCoin("BTC");
+
+/* ---------- scorecard ---------- */
+const SC=[["Իրական օգտագործում",.25,"Կա՞ պահանջարկ առանց սպեկուլյացիայի"],["Ապակենտրոնացում և անվտանգություն",.2,"Որքա՞ն է դժվար ցանցը կառավարել կամ կոտրել"],["Տոկենոմիկա",.2,"Գնաճ, թիմի մասնաբաժին, ապակողպումներ"],["Իրացվելիություն և ընդունում",.15,"Բորսաներ, ETF, ինստիտուցիոնալ հետաքրքրություն"],["Թիմ և զարգացում",.1,"Ակտիվ ծրագրավորողներ, թափանցիկություն"],["Կարգավորման ռիսկ (5՝ ցածր)",.1,"Արգելքի կամ դատական գործերի հավանականություն"]];
+const PRE={"Bitcoin":[4,5,5,5,3,4],"Ethereum":[5,4,4,4,5,3],"Solana":[4,3,3,4,4,3],"Մեմքոյն":[1,2,1,2,1,2],"Իմ գնահատականը":[3,3,3,3,3,3]};
+$("#sc-sliders").innerHTML=SC.map((s,i)=>`<label for="sc${i}" style="display:grid;grid-template-columns:1fr 140px 28px;gap:10px;align-items:center"><span><span style="color:var(--ink)">${s[0]}</span> <span class="small">· ${s[2]}</span></span><input type="range" id="sc${i}" min="1" max="5" value="3" style="padding:0;accent-color:var(--accent)"><span class="mono" id="scv${i}">3</span></label>`).join("");
+$("#sc-presets").innerHTML=Object.keys(PRE).map(k=>`<button class="sm ghost" data-k="${k}">${k}</button>`).join("");
+function sc(){let t=0;SC.forEach((s,i)=>{const v=+document.getElementById("sc"+i).value;$("#scv"+i).textContent=v;t+=v*s[1]});const pct=(t-1)/4*100;
+  const [lab,col,txt]=pct>=75?["Ուժեղ հիմքեր","var(--good)","Կարող է լինել կրիպտո պորտֆելի հիմնական մաս"]:pct>=50?["Միջին","var(--warn)","Փոքր դիրք, խորը ուսումնասիրությունից հետո"]:["Թույլ / սպեկուլյատիվ","var(--bad)","Ներդրում չէ, այլ խաղադրույք. չափաբաժինը՝ նվազագույն"];
+  $("#sc-out").innerHTML=`<span class="small muted">Կշռված միավոր</span><span class="big">${t.toFixed(2)} / 5</span><div class="bar"><span style="width:${pct}%;background:${col}"></span></div><span class="zone" style="font-size:18px;color:${col}">${lab}</span><span class="small">${txt}</span><span class="small muted">Պատրաստի գնահատականները հեղինակային կարծիք են ուսուցման համար։ Փոփոխեք դրանք ձեր ուսումնասիրության հիման վրա։</span>`;}
+$("#sc-sliders").addEventListener("input",sc);
+$("#sc-presets").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;PRE[b.dataset.k].forEach((v,i)=>document.getElementById("sc"+i).value=v);$$("#sc-presets button").forEach(x=>x.classList.toggle("ghost",x!==b));sc();});
+$("#sc-presets button").click();
+
+/* ---------- checklists ---------- */
+function checklist(box,out,items,okTxt,badTxt){
+  document.querySelector(box).innerHTML=items.map((t,i)=>`<label for="${box.slice(1)}${i}" style="flex-direction:row;gap:8px;color:var(--ink);font-weight:400;align-items:flex-start"><input type="checkbox" id="${box.slice(1)}${i}" style="width:auto;margin-top:5px">${t}</label>`).join("");
+  const upd=()=>{const n=$$(box+" input:checked").length;document.querySelector(out).innerHTML=`<span class="mono">${n} / ${items.length}</span><span class="small">${n===items.length?okTxt:badTxt}</span>`};
+  document.querySelector(box).addEventListener("change",upd);upd();}
+checklist("#buyck","#buyck-out",["Կարող եմ մեկ նախադասությամբ բացատրել, թե ինչու է այս ակտիվը արժեք ստեղծում","Գումարը չի պետք լինի առաջիկա 3–5 տարում","Անվտանգության բարձիկը և պարտքերը կարգավորված են","Գնումից հետո կրիպտոն չի գերազանցի պորտֆելի իմ սահմանած տոկոսը","Գնում եմ պլանով (DCA), ոչ թե FOMO-ից կամ Telegram-ի խորհրդից","Գիտեմ, թե որտեղ եմ պահելու և ինչպես եմ պաշտպանելու","Պատրաստ եմ դիտել −70% առանց վաճառելու"],"Բոլոր կետերը նշված են։ Որոշումը կարգապահ է։","Չնշված կետը պատճառ է սպասելու կամ գումարը նվազեցնելու։");
+checklist("#sellck","#sellck-out",["Ակտիվը գերազանցել է պորտֆելում իմ թիրախային տոկոսը","Հիմնական պատճառը, որի համար գնել եմ, այլևս ճիշտ չէ","Մոդելը ցույց է տալիս տաքացած կամ գերտաքացած գոտի","Գումարն ինձ պետք է կոնկրետ նպատակի համար","Վաճառում եմ պլանով, ոչ թե խուճապից մեկ օրվա անկման պատճառով","Հաշվի եմ առել հարկերը և միջնորդավճարները"],"Վաճառքը հիմնավորված է պլանով։","Եթե միակ պատճառը վախն է, վերանայեք որոշումը մեկ օր անց։");
+
+/* ---------- portfolio ---------- */
+let H=store.get("ka-pf",null)||[{n:"BTC",q:0.05,b:82000,c:73583,t:"Կրիպտո"},{n:"SOL",q:10,b:140,c:82.7,t:"Կրիպտո"},{n:"VOO (S&P 500)",q:4,b:520,c:560,t:"Բաժնետոմս/ETF"},{n:"Դեպոզիտ",q:1,b:2000,c:2000,t:"Կանխիկ/Դեպոզիտ"}];
+let J=store.get("ka-j",null)||[{d:"2026-11-06",a:"Գնում",n:"BTC",w:"Մոդելը՝ կուտակման գոտի, վախի ինդեքս 28, DCA-ի ամսական մաս"}];
+const TC={"Կրիպտո":"var(--bad)","Բաժնետոմս/ETF":"var(--accent)","Պարտատոմս":"var(--brass)","Կանխիկ/Դեպոզիտ":"var(--muted)","Այլ":"var(--warn)"};
+function renderPF(){store.set("ka-pf",H);
+  let cost=0,valu=0;const byT={};H.forEach(h=>{cost+=h.q*h.b;valu+=h.q*h.c;byT[h.t]=(byT[h.t]||0)+h.q*h.c});
+  const pl=valu-cost;
+  $("#pf-sum").innerHTML=`<div class="stat"><span class="v">$${fmt(valu)}</span><span class="l">Ընթացիկ արժեք</span></div><div class="stat"><span class="v">$${fmt(cost)}</span><span class="l">Ներդրված</span></div><div class="stat"><span class="v" style="color:${pl>=0?"var(--good)":"var(--bad)"}">${pl>=0?"+":""}$${fmt(pl)}</span><span class="l">Շահույթ / վնաս</span></div><div class="stat"><span class="v">${fmt(valu?(byT["Կրիպտո"]||0)/valu*100:0,1)}%</span><span class="l">Կրիպտոյի մասնաբաժին</span></div>`;
+  $("#pf-table").innerHTML=`<thead><tr><th>Ակտիվ</th><th>Տեսակ</th><th class="num">Քանակ</th><th class="num">Գնման գին</th><th class="num">Ընթացիկ գին</th><th class="num">Արժեք</th><th class="num">Արդյունք</th><th></th></tr></thead><tbody>${H.map((h,i)=>{const r=h.b?(h.c/h.b-1)*100:0;return `<tr><td><b>${esc(h.n)}</b></td><td class="small">${esc(h.t)}</td><td class="num">${fmt(h.q,6)}</td><td class="num">${fmt(h.b,2)}</td><td class="num"><input aria-label="Ընթացիկ գին ${esc(h.n)}" type="number" step="any" value="${h.c}" data-i="${i}" style="width:110px;text-align:right;padding:4px 6px"></td><td class="num">$${fmt(h.q*h.c)}</td><td class="num" style="color:${r>=0?"var(--good)":"var(--bad)"}">${r>=0?"+":""}${fmt(r,1)}%</td><td><button class="sm ghost" data-del="${i}" aria-label="Ջնջել">✕</button></td></tr>`}).join("")}</tbody>`;
+  renderAlerts();
+  $("#pf-alloc").innerHTML=valu?`<p class="small muted" style="margin-top:8px">Բաշխում ըստ տեսակի</p><div class="bar" style="height:16px">${Object.entries(byT).map(([t,v])=>`<span title="${t}" style="width:${v/valu*100}%;background:${TC[t]}"></span>`).join("")}</div><div class="row small" style="margin-top:6px">${Object.entries(byT).map(([t,v])=>`<span class="row" style="gap:6px"><i style="width:10px;height:10px;border-radius:2px;background:${TC[t]};display:inline-block"></i>${t} <span class="mono">${fmt(v/valu*100,1)}%</span></span>`).join("")}</div>`:"";}
+$("#pf-table").addEventListener("change",e=>{const i=e.target.dataset.i;if(i!==undefined){H[i].c=parseFloat(e.target.value)||0;renderPF()}});
+$("#pf-table").addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(b){H.splice(+b.dataset.del,1);renderPF()}});
+$("#pf-add").onclick=()=>{const n=$("#pf-n").value.trim(),q=val("pf-q"),b=val("pf-b"),c=val("pf-c")||b;
+  if(!n||!q||!b){$("#pf-msg").textContent="Լրացրեք անվանումը, քանակը և գնման գինը։";return}
+  H.push({n,q,b,c,t:$("#pf-t").value});["pf-n","pf-q","pf-b","pf-c"].forEach(id=>document.getElementById(id).value="");$("#pf-msg").textContent="Ավելացված է։";renderPF();};
+renderPF();
+function renderJ(){store.set("ka-j",J);$("#j-table").innerHTML=`<thead><tr><th>Ամսաթիվ</th><th>Գործողություն</th><th>Ակտիվ</th><th>Պատճառ</th><th></th></tr></thead><tbody>${J.map((j,i)=>`<tr><td class="mono small">${esc(j.d)}</td><td><span class="pill ${j.a==="Գնում"?"p-good":"p-warn"}">${esc(j.a)}</span></td><td>${esc(j.n)}</td><td class="small">${esc(j.w)}</td><td><button class="sm ghost" data-jd="${i}" aria-label="Ջնջել">✕</button></td></tr>`).join("")}</tbody>`;}
+$("#j-table").addEventListener("click",e=>{const b=e.target.closest("[data-jd]");if(b){J.splice(+b.dataset.jd,1);renderJ()}});
+$("#j-d").value=new Date().toISOString().slice(0,10);
+$("#j-add").onclick=()=>{const n=$("#j-n").value.trim();if(!n)return;J.unshift({d:$("#j-d").value,a:$("#j-a").value,n,w:$("#j-w").value.trim()});$("#j-n").value="";$("#j-w").value="";renderJ();};
+renderJ();
+
+/* ---------- literacy: lessons ---------- */
+const LA=[
+{t:"Ինչ է հաշվապահությունը. հիմնական հավասարումը",k:"eq",b:`<p>Հաշվապահությունը բիզնեսի լեզուն է. այն գրանցում, դասակարգում և ամփոփում է բոլոր գործարքները, որպեսզի սեփականատերը, բանկը և պետությունը տեսնեն ընկերության իրական վիճակը։ Հայաստանում հանրային հետաքրքրություն ներկայացնող կազմակերպությունները կիրառում են Ֆինանսական հաշվետվությունների միջազգային ստանդարտները (ՖՀՄՍ)։</p>
+<div class="tip"><b>Ակտիվներ = Պարտավորություններ + Սեփական կապիտալ</b></div>
+<ul><li><b>Ակտիվներ.</b> Այն, ինչ ընկերությունն ունի. դրամ, ապրանք, սարքավորում, դեբիտորական պարտքեր (այն, ինչ պարտք են ընկերությանը)։</li>
+<li><b>Պարտավորություններ.</b> Այն, ինչ ընկերությունը պարտք է ուրիշներին. վարկեր, մատակարարներին պարտքեր, չվճարված աշխատավարձ։</li>
+<li><b>Սեփական կապիտալ.</b> Սեփականատիրոջ մասը՝ ներդրված կապիտալ և կուտակված շահույթ։</li></ul>
+<p>Օրինակ. ակտիվներ 500,000, պարտավորություններ 200,000, ուրեմն կապիտալը 300,000 է։ Ցանկացած գործարքից հետո հավասարումը մնում է հավասարակշռված։</p>`},
+{t:"Կրկնակի գրանցում. դեբետ և կրեդիտ",k:"dbl",b:`<p>Յուրաքանչյուր գործարք ազդում է առնվազն երկու հաշվի վրա, և դեբետների գումարը միշտ հավասար է կրեդիտների գումարին։ Սա 500 տարվա հնություն ունեցող համակարգ է, որը թույլ է տալիս գտնել սխալները։</p>
+<div class="tbl"><table><thead><tr><th>Հաշվի տեսակ</th><th>Ավելանում է</th><th>Նվազում է</th></tr></thead><tbody>
+<tr><td>Ակտիվներ</td><td>Դեբետ</td><td>Կրեդիտ</td></tr>
+<tr><td>Ծախսեր</td><td>Դեբետ</td><td>Կրեդիտ</td></tr>
+<tr><td>Պարտավորություններ</td><td>Կրեդիտ</td><td>Դեբետ</td></tr>
+<tr><td>Կապիտալ</td><td>Կրեդիտ</td><td>Դեբետ</td></tr>
+<tr><td>Եկամուտներ</td><td>Կրեդիտ</td><td>Դեբետ</td></tr></tbody></table></div>
+<p>Օրինակ. հաճախորդը կանխիկ վճարեց 80,000 ծառայության դիմաց. <b>Դտ Դրամարկղ 80,000 / Կտ Եկամուտ 80,000</b>։ Դրամարկղը (ակտիվ) ավելացավ դեբետով, եկամուտն ավելացավ կրեդիտով։</p>`},
+{t:"Հաշվեգրման և դրամարկղային մեթոդներ",k:"stm",b:`<ul><li><b>Դրամարկղային մեթոդ.</b> Եկամուտը և ծախսը գրանցվում են, երբ փողը իրականում շարժվում է։ Պարզ է, հարմար փոքր անձնական հաշվառման համար։</li>
+<li><b>Հաշվեգրման մեթոդ.</b> Եկամուտը ճանաչվում է, երբ վաստակվել է, իսկ ծախսը՝ երբ առաջացել է, անկախ վճարման պահից։ Այն ՖՀՄՍ-ի հիմքն է։</li></ul>
+<p>Օրինակ. դեկտեմբերին մատուցել եք ծառայություն, վճարումը կստանաք հունվարին։ Հաշվեգրման մեթոդով դեկտեմբերին գրանցվում է եկամուտ և դեբիտորական պարտք. <b>Դտ Դեբիտորական պարտք / Կտ Եկամուտ</b>։</p>
+<div class="tip">Հաշվեգրման մեթոդը ցույց է տալիս շահութաբերությունը, իսկ դրամական հոսքը՝ վճարունակությունը։ Պետք է հետևել երկուսին էլ։</div>`},
+{t:"Երեք հիմնական ֆինանսական հաշվետվությունները",k:"stm",b:`<ul><li><b>Ֆինանսական վիճակի հաշվետվություն (հաշվեկշիռ).</b> Ակտիվները, պարտավորությունները և կապիտալը որոշակի ամսաթվի դրությամբ, ասես լուսանկար։</li>
+<li><b>Ֆինանսական արդյունքների հաշվետվություն.</b> Եկամուտները, ծախսերը և շահույթը ժամանակահատվածի համար, ասես տեսանյութ։</li>
+<li><b>Դրամական հոսքերի հաշվետվություն.</b> Իրական փողի մուտքերն ու ելքերը երեք բաժնով՝ գործառնական, ներդրումային և ֆինանսական։</li></ul>
+<div class="warnbox">Շահութաբեր ընկերությունը կարող է սնանկանալ, եթե հաճախորդները ուշ են վճարում, իսկ աշխատավարձը վճարելու փող չկա։ Դա երևում է միայն դրամական հոսքերի հաշվետվությունում։</div>`},
+{t:"Մաշվածություն և ինքնարժեք",k:"dep",b:`<p><b>Մաշվածությունը</b> հիմնական միջոցի արժեքի բաշխումն է նրա օգտակար ծառայության ժամկետի վրա։ Գծային մեթոդի բանաձևն է.</p>
+<div class="tip">Տարեկան մաշվածություն = (Սկզբնական արժեք − Մնացորդային արժեք) ÷ Օգտակար ժամկետ</div>
+<p>Օրինակ. (1,200,000 − 200,000) ÷ 5 = 200,000 տարեկան։ Մաշվածությունը ոչ դրամական ծախս է. այն նվազեցնում է շահույթը և հարկվող բազան, բայց փող դուրս չի գալիս։</p>
+<p><b>Վաճառված ապրանքի ինքնարժեքը</b> այն ապրանքի արժեքն է, որը վաճառվել է ժամանակահատվածում։ Եկամուտ − Ինքնարժեք = Համախառն շահույթ։</p>`},
+{t:"Ֆինանսական ցուցանիշներ և վերլուծություն",k:"rat",b:`<div class="tbl"><table><thead><tr><th>Ցուցանիշ</th><th>Բանաձև</th><th>Ինչ է ցույց տալիս</th></tr></thead><tbody>
+<tr><td>Ընթացիկ իրացվելիություն</td><td class="mono small">Ընթ. ակտիվներ ÷ Ընթ. պարտավորություններ</td><td>Կարո՞ղ է վճարել կարճաժամկետ պարտքերը (1.5–2՝ առողջ)</td></tr>
+<tr><td>Համախառն շահութաբերություն</td><td class="mono small">Համախառն շահույթ ÷ Եկամուտ</td><td>Արտադրանքի եկամտաբերությունը</td></tr>
+<tr><td>Զուտ շահութաբերություն</td><td class="mono small">Զուտ շահույթ ÷ Եկամուտ</td><td>Յուրաքանչյուր 100 դրամից քանի՞սն է մնում</td></tr>
+<tr><td>ROE</td><td class="mono small">Զուտ շահույթ ÷ Սեփական կապիտալ</td><td>Սեփականատիրոջ կապիտալի եկամտաբերությունը (Բաֆեթի սիրելին)</td></tr>
+<tr><td>Պարտք/կապիտալ</td><td class="mono small">Պարտավորություններ ÷ Կապիտալ</td><td>Ֆինանսական լծակ և ռիսկ</td></tr></tbody></table></div>
+<div class="tip">Բաֆեթը փնտրում է կայուն բարձր ROE, ցածր պարտք և ամուր դրամական հոսք ունեցող ընկերություններ։</div>`}
+];
+const LF=[
+{t:"Բյուջե. 50/30/20 կանոն",k:"bud",b:`<ul><li><b>50%</b>՝ անհրաժեշտ ծախսեր (բնակարան, սնունդ, կոմունալ, տրանսպորտ)։</li><li><b>30%</b>՝ ցանկություններ (ռեստորան, ժամանց, ճամփորդություն)։</li><li><b>20%</b>՝ խնայողություն, ներդրում և պարտքի մարում։</li></ul>
+<p>Մեկ ամիս գրանցեք բոլոր ծախսերը. մարդկանց մեծ մասը զարմանում է, թե որտեղ է գնում փողը։ Խնայողության տոկոսը հաշվվում է այսպես. (Եկամուտ − Ծախսեր) ÷ Եկամուտ։</p>
+<div class="tip">«Վճարիր նախ քեզ». աշխատավարձը ստանալուն պես ավտոմատ փոխանցեք խնայողության մասը, հետո ծախսեք մնացածը։</div>`},
+{t:"Անվտանգության բարձիկ և խնայողություն",k:"bud",b:`<p>Անվտանգության բարձիկը 3–6 ամսվա ծախսերի չափով հեշտ հասանելի գումար է։ Այն պաշտպանում է աշխատանքի կորստից, հիվանդությունից և անսպասելի ծախսերից, որպեսզի ստիպված չլինեք վարկ վերցնել կամ ներդրումները վաճառել անկման պահին։</p>
+<ul><li>Պահեք առանձին հաշվում, ոչ թե ամենօրյա քարտում։</li><li>Անկայուն եկամտի դեպքում նպատակ դրեք 6–12 ամիս։</li><li>Բարձիկը ներդրում չէ. նրա խնդիրը հասանելիությունն է, ոչ թե եկամտաբերությունը։</li></ul>`},
+{t:"Պարտք, վարկ և տոկոսադրույքներ",k:"debt",b:`<ul><li><b>Փաստացի տարեկան տոկոսադրույք.</b> Վարկերը համեմատեք դրանով, ոչ թե անվանականով, քանի որ այն ներառում է բոլոր վճարներն ու միջնորդավճարները։</li>
+<li><b>Ավալանշ մեթոդ.</b> Նախ մարեք ամենաբարձր տոկոսով պարտքը։ Մաթեմատիկորեն ամենաշահավետն է։</li>
+<li><b>Ձնագնդի մեթոդ.</b> Նախ մարեք ամենափոքր պարտքը։ Արագ հաղթանակները մոտիվացիա են տալիս։</li>
+<li><b>Վարկային քարտ.</b> Եթե ամբողջ պարտքը մարեք արտոնյալ ժամկետում, տոկոս չի գանձվի։ Նվազագույն վճարումը ամենաթանկ թակարդն է։</li></ul>
+<div class="warnbox">Օրինակ. 1,000,000 պարտք 24% տարեկանով։ Ամսական տոկոսը 20,000 է։ Եթե վճարում եք ամսական 20,000, պարտքը երբեք չի նվազում։</div>`},
+{t:"Տոկոս, գնաճ և իրական եկամուտ",k:"rate",b:`<ul><li><b>Բարդ տոկոս.</b> 100,000 դրամը 10%-ով 4 տարում դառնում է 146,410 (ոչ թե 140,000), քանի որ ամեն տարի տոկոս է հաշվվում նաև նախորդ տոկոսի վրա։</li>
+<li><b>72-ի կանոն.</b> 72-ը բաժանեք տոկոսադրույքի վրա և կստանաք կրկնապատկման տարիները։ 6%-ի դեպքում՝ 12 տարի։</li>
+<li><b>Իրական եկամուտ.</b> Մոտավորապես հավասար է անվանական տոկոսին հանած գնաճը։ 8% դեպոզիտ և 6% գնաճ նշանակում է մոտ 2% իրական աճ։</li>
+<li><b>Ծախսերի ուժը.</b> 1% և 0.1% տարեկան վճար ունեցող ֆոնդերի տարբերությունը 30 տարում կազմում է կուտակված գումարի մոտ 30%-ը։</li></ul>`},
+{t:"Ներդրում և ռիսկ",k:"inv",b:`<ul><li><b>Դիվերսիֆիկացիա.</b> Կապիտալը բաշխեք տարբեր ակտիվների, ոլորտների և երկրների վրա, որոնք միաժամանակ չեն ընկնում։</li>
+<li><b>Կորստի մաթեմատիկան.</b> 50% անկումից հետո վերականգնման համար պետք է 100% աճ։ Ահա թե ինչու է Բաֆեթի առաջին կանոնը «մի կորցրու գումար»։</li>
+<li><b>Ինդեքսային ֆոնդեր.</b> Ցածր ծախսեր և լայն դիվերսիֆիկացիա։ Երաշխիք չեն տալիս, բայց երկարաժամկետում գերազանցում են ակտիվ կառավարվող ֆոնդերի մեծ մասին։</li>
+<li><b>Ռիսկի տոլերանտություն.</b> Ներդրեք այնքան, որ 30–50% անկման ժամանակ չվաճառեք խուճապից։</li></ul>`},
+{t:"Պաշտպանություն. հարկեր, ապահովագրություն, խարդախություններ",k:"prot",b:`<ul><li><b>Հարկեր.</b> Հայաստանում ԱԱՀ-ի ստանդարտ դրույքը 20% է։ Զուտ աշխատավարձը համախառնն է հանած պահումները (եկամտային հարկ, կենսաթոշակային վճարներ և այլն)։ Կոնկրետ դրույքները ստուգեք ՊԵԿ-ի կայքում։</li>
+<li><b>Ապահովագրություն.</b> Այն փոխանցում է այն խոշոր կորուստների ռիսկը, որոնք դուք ինքնուրույն չեք կարող հաղթահարել։ Ավելի բարձր ֆրանշիզան նվազեցնում է ապահովագրավճարը, բայց վնասի դեպքում ավելի շատ եք վճարում դուք։</li>
+<li><b>Ֆինանսական բուրգի նշաններ.</b> Երաշխավորված բարձր եկամուտ, նոր մասնակիցներ բերելու համար վարձատրություն, անհասկանալի բիզնես մոդել, շտապեցում։</li></ul>`}
+];
+const TOP={eq:["A","Հաշվապահական հավասարում"],dbl:["A","Կրկնակի գրանցում"],stm:["A","Ֆինանսական հաշվետվություններ"],dep:["A","Մաշվածություն և ինքնարժեք"],rat:["A","Ֆինանսական ցուցանիշներ"],bud:["F","Բյուջե և խնայողություն"],debt:["F","Պարտք և վարկ"],rate:["F","Տոկոս և գնաճ"],inv:["F","Ներդրում և ռիսկ"],prot:["F","Հարկեր և պաշտպանություն"]};
+function lessHTML(arr,pre){return arr.map((l,i)=>`<details id="${pre}${i}"><summary><span class="mono" style="color:var(--brass)">${pre}${i+1}</span>${l.t}</summary><div class="lesson">${l.b}</div></details>`).join("")}
+$("#li-lessA").innerHTML=lessHTML(LA,"A");$("#li-lessF").innerHTML=lessHTML(LF,"F");
+
+/* ---------- literacy: question bank ---------- */
+const QB=[
+{k:"eq",d:1,q:"Ո՞րն է հաշվապահական հիմնական հավասարումը։",o:["Ակտիվներ = Պարտավորություններ + Սեփական կապիտալ","Ակտիվներ = Եկամուտ − Ծախսեր","Կապիտալ = Ակտիվներ + Պարտավորություններ"],a:0,x:"Ընկերության ունեցածը (ակտիվները) ֆինանսավորված է կամ պարտքով, կամ սեփականատիրոջ միջոցներով։"},
+{k:"eq",d:2,q:"Ընկերության ակտիվները 500,000 են, պարտավորությունները՝ 200,000։ Որքա՞ն է սեփական կապիտալը։",o:["700,000","300,000","200,000"],a:1,x:"Կապիտալ = Ակտիվներ − Պարտավորություններ = 500,000 − 200,000 = 300,000։"},
+{k:"eq",d:3,q:"Ընկերությունը վարկով գնեց 100,000 դրամի սարքավորում։ Ինչպե՞ս փոխվեց հավասարումը։",o:["Ակտիվներ +100,000, Կապիտալ +100,000","Ակտիվներ +100,000, Պարտավորություններ +100,000","Ակտիվները չփոխվեցին"],a:1,x:"Սարքավորումը նոր ակտիվ է, իսկ վարկը՝ նոր պարտավորություն։ Երկու կողմն էլ աճեցին 100,000-ով։"},
+{k:"dbl",d:1,q:"Ո՞րն է կրկնակի գրանցման էությունը։",o:["Յուրաքանչյուր գործարք գրանցվում է երկու անգամ նույն հաշվում","Յուրաքանչյուր գործարք ազդում է առնվազն երկու հաշվի վրա, դեբետը հավասար է կրեդիտին","Գործարքը գրանցում են երկու հաշվապահ"],a:1,x:"Դեբետների և կրեդիտների հավասարությունը թույլ է տալիս ստուգել հաշվառման ճշտությունը։"},
+{k:"dbl",d:2,q:"Ակտիվի հաշիվն ավելանում է…",o:["դեբետով","կրեդիտով","կախված է գումարից"],a:0,x:"Ակտիվները և ծախսերը ավելանում են դեբետով, իսկ պարտավորությունները, կապիտալը և եկամուտները՝ կրեդիտով։"},
+{k:"dbl",d:2,q:"Հաճախորդը կանխիկ վճարեց ծառայության դիմաց։ Ո՞րն է ճիշտ ձևակերպումը։",o:["Դտ Եկամուտ / Կտ Դրամարկղ","Դտ Դրամարկղ / Կտ Եկամուտ","Դտ Դրամարկղ / Կտ Կապիտալ"],a:1,x:"Դրամարկղը (ակտիվ) ավելանում է դեբետով, եկամուտն ավելանում է կրեդիտով։"},
+{k:"dbl",d:3,q:"Վճարվեց մատակարարին ունեցած 50,000 դրամի պարտքը։ Ո՞րն է ձևակերպումը։",o:["Դտ Կրեդիտորական պարտք / Կտ Դրամական միջոցներ","Դտ Դրամական միջոցներ / Կտ Կրեդիտորական պարտք","Դտ Ծախսեր / Կտ Դրամական միջոցներ"],a:0,x:"Պարտավորությունը նվազում է դեբետով, դրամը (ակտիվը) նվազում է կրեդիտով։ Ծախս չկա, քանի որ ծախսը գրանցվել էր ապրանքը ստանալիս։"},
+{k:"stm",d:1,q:"Ո՞ր հաշվետվությունն է ցույց տալիս ակտիվները, պարտավորությունները և կապիտալը որոշակի ամսաթվի դրությամբ։",o:["Ֆինանսական արդյունքների հաշվետվություն","Ֆինանսական վիճակի հաշվետվություն (հաշվեկշիռ)","Դրամական հոսքերի հաշվետվություն"],a:1,x:"Հաշվեկշիռը ընկերության «լուսանկարն» է կոնկրետ օրվա դրությամբ։"},
+{k:"stm",d:2,q:"Հաշվեգրման սկզբունքով եկամուտը ճանաչվում է…",o:["երբ փողը ստացվել է","երբ վաստակվել է, անկախ վճարման պահից","միայն տարեվերջին"],a:1,x:"Հաշվեգրման մեթոդը կապում է եկամուտը այն ժամանակահատվածին, երբ այն վաստակվել է։"},
+{k:"stm",d:2,q:"Ընկերությունը շահութաբեր է, բայց աշխատավարձ վճարելու փող չունի։ Ո՞ր հաշվետվությունը լավագույնս կբացահայտի խնդիրը։",o:["Դրամական հոսքերի հաշվետվությունը","Կապիտալի փոփոխությունների հաշվետվությունը","Միայն ֆինանսական արդյունքների հաշվետվությունը"],a:0,x:"Շահույթը և դրամը տարբեր բաներ են։ Դրամական հոսքերի հաշվետվությունը ցույց է տալիս իրական փողի շարժը։"},
+{k:"stm",d:3,q:"Դեկտեմբերին մատուցված ծառայության համար հաճախորդը կվճարի հունվարին։ Ի՞նչ է գրանցվում դեկտեմբերին հաշվեգրման մեթոդով։",o:["Ոչինչ, քանի որ փող չի ստացվել","Եկամուտ և դեբիտորական պարտք","Կանխավճար"],a:1,x:"Դտ Դեբիտորական պարտք / Կտ Եկամուտ։ Հունվարին վճարումը միայն փոխարինում է դեբիտորական պարտքը դրամով։"},
+{k:"dep",d:1,q:"Ի՞նչ է մաշվածությունը։",o:["Սարքավորման վերանորոգման ծախսը","Հիմնական միջոցի արժեքի բաշխումը նրա օգտակար ծառայության ժամկետի վրա","Կանխիկի կորուստը"],a:1,x:"Մաշվածությունը ակտիվի արժեքը բաժանում է այն տարիների վրա, երբ այն եկամուտ է բերում։"},
+{k:"dep",d:2,q:"Սարքավորումն արժե 1,200,000, ժամկետը 5 տարի է, մնացորդային արժեքը՝ 200,000։ Որքա՞ն է տարեկան գծային մաշվածությունը։",o:["240,000","200,000","280,000"],a:1,x:"(1,200,000 − 200,000) ÷ 5 = 200,000։"},
+{k:"dep",d:2,q:"Եկամուտը 5,000,000 է, վաճառված ապրանքի ինքնարժեքը՝ 3,000,000։ Որքա՞ն է համախառն շահույթը։",o:["2,000,000","8,000,000","3,000,000"],a:0,x:"Համախառն շահույթ = Եկամուտ − Ինքնարժեք = 2,000,000։"},
+{k:"dep",d:3,q:"Ինչպե՞ս է մաշվածությունն ազդում դրամական հոսքի վրա։",o:["Ամեն տարի համապատասխան գումար դուրս է գալիս","Անմիջականորեն չի ազդում, քանի որ ոչ դրամական ծախս է, բայց նվազեցնում է շահույթը և հարկը","Ոչ մի բանի վրա չի ազդում"],a:1,x:"Փողը դուրս է եկել գնման պահին։ Մաշվածությունը նվազեցնում է հարկվող շահույթը, ուստի անուղղակի կերպով նույնիսկ բարելավում է դրամական հոսքը։"},
+{k:"rat",d:2,q:"Եկամուտը 10 մլն է, զուտ շահույթը՝ 1.5 մլն։ Որքա՞ն է զուտ շահութաբերությունը։",o:["1.5%","15%","85%"],a:1,x:"1.5 ÷ 10 = 0.15, այսինքն 15%։"},
+{k:"rat",d:2,q:"Ընթացիկ ակտիվները 3 մլն են, ընթացիկ պարտավորությունները՝ 2 մլն։ Որքա՞ն է ընթացիկ իրացվելիության գործակիցը։",o:["0.67","1.5","5"],a:1,x:"3 ÷ 2 = 1.5։ Ընկերությունը կարող է ծածկել կարճաժամկետ պարտքերը։"},
+{k:"rat",d:3,q:"Զուտ շահույթը 2 մլն է, սեփական կապիտալը՝ 8 մլն։ Որքա՞ն է ROE-ն։",o:["16%","25%","400%"],a:1,x:"ROE = 2 ÷ 8 = 25%։ Բաֆեթը փնտրում է տարիներ շարունակ կայուն բարձր ROE ունեցող ընկերություններ։"},
+{k:"rat",d:3,q:"Երկու ընկերություն ունեն նույն ROE-ն՝ 20%։ A-ն պարտք չունի, B-ի պարտք/կապիտալ հարաբերակցությունը 3 է։ Ո՞րն է ավելի ռիսկային։",o:["A","B","Ռիսկը նույնն է"],a:1,x:"B-ի բարձր ROE-ն մեծապես պարտքի արդյունք է։ Եկամտի անկման դեպքում լծակը մեծացնում է կորուստները։"},
+{k:"bud",d:1,q:"50/30/20 կանոնում ինչի՞ համար է 20%-ը։",o:["Ժամանցի","Խնայողության, ներդրման և պարտքի մարման","Հարկերի"],a:1,x:"50%՝ անհրաժեշտ ծախսեր, 30%՝ ցանկություններ, 20%՝ ձեր ապագան։"},
+{k:"bud",d:1,q:"Որքա՞ն պետք է լինի անվտանգության բարձիկը։",o:["1 շաբաթվա ծախսեր","3–6 ամսվա ծախսեր","5 տարվա եկամուտ"],a:1,x:"3–6 ամիսը ծածկում է ամենատարածված անսպասելի իրավիճակները. անկայուն եկամտի դեպքում՝ ավելին։"},
+{k:"bud",d:2,q:"Ամսական եկամուտը 600,000 է, ծախսերը՝ 540,000։ Որքա՞ն է խնայողության տոկոսը։",o:["6%","10%","90%"],a:1,x:"(600,000 − 540,000) ÷ 600,000 = 10%։"},
+{k:"bud",d:3,q:"Ի՞նչ է նշանակում «վճարիր նախ քեզ» սկզբունքը։",o:["Ամսվա վերջում խնայել այն, ինչ մնացել է","Եկամուտը ստանալուն պես ավտոմատ փոխանցել խնայողության մասը","Նախ գնել այն, ինչ ուզում ես"],a:1,x:"Ավտոմատ խնայողությունը վերացնում է կամքի ուժի անհրաժեշտությունը. ծախսում եք այն, ինչ մնում է։"},
+{k:"debt",d:1,q:"Ո՞ր պարտքն է սովորաբար ամենաթանկը։",o:["Ցածր տոկոսով հիփոթեք","Միկրովարկ կամ վարկային քարտի ուշացած պարտք","Անտոկոս ապառիկ"],a:1,x:"Միկրովարկերի և ուշացած քարտային պարտքի փաստացի տոկոսադրույքները կարող են լինել բազմապատիկ ավելի բարձր։"},
+{k:"debt",d:2,q:"Ի՞նչն է ավելի կարևոր երկու վարկ համեմատելու համար։",o:["Անվանական տոկոսադրույքը","Փաստացի տարեկան տոկոսադրույքը՝ բոլոր վճարներով","Ամսական վճարման չափը"],a:1,x:"Փաստացի դրույքը ներառում է միջնորդավճարներն ու լրացուցիչ վճարները և ցույց է տալիս վարկի իրական գինը։"},
+{k:"debt",d:2,q:"Ո՞րն է «ձնագնդի» մեթոդը։",o:["Նախ մարել ամենաբարձր տոկոսով պարտքը","Նախ մարել ամենափոքր պարտքը","Նոր վարկով փակել հինը"],a:1,x:"Ձնագնդին արագ հաղթանակներ է տալիս. ամենաբարձր տոկոսով սկսելը կոչվում է ավալանշ մեթոդ։"},
+{k:"debt",d:3,q:"Պարտքը 1,000,000 է, տարեկան տոկոսը՝ 24%, ամսական վճարումը՝ 20,000։ Ի՞նչ կլինի։",o:["Պարտքը կմարվի 50 ամսում","Պարտքը գործնականում չի նվազի","Պարտքը կմարվի 4 տարում"],a:1,x:"Ամսական տոկոսը 2% է, այսինքն 20,000։ Ամբողջ վճարումը գնում է տոկոսին, մայր գումարը մնում է անփոփոխ։"},
+{k:"debt",d:3,q:"Վարկային քարտով գնեցիք 100,000-ի ապրանք և արտոնյալ ժամկետում ամբողջությամբ մարեցիք։ Որքա՞ն տոկոս կվճարեք։",o:["0","Տարեկան դրույքի 1/12-ը","Նվազագույն վճարման չափով"],a:0,x:"Արտոնյալ ժամկետում ամբողջ պարտքը մարելու դեպքում տոկոս չի գանձվում։ Թակարդը նվազագույն վճարումն է։"},
+{k:"rate",d:1,q:"Ի՞նչ է բարդ տոկոսը։",o:["Տոկոս միայն սկզբնական գումարի վրա","Տոկոս՝ նաև նախկինում հաշվարկված տոկոսի վրա","Բանկի միջնորդավճար"],a:1,x:"Բարդ տոկոսը աճը արագացնում է ժամանակի հետ. դա երկարաժամկետ ներդրման գլխավոր շարժիչն է։"},
+{k:"rate",d:2,q:"72-ի կանոնով քանի՞ տարում կկրկնապատկվի կապիտալը տարեկան 6%-ով։",o:["6","12","18"],a:1,x:"72 ÷ 6 = 12 տարի։"},
+{k:"rate",d:2,q:"Դեպոզիտը տալիս է 8%, գնաճը 6% է։ Որքա՞ն է մոտավոր իրական եկամուտը։",o:["14%","2%","8%"],a:1,x:"Իրական եկամուտը մոտավորապես անվանական դրույքն է հանած գնաճը՝ 2%։"},
+{k:"rate",d:3,q:"100,000 դրամը 4 տարի տարեկան 10% բարդ տոկոսով կդառնա մոտավորապես…",o:["140,000","146,410","110,000"],a:1,x:"100,000 × 1.1⁴ = 146,410։ Պարզ տոկոսով կլիներ 140,000։"},
+{k:"inv",d:1,q:"Ի՞նչ է դիվերսիֆիկացիան։",o:["Ամբողջ գումարը ամենաշահութաբեր ակտիվում պահելը","Ռիսկի բաշխումը տարբեր ակտիվների վրա","Հաճախակի առք ու վաճառքը"],a:1,x:"Երբ ակտիվները միաժամանակ չեն ընկնում, ամբողջ պորտֆելի տատանումները նվազում են։"},
+{k:"inv",d:2,q:"Պորտֆելը 50% ընկավ։ Քանի՞ տոկոս աճ է պետք վերականգնվելու համար։",o:["50%","75%","100%"],a:2,x:"100 → 50, իսկ 50-ից 100 հասնելու համար պետք է կրկնապատկվել, այսինքն 100% աճ։"},
+{k:"inv",d:2,q:"Ո՞րն է ինդեքսային ֆոնդի հիմնական առավելությունը։",o:["Երաշխավորված եկամուտը","Ցածր ծախսերը և լայն դիվերսիֆիկացիան","Այն միշտ գերազանցում է շուկային"],a:1,x:"Ինդեքսային ֆոնդը կրկնում է շուկան նվազագույն ծախսով։ Երաշխիք չկա, բայց ծախսերի խնայողությունը երկարաժամկետում մեծ է։"},
+{k:"inv",d:3,q:"A ֆոնդի տարեկան վճարը 1% է, B-ինը՝ 0.1%։ Երկուսի եկամտաբերությունը մինչև վճարները 7% է։ 30 տարի անց…",o:["Տարբերությունը գրեթե չկա","B-ն կկուտակի մոտ 29%-ով ավելի","A-ն կկուտակի ավելի շատ"],a:1,x:"1.069³⁰ ≈ 7.41, 1.06³⁰ ≈ 5.74։ Փոքր տարբերությունը վճարներում ժամանակի հետ դառնում է մեծ գումար։"},
+{k:"prot",d:1,q:"Ո՞րն է ԱԱՀ-ի ստանդարտ դրույքը Հայաստանում։",o:["10%","18%","20%"],a:2,x:"Ավելացված արժեքի հարկի ստանդարտ դրույքը 20% է։"},
+{k:"prot",d:2,q:"Ո՞րն է ապահովագրության հիմնական նպատակը։",o:["Գումար վաստակելը","Խոշոր, անկանխատեսելի կորստի ռիսկը փոխանցելը","Հարկերից խուսափելը"],a:1,x:"Ապահովագրեք այն, ինչի կորուստը ինքնուրույն չեք կարող հաղթահարել։ Փոքր ռիսկերը ծածկում է անվտանգության բարձիկը։"},
+{k:"prot",d:2,q:"Ո՞րն է ֆինանսական բուրգի տիպիկ նշանը։",o:["Աուդիտ անցած հաշվետվություններ","Երաշխավորված բարձր եկամուտ և վարձատրություն նոր մասնակիցներ բերելու համար","Ցածր, բայց կայուն եկամուտ"],a:1,x:"Բուրգերը նախկին մասնակիցներին վճարում են նորերի փողով, ուստի նրանց պետք է անընդհատ ներհոսք։"},
+{k:"prot",d:3,q:"Ի՞նչ է սովորաբար տեղի ունենում, երբ ապահովագրության ֆրանշիզան բարձրացնում եք։",o:["Ապահովագրավճարը նվազում է, բայց վնասի դեպքում ավելի շատ եք վճարում ինքներդ","Ապահովագրավճարը բարձրանում է","Ոչինչ չի փոխվում"],a:0,x:"Ավելի շատ ռիսկ եք պահում ձեզ մոտ, ուստի ապահովագրողը ավելի քիչ է գանձում։ Դա իմաստ ունի, երբ ունեք անվտանգության բարձիկ։"}
+];
+
+/* ---------- literacy: adaptive engine (Elo) ---------- */
+const DR={1:850,2:1000,3:1150};
+const blankLit=()=>({R:1000,A:1000,F:1000,T:Object.fromEntries(Object.keys(TOP).map(k=>[k,{R:1000,n:0,c:0}])),n:0,c:0,done:{},hist:[]});
+let LIT=store.get("ka-lit",null)||blankLit();
+let lmode="mix",cur=null,answered=false;
+const idx=R=>Math.max(0,Math.min(100,Math.round((R-700)/6)));
+const level=i=>i<25?["Սկսնակ","p-bad"]:i<50?["Հիմնային","p-warn"]:i<75?["Վստահ","p-acc"]:["Փորձագետ","p-good"];
+const exp=(R,D)=>1/(1+Math.pow(10,(D-R)/400));
+function pickQ(){const pool=QB.map((q,i)=>({q,i})).filter(x=>(lmode==="mix"||TOP[x.q.k][0]===lmode));
+  const R=lmode==="mix"?LIT.R:LIT[lmode];
+  let cand=pool.filter(x=>!LIT.done[x.i]);if(!cand.length)cand=pool.filter(x=>LIT.done[x.i]==="x");if(!cand.length)cand=pool;
+  const tn=tr=>Object.entries(LIT.T).filter(([k])=>TOP[k][0]===tr).reduce((s,[,v])=>s+v.n,0);
+  cand.forEach(x=>{const t=LIT.T[x.q.k];x.s=Math.abs(DR[x.q.d]-R)+(t.n*15)+(lmode==="mix"?tn(TOP[x.q.k][0])*25:0)+Math.random()*60});
+  cand.sort((a,b)=>a.s-b.s);return cand[0];}
+function showQ(){cur=pickQ();answered=false;const q=cur.q;
+  $("#lq-meta").textContent=`${TOP[q.k][1]} · ${["","Հեշտ","Միջին","Դժվար"][q.d]}`;
+  $("#lq-q").textContent=q.q;
+  $("#lq-o").innerHTML=q.o.map((o,j)=>`<button class="ghost" data-j="${j}" style="text-align:left;font-weight:500;color:var(--ink);border-color:var(--line)">${String.fromCharCode(65+j)}. ${o}</button>`).join("");
+  $("#lq-fb").innerHTML="";$("#lq-next").style.display="none";}
+function answer(j){if(answered)return;answered=true;const q=cur.q,ok=j===q.a,D=DR[q.d],trk=TOP[q.k][0];
+  const before=idx(LIT.R);const K=LIT.n<10?48:LIT.n<25?32:24;const s=ok?1:0;
+  LIT.R+=K*(s-exp(LIT.R,D));LIT[trk]+=K*(s-exp(LIT[trk],D));
+  const t=LIT.T[q.k];t.R+=K*(s-exp(t.R,D));t.n++;if(ok)t.c++;
+  LIT.n++;if(ok)LIT.c++;LIT.done[cur.i]=ok?"o":"x";LIT.hist.push(idx(LIT.R));if(LIT.hist.length>60)LIT.hist.shift();
+  store.set("ka-lit",LIT);
+  $$("#lq-o button").forEach((b,k)=>{b.disabled=true;if(k===q.a){b.style.borderColor="var(--good)";b.style.background="var(--accent-soft)"}else if(k===j){b.style.borderColor="var(--bad)"}});
+  const d=idx(LIT.R)-before;
+  $("#lq-fb").innerHTML=`<div class="out ${ok?"":"brass"}"><b class="${ok?"ok":"no"}">${ok?"Ճիշտ է":"Սխալ է"} <span class="mono">${d>=0?"+":""}${d}</span></b><span class="small">${q.x}</span>${ok?"":`<a class="small" href="#literacy" data-goto="${TOP[q.k][0]}${(TOP[q.k][0]==="A"?LA:LF).findIndex(l=>l.k===q.k)}">Կարդալ համապատասխան դասը</a>`}</div>`;
+  $("#lq-next").style.display="";renderLit(d);}
+function renderLit(d){const has=LIT.n>0;const I=idx(LIT.R);
+  $("#li-idx").textContent=has?I:"—";const L=level(I);
+  $("#li-level").textContent=has?L[0]:"Դեռ չափված չէ";$("#li-level").className="pill "+(has?L[1]:"p-acc");
+  $("#li-delta").textContent=d!==undefined?(d>=0?"+":"")+d:"";$("#li-delta").style.color=d>0?"var(--good)":d<0?"var(--bad)":"var(--muted)";
+  $("#li-conf").textContent=has?`Պատասխանված՝ ${LIT.n}, ճիշտ՝ ${LIT.c} (${fmt(LIT.c/LIT.n*100,0)}%)։ ${LIT.n<10?"Ճշգրիտ գնահատման համար պատասխանեք առնվազն 10 հարցի։":LIT.n<25?"Գնահատականը կայունանում է։":"Գնահատականը կայուն է։"}`:"Պատասխանեք առաջին հարցին՝ ինդեքսը տեսնելու համար։";
+  ["A","F"].forEach(k=>{const n=Object.entries(LIT.T).filter(([t,v])=>TOP[t][0]===k).reduce((s,[t,v])=>s+v.n,0);const v=idx(LIT[k]);$("#li-"+k).textContent=n?v+" / 100":"—";$("#li-"+k+"b").style.width=(n?v:0)+"%";});
+  $("#li-topics").innerHTML=`<thead><tr><th>Թեմա</th><th class="num">Պատասխաններ</th><th>Տիրապետում</th><th class="num">Ինդեքս</th></tr></thead><tbody>${Object.entries(TOP).map(([k,[tr,nm]])=>{const t=LIT.T[k];const v=idx(t.R);return `<tr><td class="small">${nm}</td><td class="num small">${t.n?t.c+"/"+t.n:"—"}</td><td style="min-width:110px"><div class="bar"><span style="width:${t.n?v:0}%;background:${tr==="A"?"var(--accent)":"var(--brass)"}"></span></div></td><td class="num">${t.n?v:"—"}</td></tr>`}).join("")}</tbody>`;
+  const tried=Object.entries(LIT.T).filter(([k,t])=>t.n>0).sort((a,b)=>a[1].R-b[1].R);
+  if(tried.length){const [wk]=tried[0];const tr=TOP[wk][0];const li=(tr==="A"?LA:LF).findIndex(l=>l.k===wk);
+    $("#li-rec").innerHTML=`<b>Առաջարկ.</b> Ամենաթույլ թեման «${TOP[wk][1]}»-ն է։ <a href="#literacy" data-goto="${tr}${li}">Կրկնեք դաս ${tr}${li+1}-ը</a>, ապա շարունակեք թեստը։`;}else $("#li-rec").textContent="";
+  const h=LIT.hist;if(h.length>1){const W=300,Hh=60;const pts=h.map((v,i)=>`${(i/(h.length-1))*W},${Hh-(v/100)*Hh}`).join(" ");
+    $("#li-hist").innerHTML=`<svg class="chart" viewBox="-4 -4 ${W+8} ${Hh+8}" role="img" aria-label="Ինդեքսի պատմություն"><line x1="0" x2="${W}" y1="${Hh/2}" y2="${Hh/2}" stroke="var(--line)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="${W}" cy="${Hh-(h[h.length-1]/100)*Hh}" r="3.5" fill="var(--accent)"/></svg><span class="small muted">Ինդեքսի փոփոխությունը վերջին ${h.length} պատասխաններում</span>`;}else $("#li-hist").innerHTML="";}
+$("#lq-o").addEventListener("click",e=>{const b=e.target.closest("button[data-j]");if(b)answer(+b.dataset.j)});
+$("#lq-next").onclick=showQ;
+$("#lq-mode").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;lmode=b.dataset.m;$$("#lq-mode button").forEach(x=>x.classList.toggle("ghost",x!==b));showQ();});
+$("#lq-reset").onclick=()=>{LIT=blankLit();store.set("ka-lit",LIT);renderLit();showQ();};
+$("#v-literacy").addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const d=document.getElementById(a.dataset.goto);if(d){d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"})}});
+renderLit();showQ();
+
+/* ---------- literacy: transaction simulator ---------- */
+const SIM=[
+{l:"Սեփականատերը ներդրեց 1,000,000",dr:"Դրամական միջոցներ",cr:"Կանոնադրական կապիտալ",v:1000000,e:[1000000,0,1000000]},
+{l:"Վարկ ստացվեց 500,000",dr:"Դրամական միջոցներ",cr:"Վարկեր",v:500000,e:[500000,500000,0]},
+{l:"Գնվեց սարքավորում 600,000",dr:"Հիմնական միջոցներ",cr:"Դրամական միջոցներ",v:600000,e:[0,0,0]},
+{l:"Մատուցվեց ծառայություն 300,000, վճարումը՝ հետո",dr:"Դեբիտորական պարտք",cr:"Եկամուտ",v:300000,e:[300000,0,300000]},
+{l:"Վճարվեց աշխատավարձ 150,000",dr:"Աշխատավարձի ծախս",cr:"Դրամական միջոցներ",v:150000,e:[-150000,0,-150000]},
+{l:"Մարվեց վարկի 200,000",dr:"Վարկեր",cr:"Դրամական միջոցներ",v:200000,e:[-200000,-200000,0]},
+{l:"Հաշվարկվեց մաշվածություն 50,000",dr:"Մաշվածության ծախս",cr:"Կուտակված մաշվածություն",v:50000,e:[-50000,0,-50000]}];
+let simEq=[0,0,0],simLog=[];
+function renderSim(){$("#sim-btns").innerHTML=SIM.map((s,i)=>`<button class="sm ghost" data-s="${i}">${s.l}</button>`).join("")+`<button class="sm" id="sim-r">Զրոյացնել</button>`;
+  const [A,Lb,E]=simEq;
+  $("#sim-eq").innerHTML=`<div class="stats"><div class="stat"><span class="v">${fmt(A)}</span><span class="l">Ակտիվներ</span></div><div class="stat"><span class="v">${fmt(Lb)}</span><span class="l">Պարտավորություններ</span></div><div class="stat"><span class="v">${fmt(E)}</span><span class="l">Կապիտալ</span></div></div><span class="small ${A===Lb+E?"ok":"no"}">${A===Lb+E?"✓ Հավասարակշռված է":"Անհավասարակշիռ"}՝ ${fmt(A)} = ${fmt(Lb)} + ${fmt(E)}</span>`;
+  $("#sim-log").innerHTML=simLog.length?`<thead><tr><th>Դեբետ</th><th>Կրեդիտ</th><th class="num">Գումար</th></tr></thead><tbody>${simLog.map(s=>`<tr><td class="small">${s.dr}</td><td class="small">${s.cr}</td><td class="num">${fmt(s.v)}</td></tr>`).join("")}</tbody>`:`<tbody><tr><td class="small muted">Ձևակերպումները կհայտնվեն այստեղ։</td></tr></tbody>`;}
+$("#sim-btns").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="sim-r"){simEq=[0,0,0];simLog=[]}else{const s=SIM[+b.dataset.s];simEq=simEq.map((v,i)=>v+s.e[i]);simLog.push(s)}renderSim();});
+renderSim();
+
+/* ---------- signals boot ---------- */
+renderSignals();
+$("#plan-b").addEventListener("input",plan);
+sigReady=true;renderAlerts();
+$("#pf-sync").onclick=()=>{let n=0;H.forEach(h=>{const sym=String(h.n).toUpperCase().trim();const c=DATA.coins.find(x=>sym===x.s||sym.startsWith(x.s+" ")||sym===x.n.toUpperCase());if(c){h.c=c.p;n++}});renderPF();$("#pf-sync-msg").textContent=n?`Թարմացվեց ${n} ակտիվ։`:"Համընկնող ակտիվներ չգտնվեցին։";};
+})();
+</script>
+</body>
+</html>
+
+<script>try{if(window.parent!==window&&window.parent.HUB){var _b=document.getElementById("backlink");if(_b)_b.hidden=true;}}catch(e){}</script></body></html>

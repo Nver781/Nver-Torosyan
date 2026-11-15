@@ -1,0 +1,1548 @@
+<!doctype html><html lang="hy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Management ակադեմիա</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@500;700;800&family=Noto+Sans+Armenian:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: planning-board — a course catalog leads to one course at a time; each course has a Gantt strip of 8 modules, then theory / practice / test per module, a final exam and a certificate */
+:root{
+  --paper:#f3f5f4; --sheet:#ffffff; --ink:#14232b; --muted:#5b6b70; --line:#d5dddb;
+  --accent:#0f6a7a; --accent-soft:#dbedf0; --milestone:#c9821b; --milestone-soft:#f8ead2;
+  --ok:#2f7d3a; --bad:#b23a2e; --bad-soft:#f7e1de; --ok-soft:#e0f0e1;
+  --c-pmp:#0f6a7a; --c-p2:#7a4fb8; --c-psm:#2a63b8; --c-gen:#a85a1c;
+  --f-display:"Noto Serif Armenian",Georgia,serif;
+  --f-body:"Noto Sans Armenian","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0f171a; --sheet:#162125; --ink:#e4ecea; --muted:#9aaaa8; --line:#2a3a3e;
+  --accent:#5cbfd0; --accent-soft:#16363c; --milestone:#e6a84a; --milestone-soft:#3a2c14;
+  --ok:#6cc27a; --bad:#ec7b6e; --bad-soft:#3d1f1c; --ok-soft:#1c3520;
+  --c-pmp:#5cbfd0; --c-p2:#b394e6; --c-psm:#7aa8ec; --c-gen:#e6a065; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f171a; --sheet:#162125; --ink:#e4ecea; --muted:#9aaaa8; --line:#2a3a3e;
+  --accent:#5cbfd0; --accent-soft:#16363c; --milestone:#e6a84a; --milestone-soft:#3a2c14;
+  --ok:#6cc27a; --bad:#ec7b6e; --bad-soft:#3d1f1c; --ok-soft:#1c3520;
+  --c-pmp:#5cbfd0; --c-p2:#b394e6; --c-psm:#7aa8ec; --c-gen:#e6a065; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:clamp(28px,5vw,40px);font-weight:800}
+h2{font-size:clamp(22px,3.5vw,26px);font-weight:700}
+h3{font-size:19px;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header.top{display:flex;flex-direction:column;gap:10px}
+header.top .lead,.lead{color:var(--muted);max-width:70ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips a{text-decoration:none;color:var(--ink);padding:6px 13px;border-radius:999px;border:1px solid var(--line);font-size:14px;background:var(--sheet);display:inline-flex;align-items:center;gap:7px}
+.chips a .dot{width:9px;height:9px;border-radius:50%;background:var(--cc,var(--accent))}
+.chips a.on{border-color:var(--cc,var(--accent));box-shadow:inset 0 0 0 1px var(--cc,var(--accent))}
+.statrow{display:flex;flex-wrap:wrap;gap:22px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-mono);font-size:22px;font-weight:500}
+.stat span{font-size:13px;color:var(--muted)}
+.course-head{display:flex;flex-direction:column;gap:12px;border-left:4px solid var(--cc,var(--accent));padding-left:14px}
+.gantt{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+.gantt-grid{display:grid;grid-template-columns:repeat(8,minmax(92px,1fr));gap:6px;min-width:760px}
+.g-head{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:0 4px}
+.g-bar{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-align:left;border-radius:6px;padding:8px;cursor:pointer;font:inherit;font-size:13px;line-height:1.3;display:flex;flex-direction:column;gap:6px;min-height:84px}
+.g-bar:hover{border-color:var(--cc,var(--accent))}
+.g-bar.active{border-color:var(--cc,var(--accent));box-shadow:inset 0 0 0 1px var(--cc,var(--accent))}
+.fill{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:block}
+.fill i{display:block;height:100%;background:var(--cc,var(--accent))}
+.g-ms{grid-column:1/-1;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;gap:10px;flex-wrap:wrap}
+.diamond{display:inline-block;width:9px;height:9px;background:var(--milestone);transform:rotate(45deg);margin-right:6px}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs a{text-decoration:none;color:var(--ink);padding:7px 14px;border-radius:999px;border:1px solid var(--line);font-size:14px;background:var(--sheet)}
+nav.tabs a.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+section.panel{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:18px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cols>*{min-width:0}
+.box{border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.course-card{background:var(--sheet);border:1px solid var(--line);border-top:4px solid var(--cc);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--ink)}
+.course-card:hover{border-color:var(--cc)}
+.course-card .meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+ul,ol{margin:0;padding-left:22px}
+li{margin:3px 0}
+.lesson{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.lesson-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.lesson .body{max-width:76ch;display:flex;flex-direction:column;gap:8px;min-width:0}
+.formula{font-family:var(--f-mono);background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:13.5px;overflow-x:auto;white-space:pre;max-width:100%}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;user-select:none}
+.chk input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600;white-space:nowrap;align-self:flex-start}
+.pill.ms{background:var(--milestone-soft);color:var(--milestone)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.sub-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sub-tabs button{appearance:none;border:0;background:none;font:inherit;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub-tabs button.on{color:var(--ink);border-bottom-color:var(--cc,var(--accent));font-weight:600}
+textarea{width:100%;min-height:180px;font:inherit;font-size:15px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;resize:vertical}
+input[type=number],input[type=text]{font:inherit;width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+input[type=number]{font-family:var(--f-mono)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--sheet);font:inherit;font-weight:600;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:15px;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--milestone);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.q{border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.q .opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.opt input{margin-top:5px;accent-color:var(--accent);flex:none}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.expl{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px}
+.result{font-size:18px;font-weight:600}
+.feedback{white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;font-size:15px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl{overflow-x:auto;max-width:100%}
+.timer{font-family:var(--f-mono);font-size:20px}
+.save-note{font-size:12px;color:var(--muted)}
+.notice{background:var(--milestone-soft);border:1px solid var(--milestone);border-radius:8px;padding:12px 14px;font-size:14px;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.req{display:flex;flex-direction:column;gap:6px}
+.req div{display:flex;gap:8px;align-items:center}
+.req .mark{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;background:var(--line);color:var(--muted)}
+.req .mark.done{background:var(--ok);color:var(--sheet)}
+.cert{border:2px solid var(--cc);outline:1px solid var(--cc);outline-offset:6px;border-radius:4px;padding:clamp(20px,5vw,48px);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--sheet);margin:10px}
+.cert .cname{font-family:var(--f-display);font-size:clamp(26px,5vw,40px);font-weight:800;border-bottom:1px solid var(--line);padding:0 20px 6px;min-width:min(100%,320px)}
+.cert .ctitle{font-family:var(--f-display);font-size:clamp(20px,3.5vw,28px);font-weight:700;color:var(--cc)}
+.cert .seal{width:64px;height:64px;border-radius:50%;border:2px solid var(--cc);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:12px;color:var(--cc)}
+.cert-meta{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.cert-meta b{display:block;color:var(--ink);font-family:var(--f-mono);font-weight:500;font-size:15px}
+.intro{background:var(--accent-soft);border-radius:10px;padding:clamp(14px,3vw,20px);display:flex;flex-direction:column;gap:12px}
+.intro .box{background:var(--sheet)}
+.intro table{background:var(--sheet);border-radius:6px}
+.simple{border-left:3px solid var(--milestone);background:var(--milestone-soft);border-radius:0 8px 8px 0;padding:12px 14px;display:flex;flex-direction:column;gap:6px;max-width:76ch}
+.pre{white-space:pre-wrap}
+.lesson-content{display:flex;flex-direction:column;gap:12px}
+.simple .btn{align-self:flex-start}
+details.qa{border:1px dashed var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:10px;max-width:76ch}
+details.qa[open]{border-style:solid;background:var(--paper)}
+details.qa summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:14px}
+details.qa[open] summary{margin-bottom:10px}
+details.qa textarea{min-height:70px;margin-top:10px;background:var(--sheet)}
+details.qa .row{margin-top:8px}
+.qa-thread{display:flex;flex-direction:column;gap:8px}
+.msg{white-space:pre-wrap;padding:10px 12px;border-radius:10px;font-size:15px;max-width:92%}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--sheet);border-bottom-right-radius:3px}
+.msg.a{align-self:flex-start;background:var(--sheet);border:1px solid var(--line);border-bottom-left-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.backlink{font-size:14px;text-decoration:none;color:var(--muted)}.backlink:hover{color:var(--accent)}
+select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)}
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.method .box p{font-size:15px}
+
+</style>
+<script>
+/* claude bridge: when embedded in the hub, use the hub's runtime */
+(function(){try{if(window.parent!==window&&window.parent.claude&&window.parent.claude.use){window.claude=window.parent.claude;}}catch(e){}})();
+</script>
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <a class="backlink" id="backlink" href="index.html">← Գիտելիքի կենտրոն</a>
+    <span class="eyebrow">4 դասընթաց · PMP · PRINCE2 7 · PSM I · ոչ IT ոլորտներ · քննություններ և վկայականներ</span>
+    <h1><a href="#" style="color:inherit;text-decoration:none">Project Management ակադեմիա</a></h1>
+    <nav class="chips" id="chips" aria-label="Դասընթացներ"></nav>
+  </header>
+  <div id="course"></div>
+  <main id="view"></main>
+  <p class="save-note" id="saveNote"></p>
+</div>
+<script>
+try{if(window.parent!==window&&window.parent.HUB)document.getElementById("backlink").hidden=true;}catch(e){}
+/* ========== PM 1: PMP ========== */
+const PMP = { id:"pmp", title:"PMP նախապատրաստում (PMBOK 8, 2026 ECO)", short:"PMP",
+lead:"PMI-ի Project Management Professional քննության նախապատրաստում՝ 2026-ի հուլիսից գործող Examination Content Outline-ի (People, Process, Business Environment) և PMBOK® Guide 8-րդ հրատարակության հիման վրա՝ predictive, agile և hybrid մոտեցումներով։",
+weeks:[
+{ n:1, aca:"Քննություն և PMBOK 8", title:"PMP քննությունը և PMBOK 8-ի կառուցվածքը", short:"Ներածություն",
+  goal:"Իմանալ քննության ձևաչափը, իրավասության պահանջները, PMBOK 8-ի սկզբունքները, performance domain-ները և կազմել նախապատրաստման պլան։",
+  lessons:[
+    {t:"Քննության ձևաչափը (2026-ի հուլիսի 9-ից)", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Պարամետր</th><th>Արժեք</th></tr><tr><td>Հարցեր</td><td>180 (170 գնահատվող + 10 չգնահատվող pretest)</td></tr><tr><td>Ժամանակ</td><td>240 րոպե</td></tr><tr><td>People</td><td>33%</td></tr><tr><td>Process</td><td>41%</td></tr><tr><td>Business Environment</td><td>26%</td></tr><tr><td>Մոտեցումներ</td><td>≈ 40% predictive, ≈ 60% agile և hybrid՝ ինտեգրված բոլոր domain-ներում</td></tr><tr><td>Հարցերի տեսակներ</td><td>Սցենարային multiple choice, multiple response, matching, hotspot, լրացում</td></tr></table></div>
+      <p><b>Իրավասություն</b> (ստուգիր pmi.org-ում, քանի որ պահանջները թարմացվում են). 35 ժամ նախագծերի կառավարման ուսուցում + նախագծեր ղեկավարելու փորձ (սովորաբար 36 ամիս բակալավրի աստիճանի դեպքում կամ 60 ամիս միջնակարգ կրթության դեպքում)։ Այս դասընթացի դասերը, թեստերը և գործնականները օգնում են նախապատրաստվել, բայց PMI-ի պաշտոնական 35 ժամը պետք է ստանալ PMI-ի կողմից ընդունվող մատակարարից։</p>`},
+    {t:"PMBOK® Guide 8-րդ հրատարակություն", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>6 սկզբունք</th><th>7 performance domain</th><th>5 focus area</th></tr><tr><td>Adopt a holistic view<br>Focus on value<br>Embed quality<br>Lead accountably<br>Integrate sustainability<br>Build empowered teams</td><td>Governance<br>Scope<br>Schedule<br>Finance<br>Stakeholders<br>Resources<br>Risk</td><td>Initiating<br>Planning<br>Executing<br>Monitoring & Controlling<br>Closing</td></tr></table></div>
+      <p>PMBOK 8-ը (2025-ի վերջ) համադրում է 7-րդ հրատարակության սկզբունքային մոտեցումը և գործնական <b>40 ոչ պարտադրող (non-prescriptive) process</b>-ները։ Այն շեշտում է արժեքը, tailoring-ը (մոտեցման հարմարեցումը նախագծին), կայունությունը և AI-ի դերը նախագծերի կառավարման մեջ։</p>
+      <p><b>Կարևոր.</b> PMP-ն քննություն է ECO-ի (Examination Content Outline) վրա, ոչ թե մեկ գրքի։ PMBOK-ը հիմնական, բայց ոչ միակ աղբյուրն է. ագիլ հարցերի համար կարևոր են նաև Agile Practice Guide-ը և Scrum Guide-ը։</p>`},
+    {t:"«PMI mindset»՝ ինչպես մտածել քննության ժամանակ", h:"1 ժ", b:`<ul><li><b>Servant leader</b>՝ աջակցիր թիմին, հեռացրու խոչընդոտները, մի՛ հրամայիր</li><li><b>Նախ վերլուծիր, հետո գործիր</b>՝ «assess, analyze, review» սովորաբար գալիս է «escalate» կամ «change»-ից առաջ</li><li><b>Proactive</b>՝ ռիսկերը կանխիր, մի՛ սպասիր, որ դառնան խնդիր</li><li><b>Հետևիր գործընթացին</b>՝ փոփոխությունները՝ change control-ով (predictive) կամ backlog-ով (agile)</li><li><b>Խոսիր անմիջապես</b>՝ կոնֆլիկտը լուծիր անձամբ և առաջին հերթին մասնակիցների հետ, ոչ թե email-ով կամ sponsor-ին բողոքելով</li><li><b>Արժեք և բիզնես նպատակներ</b>՝ որոշումները գնահատիր benefits-ով</li><li><b>Էթիկա</b>՝ PMI Code of Ethics. պատասխանատվություն, հարգանք, արդարություն, ազնվություն</li></ul>`}
+  ],
+  practice:{t:"PMP նախապատրաստման պլան", steps:["Ստուգիր քո իրավասությունը pmi.org-ում և նկարագրիր քո նախագծային փորձը PMI-ի ձևաչափով (նպատակ, դեր, արդյունքներ)","Կազմիր 10–12 շաբաթյա ուսման պլան՝ ըստ domain-ների կշիռների","Ներբեռնիր 2026 ECO-ն և նշիր 5 task, որոնք քեզ համար ամենաանծանոթն են","Որոշիր քննության ամսաթիվը և mock exam-ների ժամանակացույցը"], deliverable:"Իրավասության ստուգում, ուսման պլան, թույլ թեմաների ցուցակ"},
+  quiz:[
+    ["2026 ECO-ում ամենամեծ կշիռ ունի...",["People","Process","Business Environment","Agile"],1,"Process՝ 41%։"],
+    ["Քանի՞ րոպե է տևում նոր PMP քննությունը։",["180","230","240","120"],2,"240 րոպե։"],
+    ["Ո՞րն է PMBOK 8-ի performance domain։",["Finance","Integration","Communications","Procurement"],0,"Governance, Scope, Schedule, Finance, Stakeholders, Resources, Risk։"],
+    ["Թիմի անդամները կոնֆլիկտ ունեն։ PMI mindset-ով առաջին քայլը՝",["Escalate sponsor-ին","Փոխարինել թիմի անդամին","Խոսել անմիջապես մասնակիցների հետ և հասկանալ պատճառը","Անտեսել"],2,"Վերլուծիր, խոսիր անմիջապես։"],
+    ["PMBOK 8-ի սկզբունք է՝",["Integrate sustainability","Maximize scope","Avoid agile","Minimize stakeholders"],0,"Կայունությունը նոր շեշտադրում է։"]
+  ]},
+{ n:2, aca:"People", title:"People՝ առաջնորդություն և թիմ", short:"People",
+  goal:"Կառավարել թիմը, կոնֆլիկտները, մոտիվացիան և շահակիցների ներգրավվածությունը PMI-ի ակնկալիքներով։",
+  lessons:[
+    {t:"Թիմի զարգացում և առաջնորդություն", h:"1.5 ժ", b:`<ul><li><b>Tuckman</b>՝ Forming → Storming → Norming → Performing → Adjourning</li><li><b>Situational leadership</b> (Hersey-Blanchard)՝ directing, coaching, supporting, delegating՝ ըստ թիմի անդամի հմտության և մոտիվացիայի</li><li><b>Servant leadership</b>՝ agile միջավայրում PM-ը/Scrum Master-ը ծառայում է թիմին</li><li><b>Emotional intelligence</b> (Goleman)՝ ինքնաճանաչում, ինքնակառավարում, սոցիալական գիտակցում, հարաբերությունների կառավարում</li><li><b>Team charter</b>՝ արժեքներ, աշխատանքի կանոններ, որոշումների կայացում, հաղորդակցություն</li><li><b>Psychological safety</b> (Amy Edmondson, Google Project Aristotle)՝ թիմի արդյունավետության ամենաուժեղ կանխատեսիչներից</li></ul>`},
+    {t:"Կոնֆլիկտներ և բանակցություններ", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Thomas-Kilmann ռեժիմ</th><th>Արդյունք</th><th>Երբ</th></tr><tr><td>Collaborating / Problem solving</td><td>Win-win</td><td>Լավագույնը երկարաժամկետ, երբ կա ժամանակ</td></tr><tr><td>Compromising</td><td>Մասնակի win-win</td><td>Հավասար ուժեր, ժամանակի ճնշում</td></tr><tr><td>Smoothing / Accommodating</td><td>Lose-win</td><td>Հարաբերությունները կարևոր են, հարցը՝ փոքր</td></tr><tr><td>Forcing / Directing</td><td>Win-lose</td><td>Արտակարգ իրավիճակ, անվտանգություն</td></tr><tr><td>Withdrawing / Avoiding</td><td>Lose-lose</td><td>Ժամանակավոր՝ «սառեցնելու» համար</td></tr></table></div>
+      <p>Քննությունում սովորաբար ճիշտն է <b>collaborating</b>-ը։ Բանակցություններում՝ Harvard Negotiation Project-ի «Getting to Yes» սկզբունքները. առանձնացրու մարդկանց խնդրից, կենտրոնացիր շահերի, ոչ թե դիրքորոշումների վրա, ստեղծիր տարբերակներ, օգտագործիր օբյեկտիվ չափանիշներ, իմացիր քո BATNA-ն։</p>`},
+    {t:"Շահակիցներ և հաղորդակցություն", h:"1 ժ", b:`<div class="formula">Power/Interest grid:
+  Բարձր ուժ + բարձր հետաքրքրություն → Manage closely
+  Բարձր ուժ + ցածր հետաքրքրություն  → Keep satisfied
+  Ցածր ուժ + բարձր հետաքրքրություն  → Keep informed
+  Ցածր ուժ + ցածր հետաքրքրություն   → Monitor
+Engagement levels: Unaware → Resistant → Neutral → Supportive → Leading
+Հաղորդակցության ալիքներ = n(n − 1) / 2</div>
+      <p><b>Stakeholder engagement assessment matrix</b>՝ ներկա (C) և ցանկալի (D) մակարդակներ յուրաքանչյուր շահակցի համար։ Հաղորդակցության տեսակներ՝ interactive (հանդիպում), push (email, հաշվետվություն), pull (wiki, dashboard)։ Agile-ում՝ information radiators (task board, burndown), sprint review։</p>`}
+  ],
+  practice:{t:"People case study", steps:["Նկարագրիր իրական կամ մտացածին նախագծի թիմ և որոշիր Tuckman-ի փուլը","Գրիր team charter 6 կետով","Կազմիր stakeholder register և power/interest grid 8 շահակցով","Լուծիր կոնֆլիկտային սցենար. երկու ավագ մասնագետ չեն համաձայնում տեխնիկական լուծման շուրջ. գրիր քայլերը","Հաշվիր հաղորդակցության ալիքները, եթե թիմը աճում է 8-ից 12"], deliverable:"Team charter, stakeholder register, grid, կոնֆլիկտի լուծում", tools:["channels"]},
+  quiz:[
+    ["Թիմի անդամները վիճում են դերերի շուրջ։ Tuckman-ի ո՞ր փուլն է։",["Forming","Storming","Norming","Adjourning"],1,"Storming։"],
+    ["Ո՞ր կոնֆլիկտի ռեժիմն է տալիս win-win։",["Forcing","Smoothing","Collaborating / Problem solving","Withdrawing"],2,"Collaborating։"],
+    ["Թիմը 10 հոգուց աճում է 15-ի։ Քանի՞ նոր հաղորդակցության ալիք է ավելանում։",["5","45","60","105"],2,"105 − 45 = 60։"],
+    ["Բարձր ուժ, ցածր հետաքրքրություն ունեցող շահակցին պետք է...",["Manage closely","Keep satisfied","Keep informed","Monitor"],1,"Keep satisfied։"],
+    ["BATNA-ն...",["Բանակցության լավագույն այլընտրանքն է, եթե համաձայնություն չլինի","Բյուջեի մաս","Ռիսկի տեսակ","Agile artifact"],0,"Best Alternative To a Negotiated Agreement։"]
+  ]},
+{ n:3, aca:"Process (predictive)", title:"Process՝ scope, schedule, cost, quality, procurement", short:"Predictive",
+  goal:"Կիրառել predictive պլանավորում՝ WBS, CPM, գնահատում, EVM, որակ, պայմանագրեր և change control։",
+  lessons:[
+    {t:"Scope և schedule", h:"1.5 ժ", b:`<ul><li><b>Scope baseline</b> = scope statement + WBS + WBS dictionary. <b>100% կանոն</b>՝ WBS-ը ներառում է ամբողջ աշխատանքը. ամենացածր մակարդակը՝ work package</li><li><b>Կախվածություններ</b>՝ FS, SS, FF, SF. mandatory, discretionary, external. lead և lag</li><li><b>Critical Path Method</b>՝ ամենաերկար ճանապարհը. float = 0</li></ul>
+      <div class="formula">Forward pass: ES, EF = ES + Duration
+Backward pass: LF, LS = LF − Duration
+Total float = LS − ES = LF − EF
+Crashing — ռեսուրսներ ավելացնել critical path-ում (ծախսը աճում է)
+Fast tracking — զուգահեռացնել (ռիսկը աճում է)</div>`},
+    {t:"Cost և Earned Value", h:"1.5 ժ", b:`<div class="formula">EV = % ավարտված × BAC
+CV = EV − AC        SV = EV − PV
+CPI = EV / AC       SPI = EV / PV        (< 1 վատ, > 1 լավ)
+EAC = BAC / CPI                  (ներկա արդյունավետությունը կշարունակվի)
+EAC = AC + (BAC − EV)            (շեղումը եզակի էր)
+EAC = AC + (BAC − EV)/(CPI×SPI)  (երկուսն էլ ազդում են)
+ETC = EAC − AC     VAC = BAC − EAC     TCPI = (BAC − EV)/(BAC − AC)</div>
+      <p><b>Գնահատման մեթոդներ</b>՝ analogous (արագ, ոչ ճշգրիտ), parametric (միավորի գին × քանակ), bottom-up (ամենաճշգրիտ), three-point (PERT = (O + 4M + P)/6)։ <b>Reserves</b>՝ contingency (հայտնի ռիսկերի համար, PM-ի վերահսկողության տակ, մտնում է cost baseline-ի մեջ) և management reserve (անհայտ ռիսկեր, sponsor-ի հաստատմամբ, մտնում է բյուջեի մեջ, բայց ոչ baseline-ի)։</p>`},
+    {t:"Quality, procurement և change control", h:"1 ժ", b:`<ul><li><b>Quality</b>՝ cost of quality (prevention + appraisal vs internal + external failure), Pareto (80/20), fishbone, control chart (rule of seven՝ 7 կետ միջինի մի կողմում = անկանոնություն), grade vs quality</li><li><b>Պայմանագրեր</b>՝ Fixed Price (ռիսկը վաճառողի վրա), Cost Reimbursable (ռիսկը գնորդի վրա, CPFF, CPIF, CPAF), Time & Materials (փոքր, անորոշ scope)</li><li><b>Integrated change control</b>՝ փոփոխության հարցում → ազդեցության վերլուծություն → CCB → որոշում → baseline-ի թարմացում → հաղորդում։ Մի՛ կատարիր փոփոխությունը նախքան հաստատումը (gold plating-ը նույնպես սխալ է)</li><li><b>Փակում</b>՝ ընդունում, lessons learned, պայմանագրերի փակում, ռեսուրսների ազատում, արխիվ</li></ul>`}
+  ],
+  practice:{t:"Predictive պլան՝ WBS, CPM, EVM", steps:["Կազմիր WBS փոքր նախագծի համար (օր.՝ գրասենյակի տեղափոխություն)՝ 3 մակարդակով","Կազմիր 8 activity-ի ցանց տևողություններով և հաշվիր critical path-ը, float-երը","Հաշվիր PERT-ը 3 activity-ի համար","Լուծիր EVM case. BAC = 200 000, PV = 80 000, AC = 90 000, ավարտված 35%","Գրիր change request ձևանմուշ"], deliverable:"WBS, ցանցային դիագրամ, CPM հաշվարկ, EVM վերլուծություն", tools:["cpm","evm","pert"]},
+  quiz:[
+    ["EV = 40 000, AC = 50 000։ CPI-ն՝",["0.8","1.25","−10 000","0.5"],0,"40 / 50 = 0.8 (գերծախս)։"],
+    ["Ո՞ր տեխնիկան է կրճատում ժամանակացույցը ծախսի աճով։",["Fast tracking","Crashing","Resource leveling","Decomposition"],1,"Crashing։"],
+    ["O = 4, M = 7, P = 16։ PERT-ը՝",["7","8","9","9.5"],1,"(4 + 28 + 16) / 6 = 8։"],
+    ["Ո՞ր պայմանագրում է ծախսի ռիսկը հիմնականում գնորդի վրա։",["Firm Fixed Price","Cost Plus Fixed Fee","FPIF","Fixed Price"],1,"Cost reimbursable։"],
+    ["Թիմի անդամը ավելացրել է հաճախորդի չպահանջած ֆունկցիա։ Սա...",["Լավ պրակտիկա","Gold plating","Scope creep հաստատված","Crashing"],1,"Gold plating-ը խուսափելի է։"]
+  ]},
+{ n:4, aca:"Process (agile/hybrid)", title:"Agile և hybrid մոտեցումներ", short:"Agile",
+  goal:"Ընտրել և հարմարեցնել մոտեցումը (tailoring), կառավարել backlog-ը, iteration-ները և hybrid նախագծերը։",
+  lessons:[
+    {t:"Մոտեցման ընտրություն և tailoring", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Գործոն</th><th>Predictive</th><th>Agile</th></tr><tr><td>Պահանջների կայունություն</td><td>Բարձր</td><td>Ցածր, փոփոխվող</td></tr><tr><td>Առաքում</td><td>Մեկ անգամ վերջում</td><td>Հաճախակի, incremental</td></tr><tr><td>Փոփոխության գին</td><td>Բարձր (շինարարություն)</td><td>Ցածր (ծրագրային ապահովում)</td></tr><tr><td>Ռիսկ</td><td>Հայտնի, պլանավորվող</td><td>Բարձր անորոշություն</td></tr><tr><td>Հաճախորդի ներգրավվածություն</td><td>Կետային</td><td>Մշտական</td></tr></table></div>
+      <p><b>Hybrid</b>՝ օրինակ՝ շենքի կառուցումը predictive, ներքին IT համակարգը՝ agile. կամ predictive ֆազային gate-եր + agile առաքում փուլերի ներսում։ <b>Tailoring</b>՝ ընտրել գործընթացները, արտեֆակտները և ռիտմը ըստ նախագծի չափի, ռիսկի և կազմակերպության մշակույթի։ Agile Manifesto-ն ունի 4 արժեք և 12 սկզբունք։</p>`},
+    {t:"Backlog, iteration և առաքում", h:"1.5 ժ", b:`<ul><li><b>Product backlog</b>՝ դասավորված ըստ արժեքի. user stories (INVEST), acceptance criteria, refinement</li><li><b>Առաջնահերթություն</b>՝ MoSCoW, Kano, WSJF, value vs effort</li><li><b>Գնահատում</b>՝ story points, planning poker, T-shirt sizes, affinity estimation</li><li><b>Velocity</b>՝ թիմի պատմական արագություն (չի համեմատվում թիմերի միջև)</li><li><b>Kanban</b>՝ WIP limits, flow, cycle time, cumulative flow diagram</li><li><b>MVP</b>, incremental delivery, release planning, Definition of Done</li><li><b>Information radiators</b>՝ burndown/burnup, task board</li></ul>
+      <p><b>Քննական թակարդ.</b> Agile նախագծում նոր պահանջը PM-ը/թիմը չի «մերժում» կամ անմիջապես չի ավելացնում sprint-ին. այն գնում է product backlog, և Product Owner-ը առաջնահերթում է։</p>`},
+    {t:"Value delivery և benefits", h:"1 ժ", b:`<ul><li><b>Business case</b>՝ ինչու է նախագիծը արժե (NPV, IRR, payback, ոչ ֆինանսական օգուտներ)</li><li><b>Benefits management plan</b>՝ ով է պատասխանատու օգուտների իրացման համար, երբ և ինչպես են դրանք չափվելու</li><li><b>Value stream</b>, lead time, waste (Lean)</li><li><b>Outcome vs output</b>՝ առաքված ֆունկցիան (output) դեռ արժեք (outcome) չէ</li><li><b>Նախագծի ընտրություն NPV-ով</b>՝ ընտրիր ամենաբարձր NPV-ով նախագիծը (կարևոր չէ տևողությունը, քանի որ արդեն հաշվի է առնված)</li><li><b>Opportunity cost</b>՝ չընտրված լավագույն նախագծի արժեքը</li></ul>`}
+  ],
+  practice:{t:"Hybrid նախագծի tailoring", steps:["Ընտրիր նախագիծ (օր.՝ բանկի նոր մոբայլ app + մասնաճյուղերի վերանորոգում)","Որոշիր, որ մասերն են predictive, որոնք՝ agile, և հիմնավորիր","Գրիր 8 user story INVEST չափանիշով և դասավորիր MoSCoW-ով","Կազմիր release plan՝ velocity 20-ի դեպքում 120 point backlog-ի համար","Գրիր benefits management plan-ի կարճ տարբերակ"], deliverable:"Tailoring որոշում, backlog, release plan, benefits plan", tools:["forecast"]},
+  quiz:[
+    ["Agile նախագծում sponsor-ը ուզում է նոր ֆունկցիա sprint-ի կեսին։ Ճիշտ է...",["Ավելացնել sprint-ին անմիջապես","Ավելացնել product backlog, PO-ն առաջնահերթում է","Մերժել ընդմիշտ","Չեղարկել sprint-ը միշտ"],1,"Backlog-ը և PO-ն։"],
+    ["Ո՞ր դեպքում է predictive մոտեցումը ավելի համապատասխան։",["Պահանջները հաճախ փոխվում են","Փոփոխության գինը շատ բարձր է, և պահանջները կայուն են","Արագ feedback է պետք","Նորարարական product"],1,"Օր.՝ կամրջի կառուցում։"],
+    ["Velocity = 25, backlog = 150 point։ Քանի՞ sprint։",["5","6","7","25"],1,"150 / 25 = 6։"],
+    ["Երկու նախագիծ. A NPV = $80k (5 տարի), B NPV = $95k (8 տարի)։ Որը ընտրել։",["A","B","Երկուսն էլ","Ոչ մեկը"],1,"NPV-ն արդեն հաշվի է առնում ժամանակը։"],
+    ["INVEST-ում «V»-ն նշանակում է...",["Velocity","Valuable","Visible","Verified"],1,"Independent, Negotiable, Valuable, Estimable, Small, Testable։"]
+  ]},
+{ n:5, aca:"Risk և Business Environment", title:"Ռիսկ, compliance, կայունություն և կազմակերպական փոփոխություն", short:"Risk & BE",
+  goal:"Կառավարել ռիսկերը և հնարավորությունները, ապահովել compliance-ը, governance-ը և կազմակերպական փոփոխության աջակցությունը։",
+  lessons:[
+    {t:"Ռիսկի կառավարում", h:"1.5 ժ", b:`<div class="formula">Ռիսկի հայտարարություն: «Քանի որ [պատճառ], կարող է տեղի ունենալ [ռիսկ], որը կհանգեցնի [ազդեցություն]»
+Probability × Impact matrix → առաջնահերթություն
+EMV = Probability × Impact   (սպառնալիքը՝ −, հնարավորությունը՝ +)
+Decision tree: յուրաքանչյուր ճյուղի EMV-ն գումարվում է ծախսին</div>
+      <div class="tbl"><table><tr><th>Սպառնալիքներ</th><th>Հնարավորություններ</th></tr><tr><td>Avoid, Transfer, Mitigate, Accept, Escalate</td><td>Exploit, Share, Enhance, Accept, Escalate</td></tr></table></div>
+      <p><b>Risk owner</b>, trigger, contingency plan, fallback plan, residual և secondary risks, risk register, risk review։ Agile-ում ռիսկը նվազում է կարճ iteration-ներով և վաղ feedback-ով. risk-adjusted backlog։</p>`},
+    {t:"Governance, compliance և կայունություն", h:"1 ժ", b:`<ul><li><b>Governance</b>՝ ով է որոշում կայացնում, phase gates, escalation path-եր, PMO-ի դեր</li><li><b>Compliance</b>՝ օրենքներ, կանոնակարգեր (տվյալների պաշտպանություն, անվտանգություն, ոլորտային ստանդարտներ), կազմակերպական քաղաքականություններ. compliance requirements-ը ներառվում են պլանում և ստուգվում</li><li><b>Կայունություն (sustainability)</b>՝ բնապահպանական, սոցիալական և տնտեսական ազդեցություն, ESG պահանջներ, «sustainability standards» ECO-ում</li><li><b>Արտաքին միջավայր</b>՝ շուկայի, տեխնոլոգիական, քաղաքական փոփոխություններ, որոնք կարող են ազդել scope-ի և benefits-ի վրա. PM-ը պարբերաբար վերանայում է business case-ը</li></ul>`},
+    {t:"Կազմակերպական փոփոխություն և AI նախագծերում", h:"1 ժ", b:`<ul><li><b>Kotter-ի 8 քայլ</b>՝ urgency, coalition, vision, communicate, empower, short-term wins, consolidate, anchor in culture</li><li><b>ADKAR</b> (Prosci)՝ Awareness, Desire, Knowledge, Ability, Reinforcement</li><li><b>Կազմակերպական մշակույթ</b>՝ functional, matrix (weak/balanced/strong), projectized. PM-ի իշխանությունը ամենամեծն է projectized-ում</li><li><b>AI-ը նախագծերում</b>՝ գնահատումների, ռիսկերի, հաշվետվությունների, ամփոփումների ավտոմատացում. PM-ը պատասխանատու է տվյալների գաղտնիության, AI-ի արդյունքների ստուգման և էթիկական օգտագործման համար</li></ul>`}
+  ],
+  practice:{t:"Risk register և decision tree", steps:["Կազմիր risk register 10 ռիսկով (8 սպառնալիք, 2 հնարավորություն)՝ պատճառ-ռիսկ-ազդեցություն ձևաչափով","Գնահատիր P×I և ընտրիր արձագանքի ռազմավարություններ","Լուծիր decision tree. «Կառուցել ($500k, 30% հավանականություն $200k լրացուցիչ ծախսի)» vs «Գնել ($620k, 10% հավանականություն $50k)»","Կազմիր ADKAR պլան նոր գործիքի ներդրման համար"], deliverable:"Risk register, decision tree վերլուծություն, փոփոխության պլան", tools:["emv"]},
+  quiz:[
+    ["Ռիսկը 20% հավանականությամբ, $50 000 ազդեցությամբ։ EMV-ն՝",["−$10 000","−$50 000","−$2 500","$40 000"],0,"0.2 × 50 000։"],
+    ["Ապահովագրություն գնելը ո՞ր արձագանքն է։",["Avoid","Transfer","Mitigate","Exploit"],1,"Ռիսկը փոխանցվում է երրորդ կողմին։"],
+    ["Ռիսկը դուրս է PM-ի իրավասությունից և ազդում է ամբողջ ծրագրի վրա։ Արձագանքը՝",["Accept","Escalate","Avoid","Ignore"],1,"Escalate։"],
+    ["Ո՞ր կազմակերպական կառուցվածքում է PM-ի իշխանությունը ամենամեծը։",["Functional","Weak matrix","Projectized","Balanced matrix"],2,"Projectized։"],
+    ["ADKAR-ում «K»-ն նշանակում է...",["Key","Knowledge","Kotter","KPI"],1,"Knowledge։"]
+  ]},
+{ n:6, aca:"Քննական ռազմավարություն", title:"Քննական ռազմավարություն և mock exam-ներ", short:"Exam",
+  goal:"Տիրապետել սցենարային հարցերի լուծման տեխնիկային, ժամանակի կառավարմանը և վերջին շաբաթների պլանին։",
+  lessons:[
+    {t:"Սցենարային հարցերի տեխնիկա", h:"1 ժ", b:`<ol><li>Կարդա <b>վերջին նախադասությունը</b> նախ. ինչ է հարցնում (առաջին քայլը, լավագույնը, ինչ պետք է արվեր նախկինում)</li><li>Որոշիր կոնտեքստը՝ predictive, agile, թե hybrid</li><li>Գտիր, թե նախագիծը որ փուլում է</li><li>Բացառիր տարբերակներ, որոնք՝ անտեսում են խնդիրը, անմիջապես escalate են անում, խախտում են գործընթացը, կամ PM-ը միայնակ է որոշում թիմի փոխարեն</li><li>Մնացածից ընտրիր ամենա proactive և servant leader տարբերակը</li></ol>
+      <p><b>Բանալի բառեր</b>՝ FIRST, NEXT, BEST, MOST LIKELY, SHOULD HAVE։ «Should have» հարցերը հաճախ վերաբերում են պլանավորմանը (risk register, communications plan, stakeholder engagement)։</p>`},
+    {t:"Ժամանակ և ֆիզիկական պատրաստվածություն", h:"1 ժ", b:`<div class="formula">240 րոպե / 180 հարց ≈ 1.33 րոպե մեկ հարցին
+Ստուգման կետեր (մոտավոր):  հարց 60 → ≈ 80 րոպե,  հարց 120 → ≈ 160 րոպե
+Mark for review — չմնալ մեկ հարցի վրա > 2.5 րոպե</div>
+      <ul><li>Ստուգիր PMI-ի և Pearson VUE-ի ընթացիկ կանոնները ընդմիջումների, online proctoring-ի և նույնականացման համար</li><li>Վերջին 2 շաբաթում՝ 2–3 լիարժեք mock exam ժամաչափով, ամեն սխալի վերլուծություն («ինչու ընտրեցի սխալը»)</li><li>Mock-երում կայուն 70%+ բարձր որակի հարցերով (օր.՝ PMI Study Hall) սովորաբար համարվում է պատրաստվածության լավ նշան</li></ul>`},
+    {t:"Սխալների վերլուծություն և spaced repetition", h:"1 ժ", b:`<ul><li><b>Error log</b>՝ յուրաքանչյուր սխալ հարցի համար գրիր թեման, սխալի տեսակը (գիտելիք, ընթերցանություն, mindset, ժամանակ) և ճիշտ տրամաբանությունը</li><li><b>Retrieval practice</b>՝ ինքնաստուգումը ավելի արդյունավետ է, քան կրկնակի ընթերցումը (Roediger & Karpicke, 2006)</li><li><b>Spaced repetition</b>՝ բանաձևեր և տերմիններ կրկնիր 1, 3, 7, 14 օր ընդմիջումներով</li><li><b>Interleaving</b>՝ խառնիր domain-ները թեստերում, ոչ թե մեկ թեմա անընդմեջ</li><li><b>Brain dump</b>՝ ստուգիր քննական կենտրոնի կանոնները, թե արդյոք և երբ է թույլատրվում գրառում</li></ul>`}
+  ],
+  practice:{t:"Mock exam պլան և error log", steps:["Անցիր այս դասընթացի ավարտական քննությունը ժամաչափով","Ստեղծիր error log 4 սխալի տեսակներով","«Թեստային առաջադրանքներ» բաժնում ստեղծիր 5 բարդ թեստ տարբեր մոդուլներից (interleaving)","Կազմիր վերջին 14 օրվա պլան","Անցիր AI փորձնական հարցազրույցը (PMP սցենարներով)"], deliverable:"Mock արդյունքներ, error log, 14-օրյա պլան", tools:["interview"]},
+  quiz:[
+    ["«What should the project manager do FIRST?» հարցում հաճախ ճիշտն է...",["Escalate sponsor-ին","Վերլուծել/գնահատել իրավիճակը","Փոխել թիմը","Ավելացնել բյուջե"],1,"Assess before act։"],
+    ["Մոտավորապես քանի՞ րոպե կա մեկ հարցի համար նոր PMP-ում։",["0.75","1.33","2","3"],1,"240/180։"],
+    ["Ո՞ր ուսուցման տեխնիկան է ամենաուժեղը ըստ Roediger & Karpicke-ի։",["Կրկնակի ընթերցում","Retrieval practice (ինքնաստուգում)","Ընդգծում","Միայն վիդեո"],1,"Testing effect։"],
+    ["«What should the PM have done to prevent this?» հարցերը հաճախ վերաբերում են...",["Պլանավորմանը (risk, communication, stakeholder plans)","Փակմանը","Գնումներին միշտ","Խրախուսմանը"],0,"Proactive պլանավորում։"],
+    ["Interleaving-ը...",["Մեկ թեմա անընդմեջ","Տարբեր թեմաների խառնում պրակտիկայում","Քնել ուսման ընթացքում","Միայն mock exam"],1,"Ավելի լավ փոխանցում։"]
+  ]}
+],
+final:[
+  ["Predictive նախագիծ. հաճախորդը խնդրում է փոքր փոփոխություն և ասում, որ այն «անվճար է»։ PM-ը պետք է...",["Կատարել անմիջապես","Գրանցել change request, վերլուծել ազդեցությունը և ներկայացնել CCB-ին","Մերժել","Կատարել թաքուն"],1,"Integrated change control։"],
+  ["CPI = 0.9, SPI = 1.1։ Նախագիծը...",["Բյուջեից ցածր, ուշացած","Գերծախս, ժամանակացույցից առաջ","Բյուջեից ցածր, առաջ","Գերծախս, ուշացած"],1,"CPI < 1, SPI > 1։"],
+  ["Agile թիմի անդամը հաճախ ուշանում է daily-ից, և թիմը դժգոհ է։ Servant leader-ի առաջին քայլը՝",["Գրավոր նկատողություն","Անձամբ խոսել անդամի հետ՝ պատճառը հասկանալու համար","Escalate HR","Չեղարկել daily-ն"],1,"Անմիջական, աջակցող։"],
+  ["Ռիսկը տեղի ունեցավ, և պլանավորված contingency-ն չաշխատեց։ Ի՞նչ է կիրառվում։",["Workaround միայն","Fallback plan","Avoid","Exploit"],1,"Fallback-ը պլանավորված երկրորդ տարբերակն է։"],
+  ["Կազմակերպությունը ուզում է օգտագործել AI գործիք հաճախորդների տվյալներով ռիսկերի վերլուծության համար։ PM-ի պատասխանատվությունը՝",["Օգտագործել առանց ստուգման","Ապահովել compliance-ը տվյալների պաշտպանության կանոններին, ստուգել արդյունքները և փաստաթղթավորել","Արգելել ամեն AI","Թողնել IT-ին"],1,"Governance և compliance։"],
+  ["Activity A (5 օր) → B (3) → D (4); A → C (6) → D։ Critical path-ի տևողությունը՝",["12","15","18","9"],1,"A-C-D = 5 + 6 + 4 = 15։"],
+  ["Նախագիծը ունի բարձր անորոշություն, պահանջները կփոխվեն, հաճախորդը պատրաստ է շաբաթական feedback տալ։ Մոտեցումը՝",["Predictive","Agile կամ hybrid՝ կարճ iteration-ներով","Waterfall առանց փոփոխության","Ոչ մի պլան"],1,"Մոտեցման ընտրության գործոններ։"],
+  ["Երկու ֆունկցիոնալ ղեկավարներ կռվում են նույն ռեսուրսի համար։ Matrix կազմակերպությունում PM-ը նախ...",["Վերցնում է ռեսուրսը","Բանակցում է ֆունկցիոնալ ղեկավարների հետ՝ ելնելով նախագծի առաջնահերթություններից և ժամանակացույցից","Անտեսում","Փոխում է scope-ը"],1,"Բանակցություն և collaborating։"],
+  ["Ո՞րն է PMBOK 8-ի focus area։",["Monitoring and Controlling","Procurement","Integration","Value stream"],0,"Initiating, Planning, Executing, Monitoring & Controlling, Closing։"],
+  ["Նախագծի ավարտին արտադրանքը ընդունված է, բայց benefits-ը կիրացվեն 1 տարի անց։ Ո՞վ է սովորաբար պատասխանատու benefits-ի իրացման համար։",["Թիմի անդամը","Benefits owner-ը (հաճախ sponsor-ը կամ բիզնեսի ղեկավարը)՝ benefits management plan-ի համաձայն","Մատակարարը","Ոչ ոք"],1,"Benefits management plan։"]
+],
+sources:[
+  ["PMI — PMP Certification","https://www.pmi.org/certifications/project-management-pmp","Իրավասություն և քննություն"],
+  ["PMI — PMBOK® Guide","https://www.pmi.org/standards/pmbok","8-րդ հրատարակություն"],
+  ["Pocket Prep — What's changing on the PMP exam in 2026","https://www.pocketprep.com/posts/whats-changing-on-the-pmp-exam-in-2026/","Domain-ների կշիռներ, 180/240"],
+  ["Learning Tree — PMBOK 8 What's New","https://www.learningtree.com/blog/pmbok-guide-8th-edition-whats-new/","6 սկզբունք, 7 domain, 5 focus area"],
+  ["Agile Manifesto","https://agilemanifesto.org","4 արժեք, 12 սկզբունք"],
+  ["Harvard PON — Getting to Yes / BATNA","https://www.pon.harvard.edu/daily/batna/","Բանակցություններ"]
+], examExtra:20, examMin:50 };
+
+/* ========== PM 2: PRINCE2 7 ========== */
+const P2 = { id:"p2", title:"PRINCE2® 7 Foundation", short:"PRINCE2",
+lead:"PRINCE2 7-րդ հրատարակության մեթոդը՝ 5 ինտեգրված տարր, 7 սկզբունք, 7 պրակտիկա, 7 գործընթաց, դերեր և tailoring, ինչպես նաև Foundation քննության նախապատրաստում։",
+weeks:[
+{ n:1, aca:"Ակնարկ", title:"PRINCE2 7-ի կառուցվածքը և 7 սկզբունքները", short:"Սկզբունքներ",
+  goal:"Հասկանալ PRINCE2-ի 5 ինտեգրված տարրերը և 7 սկզբունքները, որոնք պարտադիր են ցանկացած PRINCE2 նախագծի համար։",
+  lessons:[
+    {t:"Ինչ է PRINCE2-ը և 5 ինտեգրված տարրերը", h:"1 ժ", b:`<p><b>PRINCE2</b> (PRojects IN Controlled Environments)՝ կառուցվածքային, գործընթացային մեթոդ, որը ծագել է Մեծ Բրիտանիայի պետական հատվածից և այժմ տարածված է Եվրոպայում, Ավստրալիայում և միջազգային կազմակերպություններում։ Սեփականատերը PeopleCert-ն է (AXELOS)։ 7-րդ հրատարակությունը թողարկվել է 2023-ին։</p>
+      <div class="formula">5 ինտեգրված տարր
+1. Principles (սկզբունքներ)  — 7 պարտադիր
+2. People (մարդիկ)           — նոր 7-րդ հրատարակությունում. առաջնորդություն, թիմեր, հաղորդակցություն, փոփոխություն
+3. Practices (պրակտիկաներ)   — 7 կառավարման ասպեկտ
+4. Processes (գործընթացներ)  — 7 գործընթաց՝ սկզբից մինչև վերջ
+5. Project context           — tailoring ըստ նախագծի միջավայրի</div>
+      <p>PRINCE2-ը կենտրոնանում է <b>ինչ</b> և <b>ով</b> հարցերի վրա (կառավարում, որոշումներ, դերեր). այն չի նկարագրում մասնագիտական տեխնիկաներ (օր.՝ ինչպես գրել կոդ կամ կառուցել շենք)։</p>`},
+    {t:"7 սկզբունք", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Սկզբունք</th><th>Իմաստ</th></tr>
+      <tr><td>Ensure continued business justification</td><td>Նախագիծը պետք է արդարացված լինի ողջ կյանքի ընթացքում (business case)</td></tr>
+      <tr><td>Learn from experience</td><td>Դասեր նախորդ նախագծերից և ընթացքում</td></tr>
+      <tr><td>Define roles, responsibilities and relationships</td><td>Հստակ դերեր՝ բիզնես, օգտատեր, մատակարար</td></tr>
+      <tr><td>Manage by stages</td><td>Պլանավորում, մոնիթորինգ և վերահսկում փուլ առ փուլ</td></tr>
+      <tr><td>Manage by exception</td><td>Tolerance-ներ, որոնց սահմաններում կառավարող մակարդակը չի միջամտում</td></tr>
+      <tr><td>Focus on products</td><td>Արդյունքների (product) սահմանում և որակ</td></tr>
+      <tr><td>Tailor to suit the project</td><td>Հարմարեցում նախագծի չափին, բարդությանը, ռիսկին</td></tr></table></div>
+      <p>Եթե որևէ սկզբունք չի կիրառվում, նախագիծը PRINCE2 նախագիծ չէ։</p>`},
+    {t:"7 performance target և tolerance", h:"1 ժ", b:`<div class="formula">7 performance target / tolerance ասպեկտ
+Time · Cost · Scope · Quality · Benefits · Risk · Sustainability</div>
+      <p><b>Tolerance</b>՝ թույլատրելի շեղում պլանից (օր.՝ ծախս ±10%, ժամանակ ±2 շաբաթ)։ Եթե կանխատեսվում է tolerance-ի խախտում, ստորին մակարդակը ստեղծում է <b>exception</b> և դիմում վերին մակարդակին։</p>
+      <div class="formula">Կառավարման 4 մակարդակ
+Business layer (կազմակերպություն) → project tolerance
+Directing (Project Board)          → stage tolerance
+Managing (Project Manager)         → work package tolerance
+Delivering (Team Manager)</div>
+      <p><b>Sustainability</b>-ը 7-րդ հրատարակությունում նոր performance target է, որը կառավարվում է նույնպես, ինչպես ժամանակը և ծախսը։</p>`}
+  ],
+  practice:{t:"Սկզբունքների աուդիտ", steps:["Ընտրիր քո փորձից կամ լուրերից ձախողված նախագիծ","Գնահատիր, թե 7 սկզբունքներից որոնք են խախտվել և ինչպես","Առաջարկիր tolerance-ներ 7 ասպեկտով այդ նախագծի համար","Նկարագրիր, թե ինչ exception կառաջանար և ով կորոշեր"], deliverable:"Սկզբունքների աուդիտ և tolerance աղյուսակ"},
+  quiz:[
+    ["Քանի՞ ինտեգրված տարր ունի PRINCE2 7-ը։",["4","5","7","10"],1,"Principles, People, Practices, Processes, Project context։"],
+    ["Ո՞ր սկզբունքն է ապահովում, որ Project Board-ը չի միջամտում tolerance-ի սահմաններում։",["Manage by stages","Manage by exception","Focus on products","Learn from experience"],1,"Manage by exception։"],
+    ["Ո՞րն է PRINCE2 7-ի նոր performance target։",["Scope","Sustainability","Time","Cost"],1,"Sustainability։"],
+    ["Եթե նախագիծը չի կիրառում «Ensure continued business justification» սկզբունքը...",["Այն դեռ PRINCE2 է","Այն PRINCE2 նախագիծ չէ","Պետք է միայն tailoring","Կարևոր չէ"],1,"Բոլոր 7 սկզբունքները պարտադիր են։"],
+    ["PRINCE2-ը հիմնականում նկարագրում է...",["Մասնագիտական տեխնիկաներ","Նախագծի կառավարում, դերեր և որոշումներ","Ծրագրավորման լեզուներ","Շինարարական նորմեր"],1,"«Ինչ» և «ով», ոչ թե մասնագիտական «ինչպես»։"]
+  ]},
+{ n:2, aca:"People և Organizing", title:"People, Organizing և project context", short:"Դերեր",
+  goal:"Իմանալ PRINCE2-ի դերերը, Project Board-ի կազմը, երեք շահի խմբերը և tailoring-ը։",
+  lessons:[
+    {t:"Երեք շահ և Project Board", h:"1 ժ", b:`<div class="formula">Project Board
+ ├── Executive        — բիզնեսի շահը, վերջնական որոշում, business case-ի սեփականատեր
+ ├── Senior User      — օգտատերերի շահը, benefits-ը
+ └── Senior Supplier  — մատակարարի շահը, տեխնիկական իրագործելիություն և ռեսուրսներ
+Project Assurance — անկախ ստուգում Board-ի անունից (ոչ PM-ի)
+Change Authority  — փոփոխությունների որոշում, եթե Board-ը պատվիրակել է
+Project Manager   — ամենօրյա կառավարում stage tolerance-ի սահմաններում
+Team Manager      — work package-ների առաքում
+Project Support   — ադմինիստրատիվ աջակցություն, configuration management</div>
+      <p>Executive-ը միշտ մեկ մարդ է։ Senior User և Senior Supplier դերերը կարող են կատարել մի քանի մարդ։ PM-ը և Executive-ը չեն կարող համակցվել նույն անձի մեջ։ Project Assurance-ը չի կարող պատվիրակվել PM-ին։</p>`},
+    {t:"People տարրը", h:"1 ժ", b:`<ul><li><b>Leadership</b>՝ PM-ը առաջնորդում է առանց ուղիղ իշխանության, հաճախ matrix միջավայրում</li><li><b>Change management</b>՝ նախագիծը փոփոխություն է ստեղծում կազմակերպությունում. պետք է աշխատել այն մարդկանց հետ, ում վրա ազդում է</li><li><b>Teams and collaboration</b>՝ վստահություն, հաղորդակցություն, թիմերի միջև համագործակցություն (մատակարար և հաճախորդ)</li><li><b>Communication</b>՝ communication management approach. ում, ինչ, երբ, ինչպես</li><li><b>Կազմակերպական կոնտեքստ</b>՝ commissioning organization, user organization, supplier organization</li></ul>`},
+    {t:"Tailoring և project context", h:"1 ժ", b:`<ul><li><b>Tailoring</b>-ը PRINCE2-ի հարմարեցումն է նախագծի չափին, բարդությանը, ռիսկին, ոլորտին և կազմակերպությանը. սկզբունքները չեն փոխվում, իսկ պրակտիկաները, գործընթացները, դերերը և փաստաթղթերը կարող են հարմարեցվել</li><li>Փոքր նախագծում մեկ մարդը կարող է կատարել մի քանի դեր (բացի նշված անհամատեղելիներից), փաստաթղթերը կարող են միավորվել</li><li><b>PRINCE2 և agile</b>՝ PRINCE2-ը կարող է լինել կառավարման շրջանակ, իսկ առաքումը՝ Scrum կամ Kanban (PRINCE2 Agile)</li><li>Tailoring-ի որոշումները փաստաթղթավորվում են <b>Project Initiation Documentation (PID)</b>-ում</li></ul>`}
+  ],
+  practice:{t:"Կառավարման կառուցվածք", steps:["Ընտրիր նախագիծ (օր.՝ համայնքային կենտրոնի կառուցում կամ CRM ներդրում)","Նշանակիր բոլոր PRINCE2 դերերը իրական պաշտոններով","Ստուգիր անհամատեղելի համակցությունները","Գրիր tailoring-ի 5 որոշում և հիմնավորում"], deliverable:"Կառուցվածքի դիագրամ, դերերի աղյուսակ, tailoring որոշումներ"},
+  quiz:[
+    ["Ո՞վ է business case-ի սեփականատերը։",["Project Manager","Executive","Senior Supplier","Team Manager"],1,"Executive։"],
+    ["Ո՞վ է ներկայացնում օգտատերերի շահը Project Board-ում։",["Senior User","Senior Supplier","Project Support","Change Authority"],0,"Senior User։"],
+    ["Project Assurance-ը կարո՞ղ է պատվիրակվել Project Manager-ին։",["Այո","Ոչ","Միայն փոքր նախագծերում","Միայն agile-ում"],1,"Assurance-ը անկախ է PM-ից։"],
+    ["Tailoring-ի ժամանակ ինչը չի կարելի փոխել։",["Փաստաթղթերի ձևաչափը","Սկզբունքները","Դերերի համակցությունը","Պրակտիկաների մանրամասները"],1,"Սկզբունքները համընդհանուր են։"],
+    ["Tailoring-ի որոշումները փաստաթղթավորվում են...",["Daily log-ում","PID-ում","Lessons log-ում","Issue register-ում"],1,"Project Initiation Documentation։"]
+  ]},
+{ n:3, aca:"Պրակտիկաներ I", title:"Business case, Plans և Quality", short:"Պրակտիկաներ I",
+  goal:"Կիրառել business case, պլանավորման և որակի պրակտիկաները՝ product-based planning-ով։",
+  lessons:[
+    {t:"Business case պրակտիկա", h:"1 ժ", b:`<ul><li><b>Business case</b>՝ արդյոք նախագիծը ցանկալի (desirable), կենսունակ (viable) և իրագործելի (achievable) է</li><li>Բովանդակություն՝ executive summary, պատճառներ, տարբերակներ (ներառյալ «ոչինչ չանել»), ակնկալվող benefits և dis-benefits, ժամանակ, ծախսեր, ներդրումային գնահատում, հիմնական ռիսկեր</li><li><b>Output → Outcome → Benefit</b>. օր.՝ նոր համակարգ (output) → աշխատակիցները արագ են մշակում հայտերը (outcome) → 20% ծախսերի կրճատում (benefit)</li><li><b>Benefits management approach</b>՝ ինչպես և երբ կչափվեն benefits-ը (հաճախ նախագծից հետո)</li><li>Business case-ը թարմացվում է յուրաքանչյուր փուլի վերջում</li></ul>`},
+    {t:"Plans պրակտիկա և product-based planning", h:"1.5 ժ", b:`<div class="formula">Պլանների մակարդակներ: Project plan → Stage plan → Team plan
+                       + Exception plan (փոխարինում է stage/project plan-ին)
+Product-based planning:
+1. Project product description (ամբողջ արդյունքը, acceptance criteria)
+2. Product breakdown structure (PBS)
+3. Product descriptions (յուրաքանչյուր product-ի համար)
+4. Product flow diagram (հաջորդականություն)
+→ ապա activity-ներ, գնահատումներ, ժամանակացույց</div>
+      <p>PRINCE2-ը պլանավորում է սկսում <b>products</b>-ից (focus on products սկզբունք), ոչ թե activity-ներից։ Management products (փաստաթղթեր) և specialist products (մասնագիտական արդյունքներ)։</p>`},
+    {t:"Quality պրակտիկա", h:"1 ժ", b:`<ul><li><b>Quality planning</b>՝ customer's quality expectations → acceptance criteria → project product description → quality management approach → product descriptions (quality criteria, tolerance, method, responsibilities)</li><li><b>Quality control</b>՝ quality methods (inspection, testing, quality review technique) և quality register-ում գրանցումներ</li><li><b>Quality assurance</b>՝ անկախ ստուգում, որ գործընթացները ճիշտ են կիրառվում (կազմակերպության, ոչ թե նախագծի պատասխանատվություն)</li><li><b>Quality review technique</b>-ի դերեր՝ chair, presenter, reviewer, administrator</li><li><b>Acceptance records</b>՝ product-ի հաստատում</li></ul>`}
+  ],
+  practice:{t:"Business case և product-based plan", steps:["Գրիր 1-էջանոց business case (տարբերակներ, benefits, ծախսեր, ռիսկեր)","Կազմիր project product description acceptance criteria-ով","Կառուցիր product breakdown structure (առնվազն 10 product)","Գրիր 2 product description quality criteria-ով","Գծիր product flow diagram"], deliverable:"Business case, PBS, product descriptions, PFD"},
+  quiz:[
+    ["Business case-ում պարտադիր տարբերակ է...",["Միայն լավագույնը","«Ոչինչ չանել»","Միայն ամենաէժանը","Ոչ մի տարբերակ"],1,"Համեմատության հիմք։"],
+    ["Product-based planning-ի առաջին քայլը՝",["Gantt chart","Project product description","Ռիսկերի ցուցակ","Թիմի ընտրություն"],1,"Սկսում ենք ամբողջ արդյունքի նկարագրությունից։"],
+    ["Ո՞ր պլանն է փոխարինում stage plan-ին exception-ից հետո։",["Team plan","Exception plan","Benefits plan","Daily log"],1,"Exception plan։"],
+    ["Quality register-ը...",["Ռիսկերի ցուցակ","Որակի ստուգումների գրանցում","Business case","Ծախսերի աղյուսակ"],1,"Quality control-ի ապացույց։"],
+    ["Output → Outcome → Benefit. ո՞րն է benefit։",["Նոր ծրագիրը","Աշխատակիցները արագ են աշխատում","Տարեկան 15% ծախսերի կրճատում","Թիմը"],2,"Չափելի բարելավում։"]
+  ]},
+{ n:4, aca:"Պրակտիկաներ II", title:"Risk, Issues և Progress", short:"Պրակտիկաներ II",
+  goal:"Կառավարել ռիսկերը, issue-ները և փոփոխությունները, և վերահսկել առաջընթացը tolerance-ներով և exception-ներով։",
+  lessons:[
+    {t:"Risk պրակտիկա", h:"1 ժ", b:`<div class="formula">Risk management procedure: Identify → Assess → Plan → Implement  (+ Communicate ամբողջ ընթացքում)
+Risk description: Cause → Event → Effect
+Risk appetite (կազմակերպության) → risk tolerance (նախագծի)</div>
+      <ul><li><b>Threat responses</b>՝ avoid, reduce, transfer, share, accept, prepare contingent plans</li><li><b>Opportunity responses</b>՝ exploit, enhance, share, reject, prepare contingent plans</li><li><b>Risk owner</b> (պատասխանատու ռիսկի համար) և <b>risk actionee</b> (կատարում է արձագանքը)</li><li><b>Risk register</b>, risk management approach, <b>risk budget</b></li></ul>`},
+    {t:"Issues պրակտիկա (նախկին Change)", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Issue-ի տեսակ</th><th>Օրինակ</th></tr><tr><td>Request for change</td><td>Ավելացնել նոր ֆունկցիա baseline-ին</td></tr><tr><td>Off-specification</td><td>Product-ը չի համապատասխանում նկարագրությանը</td></tr><tr><td>Problem / concern</td><td>Ցանկացած այլ հարց, որը պետք է լուծել</td></tr></table></div>
+      <div class="formula">Issue procedure: Capture → Assess → Recommend → Decide → Implement
+Change budget — գումար փոփոխությունների համար, Change Authority-ի տնօրինությամբ
+Configuration management — product-ների տարբերակների վերահսկում (baseline)</div>
+      <p>Փոքր issue-ները կարող են կառավարվել ոչ ֆորմալ <b>daily log</b>-ում, ֆորմալները՝ <b>issue register</b>-ում և <b>issue report</b>-ով։</p>`},
+    {t:"Progress պրակտիկա", h:"1 ժ", b:`<ul><li><b>Event-driven controls</b>՝ end stage assessment, exception report, project closure</li><li><b>Time-driven controls</b>՝ checkpoint report (Team Manager → PM), highlight report (PM → Board)</li><li><b>Exception process</b>՝ PM-ը կանխատեսում է stage tolerance-ի խախտում → exception report Board-ին → Board-ը որոշում է (exception plan, tolerance-ի փոփոխություն, փակում)</li><li><b>Work package</b>՝ PM-ի և Team Manager-ի միջև համաձայնություն (ինչ, tolerance, հաշվետվություն)</li><li><b>Lessons log</b> և <b>lessons report</b></li><li>Stage-ների քանակը և երկարությունը որոշվում են ռիսկով, բարդությամբ և որոշումների կետերով</li></ul>`}
+  ],
+  practice:{t:"Վերահսկման փաստաթղթեր", steps:["Կազմիր risk register 6 ռիսկով (cause-event-effect, owner, actionee, response)","Գրանցիր 3 issue (յուրաքանչյուր տեսակից մեկը) issue register-ում և նկարագրիր որոշման ուղին","Գրիր highlight report ձևանմուշ","Նկարագրիր exception սցենար. ծախսը կգերազանցի stage tolerance-ը 15%-ով. ով ինչ է անում"], deliverable:"Risk register, issue register, highlight report, exception սցենար"},
+  quiz:[
+    ["Ո՞վ է կատարում ռիսկի արձագանքը, եթե դա owner-ը չէ։",["Risk actionee","Executive","Senior User","Project Support"],0,"Risk actionee։"],
+    ["Product-ը չի համապատասխանում product description-ին։ Issue-ի տեսակը՝",["Request for change","Off-specification","Problem","Risk"],1,"Off-specification։"],
+    ["Highlight report-ը ուղարկվում է...",["Team Manager-ից PM-ին","PM-ից Project Board-ին","Board-ից կազմակերպությանը","Մատակարարին"],1,"Time-driven control։"],
+    ["PM-ը կանխատեսում է stage tolerance-ի խախտում։ Ի՞նչ է անում։",["Լուռ շարունակում է","Exception report Project Board-ին","Փակում է նախագիծը","Փոխում է tolerance-ը ինքը"],1,"Manage by exception։"],
+    ["Ո՞ր պրակտիկայում է կիրառվում «opportunity»-ի «exploit» արձագանքը։",["Issues","Risk","Quality","Plans"],1,"Risk պրակտիկա։"]
+  ]},
+{ n:5, aca:"Գործընթացներ", title:"7 գործընթացները", short:"Գործընթացներ",
+  goal:"Իմանալ 7 գործընթացների նպատակները, որ դերն է պատասխանատու և ինչ արդյունքներ են ստեղծվում։",
+  lessons:[
+    {t:"Starting up, Directing, Initiating", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Գործընթաց</th><th>Նպատակ</th><th>Հիմնական արդյունքներ</th></tr>
+      <tr><td>Starting up a project (SU)</td><td>Ստուգել, որ նախագիծը արժե սկսել. «արժե՞ նախագիծը»</td><td>Project brief, outline business case, Executive-ի և PM-ի նշանակում, lessons log, initiation stage plan</td></tr>
+      <tr><td>Directing a project (DP)</td><td>Project Board-ի որոշումներ ամբողջ նախագծի ընթացքում</td><td>Թույլտվություններ՝ initiation, project, stage, exception plan, closure. ad hoc ուղղություն</td></tr>
+      <tr><td>Initiating a project (IP)</td><td>Ստեղծել ամուր հիմք</td><td>PID՝ business case, project plan, management approaches (risk, quality, issue, communication), controls, tailoring</td></tr></table></div>
+      <p>Pre-project trigger՝ <b>project mandate</b>։ SU-ն կարճ է և նախորդում է նախագծին. IP-ն առաջին փուլն է (initiation stage)։</p>`},
+    {t:"Controlling a stage, Managing product delivery, Managing a stage boundary", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Գործընթաց</th><th>Ով</th><th>Ինչ</th></tr>
+      <tr><td>Controlling a stage (CS)</td><td>Project Manager</td><td>Work package-ների թույլատրում, առաջընթացի վերանայում, issue-ների և ռիսկերի կառավարում, highlight report-ներ, exception-ի բարձրացում</td></tr>
+      <tr><td>Managing product delivery (MP)</td><td>Team Manager</td><td>Work package-ի ընդունում, կատարում, checkpoint report-ներ, ավարտված product-ների հանձնում</td></tr>
+      <tr><td>Managing a stage boundary (SB)</td><td>Project Manager</td><td>Ընթացիկ փուլի ամփոփում (end stage report), հաջորդ stage plan-ի պատրաստում, business case-ի թարմացում, կամ exception plan</td></tr></table></div>`},
+    {t:"Closing a project", h:"1 ժ", b:`<ul><li><b>Նպատակ</b>՝ ֆիքսված կետ, որտեղ հաստատվում է, որ project product-ը ընդունված է, և նախագիծը այլևս ունի ավելացնելու ոչինչ</li><li><b>Գործողություններ</b>՝ պլանավորված փակման պատրաստում, վաղաժամ փակման պատրաստում (եթե Board-ը որոշել է), product-ների հանձնում, նախագծի գնահատում, փակման առաջարկ</li><li><b>Արդյունքներ</b>՝ end project report, lessons report, follow-on action recommendations, benefits management approach-ի թարմացում (benefits-ի հետագա չափման համար)</li><li>Վերջնական որոշումը՝ <b>Directing a project</b>-ում (Board-ը թույլատրում է փակումը)</li></ul>`}
+  ],
+  practice:{t:"Գործընթացների քարտեզ", steps:["Գծիր 7 գործընթացների հոսքը մտացածին նախագծի համար (3 delivery stage)","Յուրաքանչյուր գործընթացի համար նշիր պատասխանատու դերը և 2 հիմնական արդյունք","Գրիր project brief-ի 1-էջանոց տարբերակ","Գրիր end stage report-ի կառուցվածքը"], deliverable:"Գործընթացների քարտեզ, project brief, end stage report ձևանմուշ"},
+  quiz:[
+    ["Ո՞ր գործընթացն է ստեղծում PID-ը։",["Starting up","Initiating a project","Controlling a stage","Closing"],1,"Initiating a project։"],
+    ["Checkpoint report-ները ստեղծվում են...",["Directing a project-ում","Managing product delivery-ում","Starting up-ում","Closing-ում"],1,"Team Manager-ի կողմից։"],
+    ["Project mandate-ը...",["Starting up-ի trigger-ն է","PID-ի մաս","Փակման փաստաթուղթ","Exception report"],0,"Pre-project trigger։"],
+    ["Հաջորդ stage plan-ը պատրաստվում է...",["Managing a stage boundary-ում","Managing product delivery-ում","Closing-ում","Starting up-ում միշտ"],0,"SB գործընթաց։"],
+    ["Ո՞վ է թույլատրում նախագծի փակումը։",["Team Manager","Project Board (Directing a project)","Project Support","Senior Supplier միայնակ"],1,"Board-ի որոշում։"]
+  ]},
+{ n:6, aca:"Քննություն", title:"Foundation քննության նախապատրաստում", short:"Exam",
+  goal:"Պատրաստվել PRINCE2 7 Foundation քննությանը և հասկանալ, թե ինչպես է PRINCE2-ը համադրվում PMP-ի և agile-ի հետ։",
+  lessons:[
+    {t:"Քննության ձևաչափը", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Պարամետր</th><th>Foundation (7-րդ հրատ.)</th></tr><tr><td>Հարցեր</td><td>60 multiple choice</td></tr><tr><td>Ժամանակ</td><td>60 րոպե (+25% ոչ մայրենի լեզվով հանձնողների համար՝ պայմաններով)</td></tr><tr><td>Անցողիկ</td><td>60% (36/60)</td></tr><tr><td>Ձևաչափ</td><td>Closed book, առանց բացասական միավորների</td></tr><tr><td>Նախապայման</td><td>Չկա</td></tr></table></div>
+      <p><b>Practitioner</b>-ը սցենարային է և open book (պաշտոնական ձեռնարկով). նախապայման՝ Foundation կամ ընդունված այլ սերտիֆիկատ։ Միշտ ստուգիր ընթացիկ պայմանները PeopleCert-ի կայքում։</p>`},
+    {t:"Քննական թակարդներ", h:"1 ժ", b:`<ul><li><b>Ով vs ինչ</b>՝ շատ հարցեր ստուգում են, թե որ դերն է պատասխանատու (օր.՝ Executive-ը business case-ի համար, Senior User-ը benefits-ի կանխատեսման համար)</li><li><b>Պրակտիկա vs գործընթաց</b>՝ «quality register»-ը Quality պրակտիկայից է, իսկ «Controlling a stage»-ը գործընթաց է</li><li><b>Նախկին անվանումներ</b>՝ Organization → Organizing, Change → Issues. 6-րդ հրատարակության «themes»-ը այժմ «practices» են</li><li><b>Բացարձակ բառեր</b>՝ «always», «never» սովորաբար սխալ են, բացի սկզբունքներից</li><li>Կարդա բոլոր 4 տարբերակները. երկուսը կարող են թվալ ճիշտ, բայց մեկն ավելի ճշգրիտ է PRINCE2 տերմինաբանությամբ</li></ul>`},
+    {t:"PRINCE2, PMP և agile", h:"1 ժ", b:`<div class="tbl"><table><tr><th></th><th>PRINCE2</th><th>PMBOK / PMP</th><th>Scrum</th></tr><tr><td>Բնույթ</td><td>Մեթոդ (ինչ և ով)</td><td>Գիտելիքի մարմին և ստանդարտ (ինչ և ինչպես)</td><td>Թեթև շրջանակ (framework)</td></tr><tr><td>Շեշտ</td><td>Կառավարում, դերեր, business case</td><td>Գործիքներ, տեխնիկաներ, հմտություններ</td><td>Empiricism, արժեքի արագ առաքում</td></tr><tr><td>Տարածվածություն</td><td>ՄԲ, Եվրոպա, Ավստրալիա, միջազգային կազմակերպություններ</td><td>ԱՄՆ, Մերձավոր Արևելք, համաշխարհային</td><td>Ծրագրային ապահովում, համաշխարհային</td></tr></table></div>
+      <p>Իրական կազմակերպություններում հաճախ համադրում են. PRINCE2-ի governance + PMBOK-ի տեխնիկաներ + Scrum-ի առաքում։</p>`}
+  ],
+  practice:{t:"Foundation mock", steps:["Անցիր ավարտական քննությունը ժամաչափով","Ստեղծիր 3 բարդ AI թեստ «Թեստային առաջադրանքներ» բաժնում","Կազմիր flashcard-ներ 7 սկզբունքների, 7 պրակտիկաների, 7 գործընթացների և դերերի համար","Գրանցիր սխալները error log-ում"], deliverable:"Mock արդյունքներ, flashcard-ներ, error log", tools:["interview"]},
+  quiz:[
+    ["Foundation քննության անցողիկ միավորը՝",["50%","60% (36/60)","65%","85%"],1,"36/60։"],
+    ["6-րդ հրատարակության «Change» թեման 7-րդում կոչվում է...",["Issues","Progress","Risk","Organizing"],0,"Issues։"],
+    ["Foundation-ը open book է։",["Այո","Ոչ, closed book","Միայն մասամբ","Կախված է երկրից"],1,"Closed book. Practitioner-ն է open book։"],
+    ["PRINCE2-ը հիմնականում ո՞ր հարցերին է պատասխանում։",["Ինչ և ով","Միայն ինչպես","Միայն երբ","Միայն որքան"],0,"Կառավարում և դերեր։"],
+    ["Ո՞վ է պատասխանատու benefits-ի կանխատեսման և իրացման համար օգտատիրոջ կողմից։",["Senior Supplier","Senior User","Project Support","Team Manager"],1,"Senior User։"]
+  ]}
+],
+final:[
+  ["Նախագծի ընթացքում պարզվում է, որ business case-ը այլևս արդարացված չէ։ Ի՞նչ պետք է անի Project Board-ը։",["Շարունակել, քանի որ գումարը ծախսված է","Վաղաժամ փակել նախագիծը (continued business justification)","Ավելացնել scope","Փոխել PM-ին"],1,"Սկզբունք 1։"],
+  ["Team Manager-ը կանխատեսում է work package-ի tolerance-ի խախտում։ Ում է տեղեկացնում։",["Project Board-ին","Project Manager-ին (issue)","Կազմակերպությանը","Ոչ մեկին"],1,"Exception-ը բարձրանում է մեկ մակարդակ։"],
+  ["Ո՞ր դերը չի կարող համակցվել Project Manager-ի հետ։",["Project Support","Executive","Team Manager","Change Authority՝ փոքր փոփոխությունների համար"],1,"Executive-ը և PM-ը անհամատեղելի են։"],
+  ["PID-ը ստեղծվում է...",["Starting up a project","Initiating a project","Managing a stage boundary","Closing a project"],1,"Initiation stage։"],
+  ["Product-ը չի համապատասխանում quality criteria-ին, բայց Senior User-ը պատրաստ է ընդունել այն որոշ պայմաններով։ Սա...",["Risk","Off-specification issue, որը կարող է ընդունվել concession-ով","Request for change","Lessons"],1,"Concession։"],
+  ["Ո՞ր հաշվետվությունն է time-driven։",["End stage report","Highlight report","Exception report","End project report"],1,"Highlight report՝ պարբերական։"],
+  ["Ո՞րն է PRINCE2 7-ի պրակտիկա։",["Organizing","Directing a project","Managing by stages","Project brief"],0,"Business case, Organizing, Plans, Quality, Risk, Issues, Progress։"],
+  ["Product-based planning-ում product flow diagram-ը ցույց է տալիս...",["Ռիսկերը","Product-ների ստեղծման հաջորդականությունը և կախվածությունները","Թիմը","Բյուջեն"],1,"PFD։"],
+  ["Փոքր նախագծում PM-ը ուզում է հրաժարվել Project Board-ի պաշտոնական հանդիպումներից։ PRINCE2-ի տեսանկյունից՝",["Արգելված է","Թույլատրելի է tailoring-ով, եթե պահպանվում են սկզբունքները և որոշումների մեխանիզմը","Միայն PeopleCert-ի թույլտվությամբ","Պետք է փոխել մեթոդը"],1,"Tailor to suit the project։"],
+  ["Ո՞ր performance target-ն է ավելացել 7-րդ հրատարակությունում։",["Sustainability","Time","Quality","Risk"],0,"Sustainability։"]
+],
+sources:[
+  ["PeopleCert / AXELOS — PRINCE2 7 Foundation","https://www.axelos.com/certifications/propath/prince2-project-management/prince2-7-foundation","Պաշտոնական սերտիֆիկացում"],
+  ["OpenExamPrep — PRINCE2 Foundation exam facts","https://open-exam-prep.com/study-guides/prince2/orientation-and-exam-strategy/current-exam-facts","60 հարց, 60 րոպե, 60%"],
+  ["PRINCE2.com — PRINCE2 7 questions answered","https://www.prince2.com/usa/blog/prince2-7-your-questions-answered","7-րդ հրատարակության փոփոխություններ"],
+  ["UK Government — Project delivery","https://www.gov.uk/government/organisations/infrastructure-and-projects-authority","Պետական նախագծերի կառավարում ՄԲ-ում"]
+], examExtra:20, examMin:45 };
+
+/* ========== PM 3: PSM I ========== */
+const PSM = { id:"psm", title:"Scrum Master՝ PSM I նախապատրաստում", short:"Scrum",
+lead:"Scrum Guide 2020-ի խորը ուսումնասիրություն՝ empiricism, Scrum Team-ի պատասխանատվություններ, իրադարձություններ, արտեֆակտներ և պարտավորություններ, տարածված թյուրըմբռնումներ և Scrum.org-ի PSM I քննության նախապատրաստում։",
+weeks:[
+{ n:1, aca:"Տեսություն", title:"Empiricism, Lean և Scrum-ի արժեքները", short:"Տեսություն",
+  goal:"Հասկանալ Scrum-ի տեսական հիմքը՝ empiricism, lean thinking, 3 հենասյուներ և 5 արժեքներ։",
+  lessons:[
+    {t:"Ինչ է Scrum-ը", h:"1 ժ", b:`<p>Scrum Guide 2020-ի սահմանմամբ Scrum-ը <b>թեթև շրջանակ (lightweight framework)</b> է, որն օգնում է մարդկանց, թիմերին և կազմակերպություններին արժեք ստեղծել բարդ խնդիրների ադապտիվ լուծումների միջոցով։ Scrum-ը միտումնավոր թերի է. այն չի նկարագրում բոլոր պրակտիկաները (օր.՝ user story-ներ, story points, burndown-ներ Scrum Guide-ի մաս չեն)։</p>
+      <div class="formula">Scrum Master-ը նպաստում է միջավայրի ստեղծմանը, որտեղ.
+1. Product Owner-ը կարգավորում է աշխատանքը բարդ խնդրի համար Product Backlog-ում
+2. Scrum Team-ը Sprint-ի ընթացքում ընտրված աշխատանքը վերածում է արժեքի Increment-ի
+3. Scrum Team-ը և շահակիցները ստուգում են արդյունքները և հարմարվում հաջորդ Sprint-ի համար
+4. Կրկնել</div>`},
+    {t:"Empiricism և lean thinking", h:"1 ժ", b:`<p><b>Empiricism</b>՝ գիտելիքը գալիս է փորձից, և որոշումները կայացվում են դիտարկվածի հիման վրա։ <b>Lean thinking</b>՝ նվազեցնել վատնումը և կենտրոնանալ էականի վրա։ Scrum-ը օգտագործում է <b>իտերատիվ, ինկրեմենտալ մոտեցում</b>՝ կանխատեսելիությունը բարելավելու և ռիսկը վերահսկելու համար։</p>
+      <div class="tbl"><table><tr><th>Հենասյուն</th><th>Իմաստ</th></tr><tr><td>Transparency</td><td>Գործընթացը և աշխատանքը տեսանելի են և՛ կատարողներին, և՛ ստացողներին. ցածր թափանցիկությամբ արտեֆակտները կարող են հանգեցնել սխալ որոշումների</td></tr><tr><td>Inspection</td><td>Արտեֆակտները և առաջընթացը պետք է ստուգվեն հաճախ և ջանասիրաբար. Scrum իրադարձությունները նախատեսված են դրա համար</td></tr><tr><td>Adaptation</td><td>Եթե շեղումը անընդունելի է, գործընթացը կամ արդյունքը պետք է կարգավորվեն որքան հնարավոր է շուտ</td></tr></table></div>
+      <p>Inspection առանց transparency-ի մոլորեցնող է, իսկ inspection առանց adaptation-ի՝ անիմաստ։</p>`},
+    {t:"Scrum-ի 5 արժեքները", h:"1 ժ", b:`<div class="formula">Commitment · Focus · Openness · Respect · Courage</div>
+      <ul><li><b>Commitment</b>՝ թիմը պարտավորվում է հասնել իր նպատակներին և աջակցել միմյանց</li><li><b>Focus</b>՝ կենտրոնացում Sprint-ի աշխատանքի վրա՝ նպատակների ուղղությամբ լավագույն առաջընթացի համար</li><li><b>Openness</b>՝ թափանցիկություն աշխատանքի և մարտահրավերների մասին</li><li><b>Respect</b>՝ միմյանց հարգանք որպես ունակ, անկախ մարդկանց</li><li><b>Courage</b>՝ քաջություն ճիշտն անելու և բարդ խնդիրների վրա աշխատելու համար</li></ul>
+      <p>Երբ այս արժեքները կենդանի են, հենասյուները կյանքի են կոչվում և վստահություն են կառուցում։</p>`}
+  ],
+  practice:{t:"Scrum Guide-ի ընթերցում", steps:["Կարդա Scrum Guide 2020-ը ամբողջությամբ (13 էջ, scrumguides.org)","Ընդգծիր բոլոր «must» և «should» բառերը և գրիր, թե ինչ են պարտադրում","Գրիր 3 օրինակ քո փորձից, երբ transparency-ի բացակայությունը հանգեցրել է սխալ որոշման","Անցիր Scrum.org-ի անվճար Scrum Open assessment-ը և գրանցիր արդյունքը"], deliverable:"Նշումներ, օրինակներ, Open assessment-ի արդյունք"},
+  quiz:[
+    ["Scrum Guide-ը Scrum-ը սահմանում է որպես...",["Մեթոդաբանություն","Թեթև շրջանակ (lightweight framework)","Գործընթաց","Գործիք"],1,"Lightweight framework։"],
+    ["Scrum-ի 3 հենասյուները՝",["Commitment, Focus, Courage","Transparency, Inspection, Adaptation","Plan, Do, Check","Sprint, Review, Retro"],1,"Empirical pillars։"],
+    ["Story points-ը Scrum Guide-ի մաս է։",["Այո","Ոչ","Միայն Sprint Planning-ում","Միայն 2017-ի տարբերակում"],1,"Scrum-ը միտումնավոր թերի է։"],
+    ["Ո՞րն է Scrum-ի արժեք։",["Speed","Courage","Velocity","Hierarchy"],1,"Commitment, Focus, Openness, Respect, Courage։"],
+    ["Inspection առանց adaptation-ի...",["Իդեալական է","Անիմաստ է","Պարտադիր է","Արգելված է"],1,"Պետք է կարգավորել, երբ շեղումը անընդունելի է։"]
+  ]},
+{ n:2, aca:"Scrum Team", title:"Scrum Team և պատասխանատվություններ", short:"Team",
+  goal:"Հասկանալ Scrum Team-ի կազմը և Developers-ի, Product Owner-ի և Scrum Master-ի պատասխանատվությունները (accountabilities)։",
+  lessons:[
+    {t:"Scrum Team", h:"1 ժ", b:`<ul><li>Մեկ Scrum Master, մեկ Product Owner և Developers. <b>չկան ենթաթիմեր և հիերարխիաներ</b></li><li><b>Cross-functional</b>՝ ունեն բոլոր հմտությունները ամեն Sprint արժեք ստեղծելու համար</li><li><b>Self-managing</b>՝ ներքուստ որոշում են՝ ով, ինչ, ինչպես</li><li>Բավական փոքր՝ արագաշարժ լինելու համար, բավական մեծ՝ զգալի աշխատանք կատարելու համար. <b>սովորաբար 10 կամ ավելի քիչ մարդ</b></li><li>Եթե թիմը շատ մեծ է, այն պետք է վերակազմավորվի մի քանի համախմբված Scrum Team-ի՝ կենտրոնացած նույն product-ի վրա. նրանք կիսում են նույն Product Goal-ը, Product Backlog-ը և Product Owner-ը</li><li>Ամբողջ Scrum Team-ը պատասխանատու է ամեն Sprint արժեքավոր, օգտակար Increment ստեղծելու համար</li></ul>`},
+    {t:"Developers և Product Owner", h:"1.5 ժ", b:`<p><b>Developers</b>-ը պատասխանատու են (accountable)՝ Sprint Backlog-ի ստեղծման, Definition of Done-ին հավատարմությամբ որակի ապահովման, պլանի ամենօրյա հարմարեցման և միմյանց պատասխանատվության համար որպես պրոֆեսիոնալներ։</p>
+      <p><b>Product Owner</b>-ը պատասխանատու է Scrum Team-ի աշխատանքից ստացվող product-ի արժեքի մաքսիմալացման համար, ինչպես նաև Product Backlog-ի արդյունավետ կառավարման համար.</p>
+      <ul><li>Product Goal-ի մշակում և հստակ հաղորդում</li><li>Product Backlog item-ների ստեղծում և հստակ հաղորդում</li><li>Item-ների դասավորում (ordering)</li><li>Product Backlog-ի թափանցիկության, տեսանելիության և հասկանալիության ապահովում</li></ul>
+      <p>PO-ն կարող է պատվիրակել այս աշխատանքը, բայց մնում է պատասխանատու։ PO-ն <b>մեկ մարդ է, ոչ թե կոմիտե</b>. ով ուզում է փոխել Product Backlog-ը, պետք է համոզի PO-ին։ PO-ի որոշումները պետք է հարգվեն ամբողջ կազմակերպությունում։</p>`},
+    {t:"Scrum Master", h:"1.5 ժ", b:`<p><b>Scrum Master</b>-ը պատասխանատու է Scrum-ի ստեղծման համար՝ ինչպես սահմանված է Scrum Guide-ում, և Scrum Team-ի արդյունավետության համար։ SM-ը <b>իրական առաջնորդ է, որը ծառայում է</b> (true leader who serves)։</p>
+      <div class="tbl"><table><tr><th>Ում է ծառայում</th><th>Ինչպես</th></tr><tr><td>Scrum Team-ին</td><td>Coaching self-management-ում և cross-functionality-ում, Definition of Done-ին համապատասխանող Increment-ների վրա կենտրոնացում, խոչընդոտների հեռացման խթանում, Scrum իրադարձությունների դրական, արդյունավետ և timebox-ի մեջ անցկացման ապահովում</td></tr><tr><td>Product Owner-ին</td><td>Product Goal-ի և backlog-ի կառավարման տեխնիկաներ, empirical product planning, շահակիցների համագործակցության խթանում</td></tr><tr><td>Կազմակերպությանը</td><td>Scrum-ի ներդրման առաջնորդում, ուսուցում և coaching, Scrum-ի պլանավորում և խորհրդատվություն, շահակիցների և թիմերի միջև խոչընդոտների հեռացում</td></tr></table></div>
+      <p>SM-ը մենեջեր չէ, որը բաժանում է առաջադրանքներ, և «քարտուղար» չէ, որը միայն կազմակերպում է հանդիպումներ։</p>`}
+  ],
+  practice:{t:"Պատասխանատվությունների քարտեզ", steps:["Նկարագրիր քո (կամ ծանոթ) թիմը և համեմատիր Scrum Guide-ի հետ. որտեղ կան շեղումներ","Գրիր 10 տարածված գործողություն (օր.՝ «ով է որոշում, թե քանի item վերցնել Sprint») և նշիր ճիշտ պատասխանատուն","Նկարագրիր 3 իրավիճակ, որտեղ SM-ը պետք է ծառայի կազմակերպությանը","Գրիր, թե ինչպես կբացատրեիր ղեկավարին, որ PO-ն չի կարող լինել կոմիտե"], deliverable:"Gap վերլուծություն, պատասխանատվությունների աղյուսակ"},
+  quiz:[
+    ["Ո՞վ է ստեղծում Sprint Backlog-ը։",["Product Owner","Scrum Master","Developers","Ղեկավարը"],2,"Developers-ը։"],
+    ["Scrum Team-ի տիպիկ չափը՝",["3","10 կամ ավելի քիչ","20","Անսահմանափակ"],1,"Typically 10 or fewer։"],
+    ["Մի քանի Scrum Team աշխատում է նույն product-ի վրա։ Քանի՞ Product Owner և Product Backlog։",["Յուրաքանչյուր թիմին մեկական","Մեկ PO և մեկ Product Backlog","Երկու PO","Backlog չկա"],1,"Նույն Product Goal, backlog և PO։"],
+    ["Ո՞վ է պատասխանատու product-ի արժեքի մաքսիմալացման համար։",["Developers","Scrum Master","Product Owner","Stakeholders"],2,"Product Owner։"],
+    ["Scrum Master-ը նկարագրվում է որպես...",["Project manager","True leader who serves","Team lead, որը բաժանում է առաջադրանքներ","Product manager"],1,"Scrum Guide 2020։"]
+  ]},
+{ n:3, aca:"Իրադարձություններ", title:"Scrum-ի իրադարձությունները", short:"Events",
+  goal:"Իմանալ 5 իրադարձությունների նպատակը, մասնակիցները, timebox-երը և տարածված սխալները։",
+  lessons:[
+    {t:"Sprint և Sprint Planning", h:"1.5 ժ", b:`<p><b>Sprint</b>՝ ֆիքսված տևողությամբ (մեկ ամիս կամ ավելի քիչ) իրադարձություն, որը պարունակում է մնացած բոլոր իրադարձությունները։ Նոր Sprint-ը սկսվում է նախորդի ավարտից անմիջապես հետո։ Sprint-ի ընթացքում՝ փոփոխություններ, որոնք վտանգում են Sprint Goal-ը, չեն արվում, որակը չի նվազում, Product Backlog-ը refinement է արվում ըստ անհրաժեշտության, scope-ը կարող է հստակեցվել և վերաբանակցվել PO-ի հետ։</p>
+      <p><b>Sprint-ը կարող է չեղարկվել միայն Product Owner-ի կողմից</b>, եթե Sprint Goal-ը հնացել է։</p>
+      <div class="formula">Sprint Planning (առավելագույնը 8 ժամ մեկամսյա Sprint-ի համար)
+Topic 1: Ինչու է այս Sprint-ը արժեքավոր → Sprint Goal (ամբողջ Scrum Team)
+Topic 2: Ինչ կարելի է անել → Developers-ը ընտրում են item-ներ
+Topic 3: Ինչպես կկատարվի աշխատանքը → Developers-ը պլանավորում են
+Արդյունք: Sprint Backlog = Sprint Goal + ընտրված item-ներ + առաքման պլան</div>`},
+    {t:"Daily Scrum և Sprint Review", h:"1 ժ", b:`<p><b>Daily Scrum</b>՝ 15 րոպե, Developers-ի համար, ամեն օր նույն ժամին և վայրում։ Նպատակ՝ ստուգել առաջընթացը դեպի Sprint Goal և հարմարեցնել Sprint Backlog-ը։ Developers-ը կարող են ընտրել ցանկացած կառուցվածք (երեք հարցը պարտադիր չեն)։ Եթե PO-ն կամ SM-ը ակտիվորեն աշխատում են Sprint Backlog-ի item-ների վրա, մասնակցում են որպես Developers։ SM-ը ապահովում է, որ այն տեղի ունենա, բայց պարտադիր չէ, որ ինքը վարի։</p>
+      <p><b>Sprint Review</b>՝ առավելագույնը 4 ժամ մեկամսյա Sprint-ի համար։ Ստուգել Sprint-ի արդյունքը և որոշել հետագա հարմարեցումները. Scrum Team-ը ներկայացնում է արդյունքները հիմնական շահակիցներին, քննարկվում է Product Goal-ի առաջընթացը։ Սա <b>աշխատանքային նիստ է</b>, ոչ թե միայն ներկայացում։ Product Backlog-ը կարող է թարմացվել։</p>`},
+    {t:"Sprint Retrospective և timebox-եր", h:"1 ժ", b:`<p><b>Sprint Retrospective</b>՝ առավելագույնը 3 ժամ մեկամսյա Sprint-ի համար, ավարտում է Sprint-ը։ Նպատակ՝ պլանավորել որակը և արդյունավետությունը բարձրացնելու ուղիներ. ինչպես անցավ վերջին Sprint-ը՝ մարդկանց, փոխազդեցությունների, գործընթացների, գործիքների և Definition of Done-ի տեսանկյունից։ Ամենաազդեցիկ բարելավումները կարող են ավելացվել հաջորդ Sprint Backlog-ին։</p>
+      <div class="tbl"><table><tr><th>Իրադարձություն</th><th>Timebox (մեկամսյա Sprint)</th></tr><tr><td>Sprint</td><td>≤ 1 ամիս</td></tr><tr><td>Sprint Planning</td><td>≤ 8 ժամ</td></tr><tr><td>Daily Scrum</td><td>15 րոպե</td></tr><tr><td>Sprint Review</td><td>≤ 4 ժամ</td></tr><tr><td>Sprint Retrospective</td><td>≤ 3 ժամ</td></tr></table></div>
+      <p>Ավելի կարճ Sprint-ների դեպքում իրադարձությունները սովորաբար ավելի կարճ են։ <b>Product Backlog refinement</b>-ը իրադարձություն չէ, այլ շարունակական գործունեություն։</p>`}
+  ],
+  practice:{t:"Իրադարձությունների ձևանմուշներ", steps:["Գրիր 2-շաբաթյա Sprint-ի օրացույց բոլոր իրադարձություններով և timebox-երով (համամասնորեն)","Կազմիր Sprint Planning-ի օրակարգ 3 թեմաներով և Sprint Goal-ի 3 օրինակ","Գրիր Sprint Review-ի ձևաչափ որպես աշխատանքային նիստ","Ընտրիր 2 retrospective տեխնիկա (օր.՝ Start/Stop/Continue, 4L) և նկարագրիր"], deliverable:"Sprint օրացույց, Planning օրակարգ, Review և Retro ձևաչափեր"},
+  quiz:[
+    ["Ո՞վ կարող է չեղարկել Sprint-ը։",["Scrum Master","Product Owner","Developers","Ղեկավարը"],1,"Միայն PO-ն՝ եթե Sprint Goal-ը հնացել է։"],
+    ["Daily Scrum-ի timebox-ը՝",["10 րոպե","15 րոպե","30 րոպե","1 ժամ"],1,"15 րոպե։"],
+    ["Ո՞ր իրադարձությունն է ավարտում Sprint-ը։",["Sprint Review","Sprint Retrospective","Daily Scrum","Refinement"],1,"Retrospective-ը վերջինն է։"],
+    ["Sprint Planning-ի ո՞ր թեման է պատասխանում «ինչու»-ին և ստեղծում Sprint Goal-ը։",["Topic 1","Topic 2","Topic 3","Ոչ մեկը"],0,"Why is this Sprint valuable։"],
+    ["Product Backlog refinement-ը...",["Scrum իրադարձություն է՝ 2 ժամ timebox-ով","Շարունակական գործունեություն է, ոչ թե իրադարձություն","Արգելված է Sprint-ի ընթացքում","PO-ի միանձնյա աշխատանք է"],1,"Ongoing activity։"]
+  ]},
+{ n:4, aca:"Արտեֆակտներ", title:"Արտեֆակտներ և պարտավորություններ", short:"Artifacts",
+  goal:"Հասկանալ 3 արտեֆակտները և դրանց պարտավորությունները՝ Product Goal, Sprint Goal, Definition of Done։",
+  lessons:[
+    {t:"Product Backlog և Product Goal", h:"1 ժ", b:`<div class="formula">Արտեֆակտ          → Պարտավորություն (commitment)
+Product Backlog   → Product Goal
+Sprint Backlog    → Sprint Goal
+Increment         → Definition of Done</div>
+      <p><b>Product Backlog</b>՝ product-ի բարելավման համար անհրաժեշտ ամեն ինչի առաջացող, դասավորված ցանկ, Scrum Team-ի աշխատանքի միակ աղբյուրը։ <b>Refinement</b>՝ item-ների բաժանում և մանրամասնում (նկարագրություն, կարգ, չափ). <b>Developers-ը պատասխանատու են չափի գնահատման համար</b>, PO-ն կարող է օգնել։</p>
+      <p><b>Product Goal</b>՝ product-ի ապագա վիճակը, թիմի երկարաժամկետ նպատակը։ Թիմը պետք է կատարի (կամ հրաժարվի) մեկ նպատակից, նախքան հաջորդը վերցնելը։</p>`},
+    {t:"Sprint Backlog և Sprint Goal", h:"1 ժ", b:`<ul><li><b>Sprint Backlog</b> = Sprint Goal (ինչու) + ընտրված Product Backlog item-ներ (ինչ) + Increment-ի առաքման պլան (ինչպես)</li><li>Այն Developers-ի կողմից, Developers-ի համար պլան է, թարմացվում է Sprint-ի ընթացքում</li><li><b>Sprint Goal</b>՝ Sprint-ի միակ նպատակը, ստեղծվում է Sprint Planning-ում, չի փոխվում Sprint-ի ընթացքում, տալիս է ճկունություն աշխատանքի ճշգրիտ բովանդակության հարցում</li><li>Եթե աշխատանքը տարբերվում է սպասվածից, Developers-ը համագործակցում են PO-ի հետ՝ scope-ը վերաբանակցելու համար՝ առանց Sprint Goal-ը փոխելու</li></ul>`},
+    {t:"Increment և Definition of Done", h:"1 ժ", b:`<ul><li><b>Increment</b>՝ քայլ դեպի Product Goal. յուրաքանչյուր Increment-ը ավելանում է նախորդներին և ամբողջովին ստուգված է, որ բոլորը միասին աշխատեն։ Մեկ Sprint-ում կարող են ստեղծվել մի քանի Increment</li><li>Increment-ը կարող է առաքվել շահակիցներին Sprint-ի ավարտից առաջ. Sprint Review-ը չպետք է դիտարկվի որպես արժեքի թողարկման «դարպաս»</li><li><b>Definition of Done</b>՝ Increment-ի վիճակի ֆորմալ նկարագրություն, երբ այն համապատասխանում է product-ի որակի պահանջներին։ Item-ը, որը չի համապատասխանում DoD-ին, չի կարող թողարկվել կամ ներկայացվել Sprint Review-ում. այն վերադառնում է Product Backlog</li><li>Եթե DoD-ը կազմակերպության ստանդարտ է, բոլոր թիմերը պետք է հետևեն դրան որպես նվազագույն. եթե ոչ, Scrum Team-ը պետք է ստեղծի DoD</li><li>Նույն product-ի վրա աշխատող մի քանի թիմ պետք է կիսեն նույն DoD-ը</li></ul>`}
+  ],
+  practice:{t:"Արտեֆակտների նախագծում", steps:["Գրիր Product Goal քո product-ի համար","Կազմիր 12 item-անոց Product Backlog և դասավորիր","Գրիր Definition of Done 8 կետով","Կազմիր Sprint Backlog Sprint Goal-ով և 5 item-ով","Նկարագրիր, ինչ կանես, եթե Sprint-ի կեսին պարզվի, որ բոլոր item-ները չեն ավարտվի"], deliverable:"Product Goal, backlog, DoD, Sprint Backlog, սցենար"},
+  quiz:[
+    ["Increment-ի պարտավորությունը՝",["Sprint Goal","Product Goal","Definition of Done","Velocity"],2,"DoD։"],
+    ["Ո՞վ է պատասխանատու Product Backlog item-ների չափի գնահատման համար։",["Product Owner","Developers","Scrum Master","Stakeholders"],1,"Developers-ը, PO-ն կարող է օգնել։"],
+    ["Item-ը չի համապատասխանում DoD-ին Sprint-ի վերջում։ Ինչ է լինում։",["Ներկայացվում է որպես «գրեթե պատրաստ»","Վերադառնում է Product Backlog","Sprint-ը երկարացվում է","DoD-ը փոխվում է"],1,"Չի կարող ներկայացվել որպես Increment։"],
+    ["Մեկ Sprint-ում քանի՞ Increment կարող է ստեղծվել։",["Միայն մեկ","Մի քանի","Զրո","Ճիշտ երկու"],1,"Multiple Increments may be created։"],
+    ["Sprint Goal-ը Sprint-ի ընթացքում...",["Փոխվում է ամեն օր","Չի փոխվում, բայց scope-ը կարող է վերաբանակցվել PO-ի հետ","Որոշում է ղեկավարը","Պարտադիր չէ"],1,"Ճկունություն scope-ում, կայունություն նպատակում։"]
+  ]},
+{ n:5, aca:"Թյուրըմբռնումներ", title:"Տարածված թյուրըմբռնումներ և բարդ սցենարներ", short:"Միֆեր",
+  goal:"Ճանաչել Scrum-ի մասին տարածված սխալ պատկերացումները և լուծել PSM I-ի բարդ սցենարային հարցեր։",
+  lessons:[
+    {t:"Scrum-ի միֆեր", h:"1.5 ժ", b:`<div class="tbl"><table><tr><th>Միֆ</th><th>Իրականություն (Scrum Guide 2020)</th></tr>
+      <tr><td>«Sprint 0», «hardening sprint», «release sprint»</td><td>Ամեն Sprint պետք է ստեղծի արժեքավոր, օգտակար Increment</td></tr>
+      <tr><td>Scrum Master-ը թիմի ղեկավարն է</td><td>SM-ը ծառայող առաջնորդ է, թիմը self-managing է</td></tr>
+      <tr><td>Daily Scrum-ը հաշվետվություն է SM-ին</td><td>Այն Developers-ի համար է՝ պլանը հարմարեցնելու համար</td></tr>
+      <tr><td>Velocity-ն արտադրողականության չափ է՝ թիմերը համեմատելու համար</td><td>Velocity-ն Scrum Guide-ում չկա. թիմերի միջև համեմատությունը վնասակար է</td></tr>
+      <tr><td>Sprint-ի երկարությունը կարելի է փոխել ըստ անհրաժեշտության</td><td>Sprint-ը ֆիքսված տևողություն ունի. երկարացում չկա</td></tr>
+      <tr><td>Product Owner-ը կարող է լինել կոմիտե</td><td>PO-ն մեկ մարդ է</td></tr>
+      <tr><td>Scrum-ում կան «testers», «architects» դերեր</td><td>Կան միայն Developers. ենթաթիմեր չկան</td></tr>
+      <tr><td>Sprint Review-ը միայն demo է</td><td>Աշխատանքային նիստ է շահակիցների հետ</td></tr></table></div>`},
+    {t:"Բարդ սցենարներ", h:"1.5 ժ", b:`<ul><li><b>Developers-ը չեն ավարտում աշխատանքը</b>՝ Sprint-ը չի երկարացվում. չավարտված item-ները վերադառնում են Product Backlog. թիմը retrospective-ում քննարկում է պատճառները</li><li><b>Շահակիցը ուղիղ դիմում է Developer-ին նոր պահանջով</b>՝ Developer-ը ուղղորդում է PO-ին. SM-ը coaching է անում</li><li><b>Թիմը չի ուզում Retrospective անել</b>՝ SM-ը բացատրում է նպատակը, փորձում է տարբեր ձևաչափեր. Retrospective-ը պարտադիր է</li><li><b>Մի քանի թիմ նույն product-ի վրա</b>՝ մեկ PO, մեկ backlog, ընդհանուր DoD, ինտեգրված Increment. Scrum.org-ը առաջարկում է Nexus շրջանակը</li><li><b>Ղեկավարը ուզում է մասնակցել Daily Scrum-ին և ստանալ հաշվետվություն</b>՝ SM-ը ուսուցանում է ղեկավարին և պաշտպանում իրադարձության նպատակը</li><li><b>Տեխնիկական պարտք</b>՝ Developers-ը թափանցիկ են դարձնում այն Product Backlog-ում և DoD-ում</li></ul>`},
+    {t:"Scrum-ը կազմակերպությունում", h:"1 ժ", b:`<ul><li>Scrum-ի փոփոխելը կամ դրա մասերը բաց թողնելը թաքցնում է խնդիրները և սահմանափակում է օգուտները. արդյունքը այլևս Scrum չէ</li><li>Scrum-ը կարող է լրացվել այլ պրակտիկաներով (Kanban, XP, DevOps, user stories, story points)</li><li><b>Կազմակերպական խոչընդոտներ</b>՝ ֆունկցիոնալ սիլոսներ, անհատական KPI-ներ, պլանավորման տարեկան բյուջետավորում. SM-ը աշխատում է կազմակերպության հետ դրանք հեռացնելու համար</li><li>Scrum-ը կիրառվում է ոչ միայն ծրագրային ապահովման, այլև մարքեթինգի, հետազոտությունների, կրթության և այլ բարդ աշխատանքների համար</li></ul>`}
+  ],
+  practice:{t:"Սցենարների լուծում", steps:["Լուծիր 6 սցենարային հարց «Թեստային առաջադրանքներ» բաժնում (բարդ մակարդակ)","Գրիր 5 միֆ, որոնք հանդիպել ես աշխատանքում, և ինչպես կբացատրեիր իրականությունը","Նկարագրիր, ինչպես կկազմակերպեիր 3 թիմի աշխատանքը նույն product-ի վրա","Ձևակերպիր 3 կազմակերպական խոչընդոտ և SM-ի քայլերը"], deliverable:"Սցենարների լուծումներ, միֆերի ցուցակ, մի քանի թիմի մոդել"},
+  quiz:[
+    ["Թիմը ուզում է «Sprint 0» պլանավորման համար՝ առանց Increment-ի։ Scrum Guide-ի համաձայն...",["Թույլատրելի է","Ամեն Sprint պետք է ստեղծի արժեքավոր Increment","Պարտադիր է","Միայն առաջին տարում"],1,"Sprint 0 հասկացություն չկա։"],
+    ["Շահակիցը ուղիղ նոր պահանջ է տալիս Developer-ին Sprint-ի կեսին։ Developer-ը...",["Անմիջապես կատարում է","Ուղղորդում է Product Owner-ին","Չեղարկում է Sprint-ը","Ավելացնում է Sprint Goal-ին"],1,"PO-ն կառավարում է backlog-ը։"],
+    ["Velocity-ն օգտագործել տարբեր թիմեր համեմատելու համար...",["Լավագույն պրակտիկա է","Scrum Guide-ում չկա և խեղաթյուրում է վարքը","Պարտադիր է","PO-ի պատասխանատվություն է"],1,"Velocity-ն թիմի ներքին գործիք է։"],
+    ["Scrum-ի ո՞ր մասն է կարելի բաց թողնել և դեռ անվանել Scrum։",["Retrospective","Daily Scrum","Ոչ մեկը","Sprint Review"],2,"Բոլոր տարրերը անհրաժեշտ են։"],
+    ["Մի քանի թիմ նույն product-ի վրա պետք է կիսեն...",["Միայն Scrum Master-ին","Product Goal, Product Backlog, Product Owner և DoD","Միայն Daily-ն","Ոչինչ"],1,"Մեկ product, մեկ backlog։"]
+  ]},
+{ n:6, aca:"Քննություն", title:"PSM I քննական ռազմավարություն", short:"Exam",
+  goal:"Պատրաստվել Scrum.org-ի PSM I քննությանը՝ ձևաչափ, թակարդ բառեր, ժամանակ և պրակտիկա։",
+  lessons:[
+    {t:"Քննության ձևաչափը", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Պարամետր</th><th>PSM I</th></tr><tr><td>Հարցեր</td><td>80</td></tr><tr><td>Ժամանակ</td><td>60 րոպե (≈ 45 վայրկյան մեկ հարցին)</td></tr><tr><td>Անցողիկ</td><td>85% (68/80)</td></tr><tr><td>Տեսակներ</td><td>Multiple choice, multiple answer, true/false</td></tr><tr><td>Ձևաչափ</td><td>Online, առանց proctor-ի, գաղտնաբառով</td></tr><tr><td>Արժեք</td><td>$200 (Scrum.org store)</td></tr><tr><td>Վավերականություն</td><td>Ցմահ</td></tr><tr><td>Հիմք</td><td>Scrum Guide 2020</td></tr></table></div>
+      <p>Քննությունը open book է տեխնիկապես, բայց 45 վայրկյանում որոնելու ժամանակ չկա. պետք է գիտենաս Scrum Guide-ը գրեթե անգիր։ Ստուգիր ընթացիկ պայմանները scrum.org-ում։</p>`},
+    {t:"Թակարդ բառեր և ռազմավարություն", h:"1 ժ", b:`<ul><li><b>«Must» vs «should» vs «may»</b>՝ Scrum Guide-ը ճշգրիտ է. օր.՝ Daily Scrum-ը «must» չէ, որ վարի SM-ը</li><li><b>«Accountable» vs «responsible»</b>՝ PO-ն accountable է backlog-ի համար, բայց կարող է պատվիրակել աշխատանքը</li><li><b>«Scrum Team» vs «Developers»</b>՝ Sprint Goal-ը ստեղծում է ամբողջ Scrum Team-ը, Sprint Backlog-ը՝ Developers-ը</li><li><b>Multiple answer</b>՝ հարցում նշված է, քանի պատասխան ընտրել. մասնակի ճիշտը չի հաշվվում</li><li>Եթե տարբերակը ավելացնում է դեր, իրադարձություն կամ արտեֆակտ, որը չկա Scrum Guide-ում, այն հավանաբար սխալ է</li><li>Առաջին անցում արագ, bookmark կասկածելիները, մնացած ժամանակում վերադառնալ</li></ul>`},
+    {t:"Պատրաստման պլան", h:"1 ժ", b:`<div class="formula">Շաբաթ 1: Scrum Guide × 3 ընթերցում + այս դասընթացի մոդուլներ 1–4
+Շաբաթ 2: Scrum Open assessment մինչև կայուն 100% (3 անգամ անընդմեջ)
+         Միֆեր և սցենարներ (մոդուլ 5)
+Շաբաթ 3: Լրացուցիչ թեստեր ժամաչափով, error log, Scrum Glossary
+         Դասընթացի ավարտական քննություն ≥ 90% → գրանցվել PSM I-ին</div>
+      <p>Լրացուցիչ աղբյուրներ՝ Scrum.org Learning Path, Scrum Glossary, Nexus Guide (ընդհանուր գաղափարի համար), Kanban Guide for Scrum Teams։</p>`}
+  ],
+  practice:{t:"PSM I պատրաստվածության ստուգում", steps:["Կարդա Scrum Guide-ը երրորդ անգամ և գրիր 20 բառ/արտահայտություն, որոնք ճշգրիտ են («must», «accountable»)","Անցիր Scrum Open assessment-ը 3 անգամ և գրանցիր արդյունքները","Անցիր այս դասընթացի ավարտական քննությունը","Error log՝ յուրաքանչյուր սխալի համար մեջբերում Scrum Guide-ից","Անցիր AI փորձնական հարցազրույցը Scrum Master-ի դերում"], deliverable:"Open assessment արդյունքներ, error log, պատրաստվածության որոշում", tools:["interview"]},
+  quiz:[
+    ["PSM I-ի անցողիկ միավորը՝",["70%","80%","85%","90%"],2,"68/80։"],
+    ["Քանի՞ հարց և րոպե։",["60 / 60","80 / 60","100 / 90","180 / 240"],1,"80 հարց, 60 րոպե։"],
+    ["Ո՞վ է ստեղծում Sprint Goal-ը։",["Միայն PO-ն","Ամբողջ Scrum Team-ը Sprint Planning-ում","Միայն Developers","SM-ը"],1,"Scrum Team-ը համագործակցությամբ։"],
+    ["Պե՞տք է արդյոք Scrum Master-ը վարի Daily Scrum-ը։",["Այո, միշտ","Ոչ, SM-ը ապահովում է, որ այն տեղի ունենա, իսկ Developers-ը են պատասխանատու","Միայն առաջին Sprint-ում","PO-ն է վարում"],1,"Daily-ն Developers-ի համար է։"],
+    ["Տարբերակը նշում է «Scrum-ի QA դերը»։ Ամենայն հավանականությամբ...",["Ճիշտ է","Սխալ է, քանի որ Scrum-ում նման դեր չկա","Ճիշտ է մեծ թիմերում","PO-ն է QA-ն"],1,"Միայն Developers, PO, SM։"]
+  ]}
+],
+final:[
+  ["Sprint-ի կեսին PO-ն հասկանում է, որ Sprint Goal-ը շուկայական փոփոխության պատճառով այլևս իմաստ չունի։",["Շարունակել","PO-ն կարող է չեղարկել Sprint-ը","SM-ը չեղարկում է","Developers-ը փոխում են Sprint Goal-ը"],1,"Միայն PO-ն։"],
+  ["Developers-ը հասկանում են, որ ավելի շատ աշխատանք են վերցրել, քան կարող են ավարտել։",["Երկարացնել Sprint-ը","Համագործակցել PO-ի հետ՝ scope-ը վերաբանակցելու համար՝ պահպանելով Sprint Goal-ը","Նվազեցնել որակը","Չեղարկել Sprint-ը"],1,"Scope-ը կարող է հստակեցվել։"],
+  ["Կազմակերպությունը ունի DoD ստանդարտ։ Scrum Team-ը...",["Կարող է անտեսել","Պետք է հետևի դրան որպես նվազագույն, կարող է ավելացնել խիստ չափանիշներ","Պետք է ստեղծի ավելի թույլ DoD","DoD պետք չէ"],1,"Կազմակերպական DoD-ը նվազագույն է։"],
+  ["Ո՞րն է Sprint Review-ի ամենաճիշտ նկարագրությունը։",["Թիմի ներքին demo","Աշխատանքային նիստ շահակիցների հետ՝ արդյունքը ստուգելու և հարմարեցումները որոշելու համար","Գործընթացի բարելավման հանդիպում","Թողարկման պաշտոնական թույլտվություն"],1,"Inspect the outcome and determine future adaptations։"],
+  ["Թիմը ունի 14 Developer և դժվարանում է համագործակցել։ Scrum Master-ի առաջարկը՝",["Նշանակել team lead","Վերակազմավորվել մի քանի համախմբված Scrum Team-ի՝ նույն product-ի, Product Goal-ի, backlog-ի և PO-ի շուրջ","Չեղարկել Daily-ն","Երկարացնել Sprint-ը"],1,"Typically 10 or fewer։"],
+  ["Ո՞րն է Scrum-ի հենասյուն։",["Commitment","Transparency","Focus","Respect"],1,"Transparency, Inspection, Adaptation։"],
+  ["Ով է որոշում, թե ինչպես Product Backlog item-ները վերածել Increment-ի։",["Product Owner","Scrum Master","Developers","Architect"],2,"Self-managing Developers։"],
+  ["Product Owner-ը ուզում է Sprint-ի ընթացքում թողարկել Increment-ը հաճախորդներին։",["Արգելված է մինչև Sprint Review","Թույլատրելի է. Increment-ը կարող է առաքվել Sprint-ի ավարտից առաջ","Միայն SM-ի թույլտվությամբ","Միայն Sprint 0-ում"],1,"Review-ը թողարկման դարպաս չէ։"],
+  ["Sprint Retrospective-ի timebox-ը մեկամսյա Sprint-ի համար՝",["1 ժամ","3 ժամ","4 ժամ","8 ժամ"],1,"Առավելագույնը 3 ժամ։"],
+  ["Ղեկավարը պահանջում է, որ Developers-ը Daily Scrum-ում հաշվետվություն տան իրեն։ Scrum Master-ը...",["Համաձայնում է","Ուսուցանում է ղեկավարին Daily Scrum-ի նպատակի մասին և պաշտպանում է այն որպես Developers-ի հարմարեցման իրադարձություն","Չեղարկում է Daily-ն","Ինքն է հաշվետվություն տալիս"],1,"SM-ը ծառայում է կազմակերպությանը ուսուցմամբ։"]
+],
+sources:[
+  ["The Scrum Guide 2020","https://scrumguides.org/scrum-guide.html","Պաշտոնական սահմանում"],
+  ["Scrum.org — PSM I Assessment","https://store.scrum.org/products/professional-scrum-master-i-assessment","Գին $200"],
+  ["Scrum.org — Scrum Open assessment","https://www.scrum.org/open-assessments/scrum-open","Անվճար ինքնաստուգում"],
+  ["OpenExamPrep — PSM I exam facts","https://open-exam-prep.com/study-guides/scrum-master-psm/introduction/exam-facts","80 հարց, 60 րոպե, 85%"],
+  ["Scrum.org — Nexus Guide","https://www.scrum.org/resources/nexus-guide","Մի քանի թիմ նույն product-ի վրա"]
+], examExtra:30, examMin:45 };
+
+/* ========== PM 4: NON-IT ========== */
+const GENPM = { id:"gen", title:"Նախագծերի կառավարում ոչ IT ոլորտներում", short:"Ոչ IT",
+lead:"Շինարարություն, պետական հատված, ՀԿ-ներ և դոնորային ծրագրեր, միջոցառումներ, ինչպես նաև կազմակերպական փոփոխություն՝ ոլորտային գործիքներով (CPM, BOQ, FIDIC, logframe, Theory of Change, run-of-show) և capstone նախագծով։",
+weeks:[
+{ n:1, aca:"Շինարարություն", title:"Շինարարական նախագծեր", short:"Շինարարություն",
+  goal:"Հասկանալ շինարարական նախագծի կյանքի ցիկլը, ժամանակացույցը, ծախսերի նախահաշիվը, պայմանագրերը և անվտանգությունը։",
+  lessons:[
+    {t:"Կյանքի ցիկլ և շահակիցներ", h:"1 ժ", b:`<div class="formula">Նախաձեռնում (feasibility) → Նախագծում (concept → schematic → detailed design)
+→ Թույլտվություններ → Մրցույթ (tender) → Կառուցում → Ընդունում (commissioning)
+→ Շահագործման հանձնում → Երաշխիքային ժամկետ (defects liability period)</div>
+      <ul><li><b>Շահակիցներ</b>՝ պատվիրատու (client/employer), ճարտարապետ, ինժեներներ, գլխավոր կապալառու, ենթակապալառուներ, տեխնիկական հսկողություն, պետական տեսչություններ, հարևաններ, ապագա օգտատերեր</li><li><b>Մատակարարման մոդելներ</b>՝ Design–Bid–Build (ավանդական), Design & Build (մեկ պատասխանատու), Construction Management, EPC (turnkey)</li><li>Փոփոխության գինը կտրուկ աճում է նախագծումից կառուցման անցնելիս, ուստի հիմնականում predictive մոտեցում է կիրառվում, իսկ նախագծման փուլում կարող են կիրառվել իտերատիվ մեթոդներ և BIM</li></ul>`},
+    {t:"Ժամանակացույց, BOQ և ծախսեր", h:"1.5 ժ", b:`<ul><li><b>Critical Path Method</b>՝ բետոնի ամրացման ժամանակ, եղանակային պատուհաններ, նյութերի առաքում. ժամանակացույցը սովորաբար Primavera P6 կամ MS Project</li><li><b>Bill of Quantities (BOQ)</b>՝ աշխատանքների և նյութերի քանակների ցուցակ միավորի գներով. մրցույթի և վճարումների հիմք</li><li><b>Նախահաշիվ</b>՝ ուղղակի ծախսեր (նյութ, աշխատուժ, տեխնիկա) + անուղղակի (կառավարում, ապահովագրություն) + contingency (սովորաբար 5–15%՝ կախված նախագծման մակարդակից) + escalation (գնաճ)</li><li><b>Interim payments</b>՝ ամսական կատարված աշխատանքների չափում, retention (պահուստային մաս, սովորաբար 5–10%, վերադարձվում է երաշխիքային ժամկետից հետո)</li><li><b>EVM</b>՝ CPI և SPI շինարարությունում շատ կիրառելի է չափելի քանակների պատճառով</li></ul>`},
+    {t:"Պայմանագրեր, փոփոխություններ և անվտանգություն", h:"1 ժ", b:`<div class="tbl"><table><tr><th>FIDIC (միջազգային ստանդարտ պայմանագրեր)</th><th>Կիրառություն</th></tr><tr><td>Red Book</td><td>Շինարարություն՝ պատվիրատուի նախագծով</td></tr><tr><td>Yellow Book</td><td>Plant & Design-Build՝ կապալառուի նախագծով</td></tr><tr><td>Silver Book</td><td>EPC / Turnkey՝ ռիսկի մեծ մասը կապալառուի վրա</td></tr></table></div>
+      <ul><li><b>Variations / change orders</b>՝ գրավոր հրահանգ, գնահատում, ժամանակի երկարացում (extension of time), claims</li><li><b>Անվտանգություն</b>՝ ռիսկերի գնահատում, անհատական պաշտպանության միջոցներ, բարձրության վրա աշխատանք, toolbox talks, միջադեպերի գրանցում. անվտանգությունը միշտ գերակա է ժամանակացույցից</li><li><b>Որակ</b>՝ inspection and test plan (ITP), նյութերի սերտիֆիկատներ, թաքնված աշխատանքների ակտեր</li><li>ՀՀ-ում ստուգիր քաղաքաշինական օրենսդրությունը, թույլտվությունների կարգը և պետական գնումների պահանջները, եթե պատվիրատուն պետական է</li></ul>`}
+  ],
+  practice:{t:"Փոքր շինարարական նախագծի պլան", steps:["Ընտրիր նախագիծ (օր.՝ 2-հարկանի առանձնատան կամ դպրոցի վերանորոգում)","Կազմիր WBS և 12 activity-ի ժամանակացույց կախվածություններով, հաշվիր critical path-ը","Կազմիր պարզեցված BOQ 10 տողով և հաշվիր contingency-ն","Ընտրիր պայմանագրի տեսակը (FIDIC Red/Yellow/Silver) և հիմնավորիր","Գրիր անվտանգության 8 հիմնական կանոն"], deliverable:"WBS, CPM, BOQ, պայմանագրի ընտրություն, անվտանգության կանոններ", tools:["cpm","evm"]},
+  quiz:[
+    ["Design & Build մոդելում...",["Պատվիրատուն նախագծում է, կապալառուն կառուցում","Մեկ կապալառուն պատասխանատու է և՛ նախագծման, և՛ կառուցման համար","Չկա կապալառու","Միայն ճարտարապետ"],1,"Single point of responsibility։"],
+    ["BOQ-ը...",["Ժամանակացույց","Աշխատանքների և նյութերի քանակների ցուցակ գներով","Անվտանգության պլան","Թույլտվություն"],1,"Bill of Quantities։"],
+    ["Ո՞ր FIDIC պայմանագիրն է EPC/Turnkey։",["Red","Yellow","Silver","Green"],2,"Silver Book։"],
+    ["Retention-ը...",["Պահուստային մաս վճարումներից, վերադարձվում է երաշխիքային ժամկետից հետո","Տուգանք","Հարկ","Ապահովագրություն"],0,"Որակի երաշխիք։"],
+    ["Ժամանակացույցը ուշանում է, և կապալառուն առաջարկում է բաց թողնել անվտանգության որոշ ընթացակարգեր։ PM-ը...",["Համաձայնում է","Մերժում է. անվտանգությունը գերակա է. փնտրում է այլ միջոցներ (crashing, fast tracking)","Թողնում է կապալառուին որոշել","Չի արձագանքում"],1,"Safety first։"]
+  ]},
+{ n:2, aca:"Պետական հատված", title:"Պետական հատվածի նախագծեր", short:"Պետական",
+  goal:"Կառավարել պետական նախագծերը՝ գնումներ, բյուջետային ցիկլ, թափանցիկություն, արդյունքահեն կառավարում և շահակիցներ։",
+  lessons:[
+    {t:"Պետական նախագծերի առանձնահատկությունները", h:"1 ժ", b:`<ul><li><b>Հանրային արժեք</b>՝ նպատակը ոչ թե շահույթն է, այլ քաղաքացիների համար արդյունքը (ծառայության որակ, հասանելիություն, անվտանգություն)</li><li><b>Հաշվետվողականություն</b>՝ աուդիտ, խորհրդարանական վերահսկողություն, լրատվամիջոցներ, հանրային կարծիք</li><li><b>Բյուջետային ցիկլ</b>՝ տարեկան բյուջե և միջնաժամկետ ծախսային ծրագիր (ՄԺԾԾ). չօգտագործված միջոցները կարող են չփոխանցվել հաջորդ տարի</li><li><b>Կարգավորումներ</b>՝ գնումների օրենսդրություն, տվյալների պաշտպանություն, հասանելիություն, լեզվական պահանջներ</li><li><b>Քաղաքական ցիկլ</b>՝ առաջնահերթությունները կարող են փոխվել ընտրություններից հետո. բիզնես քեյսը պետք է լինի դիմացկուն</li><li><b>Միջազգային դոնորներ</b>՝ Համաշխարհային բանկ, ԱԶԲ, ԵՄ, USAID և այլն, որոնք ունեն իրենց ընթացակարգերը</li></ul>`},
+    {t:"Պետական գնումներ", h:"1.5 ժ", b:`<ul><li>ՀՀ-ում պետական գնումները կարգավորվում են «Գնումների մասին» օրենքով և իրականացվում են էլեկտրոնային համակարգով (armeps.am). ստուգիր օրենքի ընթացիկ խմբագրությունը և շեմերը</li><li><b>Ընթացակարգեր</b>՝ բաց մրցույթ, գնանշման հարցում, մեկ անձից գնում (սահմանափակ դեպքերում), շրջանակային համաձայնագրեր</li><li><b>Տեխնիկական բնութագիր</b>՝ պետք է լինի չեզոք (առանց ապրանքանիշի, եթե չկա հիմնավորում), չափելի, ստուգելի. վատ բնութագիրը հանգեցնում է վատ մատակարարման կամ բողոքարկումների</li><li><b>Ժամանակ</b>՝ գնման ընթացակարգը կարող է տևել շաբաթներից ամիսներ. այն պետք է լինի ժամանակացույցի critical path-ում</li><li><b>Բողոքարկում</b>՝ մասնակիցները կարող են բողոքարկել. սա ռիսկ է, որը պետք է պլանավորել</li><li><b>Էթիկա</b>՝ շահերի բախման բացակայության հայտարարություն, կոռուպցիայի կանխարգելում</li></ul>`},
+    {t:"Արդյունքահեն կառավարում (RBM)", h:"1 ժ", b:`<div class="formula">Results chain:
+Inputs → Activities → Outputs → Outcomes → Impact
+Օրինակ: բյուջե, մասնագետներ → դպրոցների վերանորոգում → 20 վերանորոգված դպրոց
+→ ուսուցման պայմանների բարելավում, հաճախումների աճ → կրթական արդյունքների բարելավում</div>
+      <ul><li><b>Ցուցանիշներ (KPI)</b>՝ SMART, ելակետային արժեք (baseline), թիրախ, տվյալների աղբյուր, հաճախականություն</li><li><b>Մոնիթորինգ vs գնահատում</b>՝ մոնիթորինգը շարունակական է (արդյո՞ք պլանով ենք գնում), գնահատումը՝ պարբերական (արդյո՞ք ճիշտ բանն ենք անում և ինչ ազդեցություն ունենք)</li><li><b>OECD DAC չափանիշներ</b>՝ relevance, coherence, effectiveness, efficiency, impact, sustainability</li></ul>`}
+  ],
+  practice:{t:"Պետական նախագծի պլան", steps:["Ընտրիր պետական կամ համայնքային նախագիծ (օր.՝ համայնքի խաղահրապարակ, e-service)","Գրիր results chain (inputs → impact)","Կազմիր 5 ցուցանիշ baseline-ով և թիրախով","Նկարագրիր գնման ընթացակարգը և դրա ժամանակը ժամանակացույցում","Կազմիր շահակիցների քարտեզ (ներառյալ քաղաքացիներ, ԶԼՄ, վերահսկող մարմիններ)"], deliverable:"Results chain, ցուցանիշներ, գնման պլան, շահակիցների քարտեզ"},
+  quiz:[
+    ["Results chain-ում «20 վերանորոգված դպրոց»-ը...",["Input","Output","Outcome","Impact"],1,"Ուղղակի արդյունք (output)։"],
+    ["Մոնիթորինգի և գնահատման տարբերությունը՝",["Նույնն են","Մոնիթորինգը շարունակական է, գնահատումը՝ պարբերական և ազդեցության մասին","Գնահատումը ամեն օր է","Մոնիթորինգը միայն ավարտին է"],1,"M&E։"],
+    ["Տեխնիկական բնութագրում կոնկրետ ապրանքանիշ նշելը առանց հիմնավորման...",["Լավ պրակտիկա է","Սահմանափակում է մրցակցությունը և կարող է հակասել գնումների կանոններին","Պարտադիր է","Արագացնում է"],1,"Չեզոք բնութագրեր։"],
+    ["OECD DAC-ի չափանիշ է...",["Profitability","Relevance","Velocity","Market share"],1,"Relevance, coherence, effectiveness, efficiency, impact, sustainability։"],
+    ["Ինչու պետք է գնումների ընթացակարգը դնել ժամանակացույցի critical path-ում։",["Այն արագ է","Այն կարող է տևել ամիսներ և ունենալ բողոքարկումներ","Օրենքով","Պետք չէ"],1,"Գնումները հաճախ են ուշացումների պատճառ։"]
+  ]},
+{ n:3, aca:"ՀԿ և դոնորային ծրագրեր", title:"ՀԿ-ներ, դրամաշնորհներ և logframe", short:"ՀԿ",
+  goal:"Կառավարել դոնորային նախագծեր՝ Project DPro մոտեցում, Theory of Change, logframe, MEAL և դոնորային հաշվետվություններ։",
+  lessons:[
+    {t:"Project DPro (PMD Pro) մոտեցում", h:"1 ժ", b:`<p><b>PM4NGOs</b>-ի Project DPro ուղեցույցը (2-րդ հրատարակություն, Creative Commons լիցենզիա) զարգացման և մարդասիրական ոլորտի նախագծերի կառավարման ստանդարտ է՝ հասանելի մի քանի լեզուներով և սերտիֆիկացման քննությամբ։</p>
+      <div class="formula">Կյանքի ցիկլ (Project DPro):
+Identification & Design → Set Up → Planning → Implementation → Closure
++ Monitoring, Evaluation & Control՝ ամբողջ ընթացքում</div>
+      <ul><li>Շեշտը՝ շահառուների ներգրավվածություն, համատեքստի վերլուծություն, կայունություն, «do no harm»</li><li>Դոնորի, գործընկերների և համայնքի շահերի հավասարակշռում</li><li>Կարողությունների զարգացում և նախագծից հետո արդյունքների պահպանում (exit strategy)</li></ul>`},
+    {t:"Theory of Change և logframe", h:"1.5 ժ", b:`<p><b>Theory of Change</b>՝ «եթե... ապա... քանի որ...» տրամաբանություն, որը բացատրում է, թե ինչպես են գործողությունները հանգեցնում փոփոխության, և որ ենթադրությունների վրա է հիմնված։</p>
+      <div class="tbl"><table><tr><th>Մակարդակ</th><th>Նկարագրություն</th><th>Ցուցանիշներ</th><th>Ստուգման միջոցներ</th><th>Ենթադրություններ</th></tr><tr><td>Goal</td><td>Երկարաժամկետ ազդեցություն</td><td>…</td><td>Ազգային վիճակագրություն</td><td>…</td></tr><tr><td>Outcomes</td><td>Փոփոխություններ շահառուների մոտ</td><td>…</td><td>Հարցումներ</td><td>…</td></tr><tr><td>Outputs</td><td>Ապրանքներ և ծառայություններ</td><td>…</td><td>Գրանցամատյաններ</td><td>…</td></tr><tr><td>Activities</td><td>Գործողություններ</td><td>Inputs / բյուջե</td><td>Հաշվապահություն</td><td>Նախապայմաններ</td></tr></table></div>
+      <p><b>Ուղղահայաց տրամաբանություն</b>՝ եթե activities + ենթադրություններ → outputs, և այդպես շարունակ։ <b>Հորիզոնական տրամաբանություն</b>՝ յուրաքանչյուր մակարդակ ունի չափելի ցուցանիշ և տվյալների աղբյուր։</p>`},
+    {t:"MEAL և դոնորային հաշվետվություններ", h:"1 ժ", b:`<ul><li><b>MEAL</b>՝ Monitoring, Evaluation, Accountability, Learning. հաշվետվողականություն նաև շահառուների առջև (feedback մեխանիզմներ, բողոքների համակարգ)</li><li><b>Baseline, midline, endline</b> հետազոտություններ</li><li><b>Դոնորային հաշվետվություններ</b>՝ նարատիվ (ինչ արվեց, արդյունքներ, մարտահրավերներ, դասեր) և ֆինանսական (բյուջե vs փաստացի, շեղումների բացատրություն). ժամկետները պարտադիր են</li><li><b>Բյուջետային կանոններ</b>՝ թույլատրելի ծախսեր, line item-ների միջև վերաբաշխման սահմաններ (հաճախ 10–15%՝ առանց դոնորի հաստատման, ըստ պայմանագրի), անուղղակի ծախսեր (overhead)</li><li><b>Compliance</b>՝ գնումների կանոններ, ֆինանսական աուդիտ, հակակոռուպցիոն և safeguarding քաղաքականություններ</li></ul>`}
+  ],
+  practice:{t:"Դրամաշնորհային հայտի սևագիր", steps:["Ընտրիր սոցիալական խնդիր քո համայնքում և գրիր problem tree (պատճառներ և հետևանքներ)","Գրիր Theory of Change (եթե-ապա-քանի որ)","Կազմիր logframe 4 մակարդակով, ցուցանիշներով, ստուգման միջոցներով և ենթադրություններով","Կազմիր պարզ բյուջե line item-ներով","Նկարագրիր MEAL պլանը և feedback մեխանիզմը շահառուների համար"], deliverable:"Problem tree, ToC, logframe, բյուջե, MEAL պլան"},
+  quiz:[
+    ["Logframe-ի ամենաբարձր մակարդակը՝",["Activities","Outputs","Outcomes","Goal"],3,"Goal / Impact։"],
+    ["Theory of Change-ի հիմնական արժեքը՝",["Բյուջեն","Փոփոխության տրամաբանությունը և ենթադրությունները բացահայտ դարձնելը","Ժամանակացույցը","Աշխատակազմը"],1,"Ինչու և ինչպես է փոփոխությունը տեղի ունենալու։"],
+    ["MEAL-ում «A»-ն նշանակում է...",["Audit","Accountability","Activity","Analysis"],1,"Հաշվետվողականություն շահառուների առջև։"],
+    ["Բյուջեի line item-ների միջև մեծ վերաբաշխում առանց դոնորի հաստատման...",["Միշտ թույլատրելի է","Կարող է խախտել դրամաշնորհի պայմանները","Պարտադիր է","Կարևոր չէ"],1,"Ստուգիր պայմանագրի սահմանները։"],
+    ["Project DPro-ի ուղեցույցը մշակել է...",["PMI","PM4NGOs","Scrum.org","FIDIC"],1,"PM4NGOs։"]
+  ]},
+{ n:4, aca:"Միջոցառումներ", title:"Միջոցառումների կառավարում", short:"Միջոցառումներ",
+  goal:"Պլանավորել և անցկացնել միջոցառումներ՝ բյուջե, մատակարարներ, run-of-show, ռիսկեր և անվտանգություն։",
+  lessons:[
+    {t:"Միջոցառման կյանքի ցիկլը և բյուջեն", h:"1 ժ", b:`<div class="formula">Նպատակ և KPI → Կոնցեպտ → Բյուջե → Վայր և ամսաթիվ → Մատակարարներ
+→ Մարքեթինգ և գրանցում → Լոգիստիկա → Run-of-show → Միջոցառում → Ամփոփում</div>
+      <ul><li><b>Նպատակ և KPI</b>՝ մասնակիցներ, գոհունակություն (NPS), լիդեր, հովանավորների ROI, լրատվական ծածկույթ</li><li><b>Բյուջե</b>՝ վայր, սնունդ, տեխնիկա (ձայն, լույս, էկրաններ), դիզայն և տպագրություն, բանախոսներ, տրանսպորտ, ապահովագրություն, թույլտվություններ + contingency (հաճախ 10–15%)</li><li><b>Break-even</b>՝ (ֆիքսված ծախսեր) / (տոմսի գին − փոփոխական ծախս մեկ մասնակցի վրա)</li><li><b>Ժամանակացույց հետ-հաշվարկով</b>՝ միջոցառման ամսաթվից դեպի հետ (T−90, T−60, T−30, T−7, T−1)</li></ul>`},
+    {t:"Մատակարարներ և run-of-show", h:"1 ժ", b:`<ul><li><b>Մատակարարների կառավարում</b>՝ գրավոր պայմանագրեր, չեղարկման պայմաններ, կանխավճարներ, մանրամասն brief, պատասխանատու կոնտակտ, պահուստային մատակարար կրիտիկական ծառայությունների համար</li><li><b>Run-of-show</b>՝ րոպե առ րոպե ծրագիր. ժամ, տևողություն, գործողություն, պատասխանատու, տեխնիկական cue (միկրոֆոն, սլայդ, երաժշտություն), նշումներ</li><li><b>Production schedule</b>՝ մոնտաժ (load-in), փորձեր, ապամոնտաժ (load-out)</li><li><b>Ճգնաժամային կոնտակտների ցուցակ</b> և ռադիոկապ/խումբ թիմի համար</li></ul>`},
+    {t:"Ռիսկեր, անվտանգություն և ամփոփում", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ռիսկ</th><th>Արձագանք</th></tr><tr><td>Վատ եղանակ (բացօթյա)</td><td>Վրան կամ պահուստային ներքին վայր, որոշման ժամկետ</td></tr><tr><td>Բանախոսը չի գալիս</td><td>Պահուստային բանախոս կամ panel, video</td></tr><tr><td>Տեխնիկական խափանում</td><td>Փորձ, պահուստային սարքավորում, տեխնիկ տեղում</td></tr><tr><td>Մարդկանց հոսքի խնդիրներ</td><td>Մուտքի/ելքի պլան, տարողության սահմաններ, վթարային ելքեր, անվտանգության աշխատակազմ</td></tr><tr><td>Բժշկական միջադեպ</td><td>Առաջին օգնություն տեղում, շտապ օգնության հետ համաձայնեցում</td></tr></table></div>
+      <p><b>Ամփոփում</b>՝ մասնակիցների հարցում 48 ժամում, KPI vs թիրախ, բյուջե vs փաստացի, թիմի lessons learned, շնորհակալագրեր մատակարարներին և հովանավորներին։</p>`}
+  ],
+  practice:{t:"Միջոցառման պլան", steps:["Ընտրիր միջոցառում (օր.՝ 200 մասնակցով IT կոնֆերանս Երևանում)","Գրիր նպատակները և 5 KPI","Կազմիր բյուջե contingency-ով և հաշվիր break-even տոմսի գինը","Կազմիր T−90 → T+7 ժամանակացույց","Գրիր run-of-show 3 ժամվա համար","Կազմիր ռիսկերի աղյուսակ 8 ռիսկով"], deliverable:"Միջոցառման պլան, բյուջե, ժամանակացույց, run-of-show, ռիսկեր", tools:["emv"]},
+  quiz:[
+    ["Ֆիքսված ծախսեր $12 000, տոմս $60, փոփոխական ծախս մեկ մասնակցի վրա $20։ Break-even մասնակիցները՝",["200","300","600","150"],1,"12 000 / (60 − 20) = 300։"],
+    ["Run-of-show-ը...",["Բյուջեի աղյուսակ","Րոպե առ րոպե միջոցառման ծրագիր պատասխանատուներով և cue-երով","Մարքեթինգային պլան","Պայմանագիր"],1,"Միջոցառման «սցենարը»։"],
+    ["Բացօթյա միջոցառման համար եղանակային ռիսկի լավագույն պատասխանը՝",["Հույս ունենալ","Պահուստային վայր և նախապես սահմանված որոշման ժամկետ","Չեղարկել նախապես","Անտեսել"],1,"Contingency plan + trigger։"],
+    ["Միջոցառման գոհունակության հարցումը լավագույնս ուղարկել...",["1 ամիս անց","48 ժամվա ընթացքում","Մեկ տարի անց","Չուղարկել"],1,"Տպավորությունները թարմ են։"],
+    ["Կրիտիկական մատակարարի համար լավ պրակտիկա է...",["Միայն բանավոր պայմանավորվածություն","Գրավոր պայմանագիր և պահուստային մատակարար","Վճարել ամբողջը նախապես առանց պայմանագրի","Չունենալ կոնտակտ"],1,"Ռիսկի նվազեցում։"]
+  ]},
+{ n:5, aca:"Փոփոխություն", title:"Կազմակերպական փոփոխություն և շահակիցներ", short:"Փոփոխություն",
+  goal:"Ղեկավարել մարդկանց փոփոխության միջով՝ Kotter, ADKAR, դիմադրության կառավարում և հաղորդակցություն։",
+  lessons:[
+    {t:"Ինչու են ձախողվում փոփոխությունները", h:"1 ժ", b:`<p>Նախագիծը կարող է ժամանակին առաքել նոր համակարգ, շենք կամ ընթացակարգ, բայց եթե մարդիկ չեն փոխում վարքը, օգուտները չեն իրացվում։ John Kotter-ը («Leading Change», Harvard Business Review, 1995) նկարագրել է տարածված սխալներ. անբավարար urgency, թույլ coalition, vision-ի բացակայություն, անբավարար հաղորդակցություն, խոչընդոտների չհեռացում, կարճաժամկետ հաղթանակների բացակայություն, վաղաժամ «հաղթանակի հայտարարում», մշակույթում չամրագրում։</p>
+      <div class="formula">Kotter-ի 8 քայլ:
+1 Urgency  2 Coalition  3 Vision & strategy  4 Communicate the vision
+5 Empower action / remove barriers  6 Short-term wins
+7 Consolidate gains  8 Anchor in culture</div>`},
+    {t:"ADKAR և դիմադրություն", h:"1 ժ", b:`<div class="tbl"><table><tr><th>ADKAR</th><th>Հարց</th><th>Գործիք</th></tr><tr><td>Awareness</td><td>Ինչու՞ է փոփոխությունը պետք</td><td>Հաղորդակցություն ղեկավարից</td></tr><tr><td>Desire</td><td>Ի՞նչ է դա տալիս ինձ</td><td>Անձնական զրույց, WIIFM</td></tr><tr><td>Knowledge</td><td>Ինչպե՞ս փոխվել</td><td>Ուսուցում</td></tr><tr><td>Ability</td><td>Կարո՞ղ եմ իրականում անել</td><td>Պրակտիկա, coaching, ժամանակ</td></tr><tr><td>Reinforcement</td><td>Ինչպե՞ս պահպանել</td><td>Ճանաչում, չափումներ, KPI</td></tr></table></div>
+      <p><b>Դիմադրությունը</b> տեղեկատվություն է, ոչ թե թշնամություն. մարդիկ կարող են ունենալ իրական մտահոգություններ (աշխատանքի անվտանգություն, ծանրաբեռնվածություն, հմտություններ)։ Լսիր, ներգրավիր (co-design), արագ լուծիր վավեր խնդիրները։</p>`},
+    {t:"Հաղորդակցության պլան", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ում</th><th>Ինչ</th><th>Երբ</th><th>Ալիք</th><th>Ով</th></tr><tr><td>Բոլոր աշխատակիցներ</td><td>Ինչու և ինչ է փոխվում</td><td>Մեկնարկ, ամսական</td><td>Town hall, email</td><td>Sponsor</td></tr><tr><td>Ազդվող թիմեր</td><td>Ինչպես է փոխվում իրենց աշխատանքը</td><td>Շաբաթական</td><td>Թիմային հանդիպում</td><td>Գծային ղեկավար</td></tr><tr><td>Change champions</td><td>Մանրամասներ, feedback</td><td>Շաբաթական</td><td>Աշխատաժողով</td><td>PM</td></tr><tr><td>Ղեկավարություն</td><td>Առաջընթաց, ռիսկեր, որոշումներ</td><td>Երկշաբաթյա</td><td>Dashboard</td><td>PM</td></tr></table></div>
+      <p>Հետազոտությունները (Prosci) ցույց են տալիս, որ աշխատակիցները նախընտրում են լսել «ինչու»-ն բարձրագույն ղեկավարից, իսկ «ինչպես է դա ազդում ինձ վրա»-ն՝ իրենց անմիջական ղեկավարից։</p>`}
+  ],
+  practice:{t:"Փոփոխության պլան", steps:["Ընտրիր փոփոխություն (օր.՝ նոր ERP համակարգ, հիվանդանոցում էլեկտրոնային բժշկական քարտեր, դպրոցում նոր գնահատման համակարգ)","Կիրառիր Kotter-ի 8 քայլը կոնկրետ գործողություններով","Գնահատիր 3 շահակցային խմբի ADKAR-ը և գտիր «խցանման» կետը","Կազմիր հաղորդակցության պլան","Գրիր դիմադրության 4 հավանական պատճառ և պատասխաններ"], deliverable:"Kotter պլան, ADKAR գնահատում, հաղորդակցության պլան"},
+  quiz:[
+    ["Kotter-ի առաջին քայլը՝",["Vision","Urgency","Short-term wins","Culture"],1,"Create a sense of urgency։"],
+    ["Աշխատակիցը գիտի, թե ինչու և ինչպես, բայց չի կարողանում կիրառել. ADKAR-ի խցանումը՝",["Awareness","Desire","Ability","Reinforcement"],2,"Ability՝ պրակտիկա և coaching։"],
+    ["Դիմադրությանը վերաբերվել որպես...",["Թշնամության","Արժեքավոր տեղեկատվության մտահոգությունների մասին","Անտեսելի","Պատժելի"],1,"Լսիր և ներգրավիր։"],
+    ["«Ինչպես է սա ազդում իմ աշխատանքի վրա» հաղորդագրությունը լավագույնս տալիս է...",["Գործադիր տնօրենը","Անմիջական ղեկավարը","Արտաքին խորհրդատուն","HR-ի email-ը"],1,"Prosci-ի հետազոտություններ։"],
+    ["Ինչու են կարևոր short-term wins-ը։",["Ավելացնում են բյուջեն","Ցույց են տալիս առաջընթաց և պահպանում մոտիվացիան","Փոխարինում են vision-ին","Կարևոր չեն"],1,"Momentum։"]
+  ]},
+{ n:6, aca:"Capstone", title:"Capstone՝ քո ոլորտի նախագիծ", short:"Capstone",
+  goal:"Կազմել ամբողջական նախագծային փաստաթղթերի փաթեթ քո ոլորտի իրական նախագծի համար։",
+  lessons:[
+    {t:"Project charter և business case", h:"1 ժ", b:`<div class="formula">PROJECT CHARTER (1–2 էջ)
+• Անվանում, sponsor, PM
+• Խնդիր / հնարավորություն
+• Նպատակներ (SMART) և հաջողության չափանիշներ
+• Scope՝ ներառված և չներառված
+• Հիմնական արդյունքներ (deliverables) և milestones
+• Բյուջե (մոտավոր) և ֆինանսավորման աղբյուր
+• Հիմնական շահակիցներ
+• Բարձր մակարդակի ռիսկեր և ենթադրություններ
+• Մոտեցում (predictive / agile / hybrid) և հիմնավորում
+• Հաստատում (ստորագրություններ)</div>`},
+    {t:"Պլանավորման փաթեթ", h:"1 ժ", b:`<ul><li><b>WBS</b> և WBS dictionary</li><li><b>Ժամանակացույց</b> CPM-ով և milestones-ով</li><li><b>Բյուջե</b> contingency և management reserve-ով</li><li><b>RACI</b> մատրից</li><li><b>Risk register</b></li><li><b>Stakeholder engagement</b> և <b>communication plan</b></li><li><b>Quality plan</b>՝ acceptance criteria</li><li><b>Գնումների պլան</b>, եթե կան մատակարարներ</li><li><b>Logframe կամ results chain</b>, եթե նախագիծը պետական կամ դոնորային է</li><li><b>Change management plan</b>, եթե նախագիծը փոխում է աշխատանքի ձևը</li></ul>
+      <p>Tailoring. փոքր նախագծում այս ամենը կարող է լինել 5–8 էջանոց մեկ փաստաթուղթ. մեծ նախագծում՝ առանձին պլաններ։</p>`},
+    {t:"Կարիերա և սերտիֆիկացում ոչ IT ոլորտներում", h:"1 ժ", b:`<div class="tbl"><table><tr><th>Ոլորտ</th><th>Սերտիֆիկատներ և ստանդարտներ</th></tr><tr><td>Ընդհանուր</td><td>PMP, CAPM (PMI), PRINCE2, IPMA</td></tr><tr><td>Շինարարություն</td><td>PMP, FIDIC պայմանագրերի ուսուցում, ազգային ինժեներական որակավորումներ, NEBOSH (անվտանգություն)</td></tr><tr><td>ՀԿ և զարգացում</td><td>Project DPro (PM4NGOs), MEAL DPro</td></tr><tr><td>Միջոցառումներ</td><td>CMP (Certified Meeting Professional)</td></tr><tr><td>Պետական</td><td>PRINCE2, MSP (programme), PMP</td></tr><tr><td>Փոփոխություն</td><td>Prosci Certified Change Practitioner, APMG Change Management</td></tr></table></div>
+      <p>Հայաստանում նախագծերի կառավարման դերեր կան շինարարությունում, էներգետիկայում, միջազգային կազմակերպությունների ծրագրերում, պետական կառույցներում, բանկերում և միջոցառումների ոլորտում։ Պորտֆոլիոյում ներառիր capstone փաթեթը։</p>`}
+  ],
+  practice:{t:"Capstone փաթեթ", steps:["Ընտրիր իրական կամ հավանական նախագիծ քո ոլորտում","Գրիր project charter","Կազմիր WBS, CPM ժամանակացույց, բյուջե, RACI","Կազմիր risk register և communication plan","Ավելացրու ոլորտային գործիք (BOQ, logframe, run-of-show կամ ADKAR պլան)","Ստացիր AI գնահատում և անցիր փորձնական հարցազրույցը"], deliverable:"Ամբողջական նախագծային փաթեթ", tools:["cpm","evm","interview"]},
+  quiz:[
+    ["Project charter-ը սովորաբար հաստատում է...",["Թիմի անդամը","Sponsor-ը","Մատակարարը","Հաճախորդի աշխատակիցը"],1,"Sponsor-ը թույլատրում է նախագիծը։"],
+    ["RACI-ում «A»-ն...",["Assistant","Accountable՝ մեկ մարդ յուրաքանչյուր առաջադրանքի համար","Analyst","Approver միշտ մի քանիսը"],1,"Accountable։"],
+    ["Charter-ում «չներառված scope»-ի նպատակը՝",["Երկարացնել փաստաթուղթը","Կանխել սպասումների անհամապատասխանությունը","Ավելացնել բյուջե","Ոչինչ"],1,"Out of scope-ը նույնքան կարևոր է։"],
+    ["ՀԿ ոլորտում նախագծերի կառավարման սերտիֆիկատ է...",["CMP","Project DPro","NEBOSH","PSM I"],1,"PM4NGOs։"],
+    ["Փոքր նախագծում պլանավորման փաստաթղթերը...",["Պարտադիր 20 առանձին փաստաթուղթ","Կարող են միավորվել մեկ կոմպակտ փաստաթղթում (tailoring)","Պետք չեն","Միայն բանավոր"],1,"Tailoring։"]
+  ]}
+],
+final:[
+  ["Շինարարական նախագծում պատվիրատուն բանավոր խնդրում է ավելացնել ևս մեկ հարկ։ PM-ը...",["Սկսում է աշխատանքը","Պահանջում է գրավոր variation, գնահատում ազդեցությունը ժամանակի և ծախսի վրա, համաձայնեցնում պայմանագրով","Մերժում է","Թաքցնում է ծախսը"],1,"Change control և պայմանագրային պահանջներ։"],
+  ["Դոնորային նախագծում outputs-ը կատարված են 100%-ով, բայց outcomes-ը չեն փոխվել։ Ամենահավանական խնդիրը՝",["Բյուջեն","Theory of Change-ի ենթադրությունները չեն աշխատել","Հաշվապահությունը","Logo-ն"],1,"Output ≠ Outcome։"],
+  ["Պետական նախագծի ժամանակացույցում գնման ընթացակարգը պլանավորված է 1 շաբաթ, իսկ օրենքը պահանջում է նվազագույն ժամկետներ և բողոքարկման պատուհան։ Ռիսկը՝",["Չկա","Ժամանակացույցը անիրատեսական է. պետք է ներառել օրենքով սահմանված ժամկետները և բողոքարկման ռիսկը","Միայն բյուջետային","Միայն քաղաքական"],1,"Գնումները critical path-ում։"],
+  ["Միջոցառման մասնակիցների թիվը 40%-ով պակաս է break-even-ից։ Ի՞նչ պետք է արվեր նախապես։",["Ոչինչ","Սահմանել go/no-go որոշման կետ գրանցումների քանակով և չեղարկման պայմաններ մատակարարների հետ","Բարձրացնել տոմսի գինը միջոցառման օրը","Ավելացնել ծախսերը"],1,"Proactive ռիսկի կառավարում։"],
+  ["Նոր հաշվապահական համակարգը ներդրված է, բայց աշխատակիցները շարունակում են օգտագործել Excel-ը։ ADKAR-ով առաջին քայլը՝",["Արգելել Excel-ը","Ախտորոշել, թե որ փուլում է խցանումը (desire, knowledge, ability)","Փոխել համակարգը","Աշխատանքից ազատել"],1,"Ախտորոշում մինչև միջամտություն։"],
+  ["Logframe-ում «Ստուգման միջոցներ» սյունակը նշում է...",["Ով է վճարում","Որտեղից են վերցվելու ցուցանիշի տվյալները","Ենթադրությունները","Ժամանակացույցը"],1,"Means of verification։"],
+  ["Կապալառուն պահանջում է ժամանակի երկարացում՝ պատվիրատուի ուշացրած նախագծային փաստաթղթերի պատճառով։ PM-ը...",["Մերժում է ավտոմատ","Ստուգում է պայմանագրային դրույթները, փաստաթղթերը և ազդեցությունը critical path-ի վրա և գործում ըստ պայմանագրի","Համաձայնում է առանց վերլուծության","Անտեսում է"],1,"Extension of time և claims։"],
+  ["Kotter-ի մոդելում ինչու չի կարելի վաղաժամ «հաղթանակ հայտարարել»։",["Ծախսատար է","Փոփոխությունը դեռ արմատավորված չէ մշակույթում, և հին վարքը կարող է վերադառնալ","Օրենքով","Կարևոր չէ"],1,"Consolidate and anchor։"],
+  ["ՀԿ-ի նախագծում բյուջեի line item-ների միջև անհրաժեշտ է վերաբաշխել 25%։ Ճիշտ քայլը՝",["Վերաբաշխել լուռ","Ստուգել դրամաշնորհի պայմանները և ստանալ դոնորի գրավոր հաստատումը","Չեղարկել նախագիծը","Պահանջել նոր դրամաշնորհ"],1,"Compliance։"],
+  ["Որ մոտեցումն է ամենահամապատասխանը դպրոցի շենքի կառուցման համար։",["Մաքուր Scrum","Predictive՝ փուլային, հնարավոր է BIM և իտերատիվ նախագծում","Kanban առանց պլանի","Ոչ մի մոտեցում"],1,"Փոփոխության բարձր գին կառուցման փուլում։"]
+],
+sources:[
+  ["PM4NGOs — Project DPro","https://www.pm4ngos.org/project-dpro/","ՀԿ նախագծերի ստանդարտ"],
+  ["PM4NGOs — Logical Framework","https://pm4ngos.org/understanding-a-logical-framework-logframe/","Logframe-ի 4 մակարդակ"],
+  ["FIDIC — Contracts","https://fidic.org/contracts","Միջազգային շինարարական պայմանագրեր"],
+  ["OECD DAC — Evaluation Criteria","https://www.oecd.org/dac/evaluation/daccriteriaforevaluatingdevelopmentassistance.htm","Գնահատման չափանիշներ"],
+  ["ՀՀ գնումների համակարգ (ARMEPS)","https://armeps.am","Էլեկտրոնային գնումներ"],
+  ["Kotter — Leading Change (HBR)","https://hbr.org/1995/05/leading-change-why-transformation-efforts-fail-2","Փոփոխության 8 քայլ"],
+  ["Prosci — ADKAR","https://www.prosci.com/methodology/adkar","Անհատական փոփոխության մոդել"]
+], examExtra:20, examMin:45 };
+
+const ACAD={id:"pm",name:"Project Management ակադեմիա",ls:"pm-academy-v1",db:"pmacademy",seal:"PMA",disc:"PMI, PeopleCert կամ Scrum.org",
+ colors:{pmp:"#0f6a7a",p2:"#7a4fb8",psm:"#2a63b8",gen:"#a85a1c"},ivOrg:"հայաստանյան կամ միջազգային կազմակերպությունում",
+ qaPh:"Օր.՝ Չհասկացա, թե ինչով է CPI-ն տարբերվում SPI-ից։ Կարո՞ղ ես օրինակով բացատրել։",
+ homeNote:`<p class="small muted">Դասընթացները նախապատրաստում են PMI-ի (PMP), PeopleCert-ի (PRINCE2 7 Foundation) և Scrum.org-ի (PSM I) քննություններին, բայց այս վկայականները պաշտոնական սերտիֆիկատներ չեն։ Քննությունների պայմանները պարբերաբար թարմացվում են. գրանցվելուց առաջ ստուգիր պաշտոնական կայքերը։ IT նախագծերի կառավարման դասընթացը գտնվում է IT ակադեմիայում։</p>`};
+const COURSES=[PMP,P2,PSM,GENPM];
+const ROLE={pmp:"Project Manager (PMP)",p2:"PRINCE2 Project Manager",psm:"Scrum Master",gen:"Project Manager (շինարարություն, պետական, ՀԿ, միջոցառումներ)"};
+const CID=COURSES.map(c=>c.id);
+const course=id=>COURSES.find(c=>c.id===id);
+const PASS_FINAL=75, PASS_QUIZ=0.7, PRACTICE_MIN=4;
+const INTRO={}, SCHEDULE=[];
+
+function writeHubSummary(){try{let d=0,t=0,cert=0;COURSES.forEach(c=>{const k=courseStats(c);d+=k.pct;t+=100;if(st(c.id).cert)cert++;});localStorage.setItem("hub-sum-"+ACAD.id,JSON.stringify({pct:Math.round(d/Math.max(1,t)*100),cert,courses:COURSES.length,at:Date.now()}));}catch(e){}}
+function HOME(){
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:24px"});
+  const cat=el("div",{class:"catalog"});
+  COURSES.forEach(c=>{const k=courseStats(c); const s=st(c.id);
+    const a=el("a",{href:"#"+c.id,class:"course-card",style:`--cc:var(--c-${c.id})`});
+    a.innerHTML=`<span class="eyebrow">${c.weeks.length} մոդուլ · ${k.lessonsTotal} դաս · քննություն + վկայական</span><h3>${c.title}</h3><p class="small muted">${c.lead}</p>
+      <span class="fill"><i style="width:${k.pct}%"></i></span>
+      <div class="meta"><span class="mono">${k.pct}% · թեստեր ${k.quizzes}/${c.weeks.length}</span><span>${s.cert?'<span class="pill ok">Վկայական ստացված</span>':(k.pct>0?"Ընթացքում":"Չսկսված")}</span></div>`;
+    cat.appendChild(a);});
+  wrap.appendChild(cat);
+  const p=el("section",{class:"panel"});
+  p.innerHTML=`<div><span class="eyebrow">Մեթոդ</span><h2>Ինչպես է կառուցված ուսուցումը</h2></div>
+  <div class="method">
+   <div class="box"><span class="pill">1 · Պարզից բարդ</span><p>Ամեն դաս սկսվում է պարզ բացատրությամբ և կյանքից օրինակով, հետո՝ մանրամասն նյութ բանաձևերով, աղյուսակներով և աղբյուրներով։ Չհասկացածը կարող ես հարցնել հենց դասի տակ։</p></div>
+   <div class="box"><span class="pill">2 · Case method</span><p>Harvard Business School-ի ոճով. իրական իրավիճակներ, որոշումներ անորոշության պայմաններում, trade-off-ներ։ Ավարտական քննության հարցերը սցենարային են։</p></div>
+   <div class="box"><span class="pill">3 · Retrieval practice</span><p>Ինքնաստուգումը սովորեցնում է ավելի լավ, քան կրկնակի ընթերցումը (Roediger & Karpicke)։ Ամեն մոդուլ ունի թեստ, իսկ «Թեստային առաջադրանքներ» բաժնում կարող ես ստեղծել անսահմանափակ նոր հարցեր։</p></div>
+   <div class="box"><span class="pill">4 · Deliberate practice</span><p>Ամեն մոդուլ ունի գործնական առաջադրանք, որը ստանում է AI գնահատում՝ ուժեղ կողմեր, բացեր և հաջորդ քայլեր։ Աշխատանքները կառուցվում են մեկ capstone նախագծի շուրջ։</p></div>
+   <div class="box"><span class="pill ms">5 · Քննություն և վկայական</span><p>Մոդուլային թեստեր (≥70%), առնվազն ${PRACTICE_MIN} գործնական և ժամաչափված ավարտական քննություն (≥${PASS_FINAL}%)։ Դրանից հետո՝ անվանական վկայական։</p></div>
+  </div>
+  ${ACAD.homeNote}`;
+  wrap.appendChild(p);
+  return wrap;
+}
+
+/* ========== EXTRA TOOLS (trading + PM) ========== */
+function outBox(b){const o=el("div",{class:"formula"});b.appendChild(o);return o;}
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:d}):"—";
+const EXTRA_TOOLS={
+  cost(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Գործարքների տարեկան ծախսի հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("cc","Կապիտալ ($)",10000),numField("crt","Ծախս մեկ round trip-ում (%)",0.05),numField("cn","Round trip-ներ օրական",2),numField("cd","Առևտրային օրեր տարեկան",250)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#cc",b).value,r=+$("#crt",b).value/100,n=+$("#cn",b).value,d=+$("#cd",b).value;const y=C*r*n*d;
+      out.textContent=`Ծախս մեկ round trip-ում = $${fmt(C*r)}\nՏարեկան ծախս = $${fmt(y,0)}  =  ${fmt(y/C*100,1)}% կապիտալից\nՀամախառն եկամուտը պետք է գերազանցի այս թիվը, որ զուտ արդյունքը լինի դրական։`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  expect(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Expectancy և R հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("ew","Win rate (%)",40),numField("eaw","Միջին շահույթ (R)",2.5),numField("eal","Միջին վնաս (R)",1),numField("en","Գործարքների քանակ",100),numField("er","1R ($)",100)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const W=+$("#ew",b).value/100,aw=+$("#eaw",b).value,al=+$("#eal",b).value,n=+$("#en",b).value,R=+$("#er",b).value;const E=W*aw-(1-W)*al;const pf=(1-W)*al>0?(W*aw)/((1-W)*al):Infinity;const be=aw+al>0?al/(aw+al):0;
+      out.textContent=`Expectancy = ${fmt(E,3)}R մեկ գործարքում\nՍպասվող արդյունք ${n} գործարքում ≈ ${fmt(E*n,1)}R = $${fmt(E*n*R,0)}\nProfit factor = ${fmt(pf)}\nBreak-even win rate այս R-ով = ${fmt(be*100,1)}%`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  dd(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կորուստ և վերականգնում"));
+    const g=el("div",{class:"cols"}); g.append(numField("ddl","Կորուստ (%)",30),numField("ddr","Ռիսկ մեկ գործարքում (%)",1),numField("ddn","Վնասների շարք",10)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const L=+$("#ddl",b).value/100,r=+$("#ddr",b).value/100,n=+$("#ddn",b).value;const need=L<1?(1/(1-L)-1):Infinity;const streak=1-Math.pow(1-r,n);
+      out.textContent=`−${fmt(L*100,1)}% կորստից վերականգնման համար պետք է +${fmt(need*100,1)}%\n${n} վնաս անընդմեջ ${fmt(r*100,2)}% ռիսկով → drawdown ≈ −${fmt(streak*100,1)}%`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  possize(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Դիրքի չափի հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("pc","Կապիտալ ($)",20000),numField("pr","Ռիսկ (%)",1),numField("pe","Մուտքի գին",80),numField("ps","Stop գին",76),numField("pa","ATR (ըստ ցանկության)",0),numField("pk","Stop = k × ATR (k)",2)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#pc",b).value,r=+$("#pr",b).value/100,e=+$("#pe",b).value,s=+$("#ps",b).value,atr=+$("#pa",b).value,k=+$("#pk",b).value;const risk=C*r;
+      const dist=atr>0?k*atr:Math.abs(e-s);const q=dist>0?Math.floor(risk/dist):0;
+      out.textContent=`Ռիսկ = $${fmt(risk,0)}\nStop-ի հեռավորություն = ${fmt(dist)}${atr>0?" (ATR-ով)":""}\nՔանակ = ${q}\nԴիրքի արժեք = $${fmt(q*e,0)} = ${fmt(q*e/C*100,1)}% կապիտալից${q*e>C?"\nԶգուշացում. դիրքը մեծ է կապիտալից, պահանջում է լծակ":""}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  kelly(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Kelly հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("kw","Win rate (%)",50),numField("kr","R = միջին շահույթ / միջին վնաս",2)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const W=+$("#kw",b).value/100,R=+$("#kr",b).value;const f=R>0?W-(1-W)/R:0;
+      out.textContent=f<=0?`Kelly f* = ${fmt(f*100,1)}% → դրական edge չկա. մի առևտրիր այս համակարգով`:`Full Kelly = ${fmt(f*100,1)}%\nHalf Kelly = ${fmt(f*50,1)}%\nQuarter Kelly = ${fmt(f*25,1)}%\nՊրակտիկայում շատերը օգտագործում են 0.5–1%՝ գնահատման անորոշության պատճառով`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  stats(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Backtest metrics"));
+    const l=el("label",{class:"f"},"Գործարքների արդյունքները R-ով կամ %-ով (ստորակետով)"); const ta=el("textarea",{id:"stR",style:"min-height:80px"}); ta.value="1.5, -1, -1, 2.2, -1, 0.4, 3.1, -1, -0.6, 1.8, -1, 2.5"; l.appendChild(ta); b.appendChild(l);
+    const g=el("div",{class:"cols"}); g.append(numField("stY","Տարիներ",3)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const v=ta.value.split(/[,\s;]+/).map(Number).filter(x=>Number.isFinite(x)&&ta.value.trim());const n=v.length;if(!n){out.textContent="Մուտքագրիր թվեր";return;}
+      const m=v.reduce((a,x)=>a+x,0)/n;const sd=Math.sqrt(v.reduce((a,x)=>a+(x-m)**2,0)/Math.max(1,n-1));const w=v.filter(x=>x>0),lo=v.filter(x=>x<0);
+      const gp=w.reduce((a,x)=>a+x,0),gl=-lo.reduce((a,x)=>a+x,0);let eq=0,pk=0,dd=0;v.forEach(x=>{eq+=x;pk=Math.max(pk,eq);dd=Math.min(dd,eq-pk);});
+      const se=sd/Math.sqrt(n);const yrs=+$("#stY",b).value||1;
+      out.textContent=`N = ${n}\nWin rate = ${fmt(w.length/n*100,1)}%\nՄիջին (expectancy) = ${fmt(m,3)}\nՍտանդարտ շեղում = ${fmt(sd,3)}\n95% միջակայք միջինի համար ≈ ${fmt(m-1.96*se,3)} … ${fmt(m+1.96*se,3)}\nt-stat ≈ ${fmt(m/se,2)} ${Math.abs(m/se)<2?"(վիճակագրորեն թույլ)":"(ավելի համոզիչ)"}\nProfit factor = ${gl>0?fmt(gp/gl):"∞"}\nMax drawdown (գումարային) = ${fmt(dd,2)}\nԳործարքներ տարեկան ≈ ${fmt(n/yrs,0)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  pip(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Ֆորեքս՝ pip value և lot"));
+    const g=el("div",{class:"cols"}); g.append(numField("fxC","Կապիտալ ($)",5000),numField("fxR","Ռիսկ (%)",1),numField("fxS","Stop (pip)",25),numField("fxP","Զույգի գին",1.085));
+    const sl=el("label",{class:"f"},"Զույգի տեսակ"); const sel=el("select",{id:"fxT"}); [["usdq","Quote = USD (EUR/USD, GBP/USD)"],["jpy","USD/JPY"],["usdb","Base = USD (USD/CHF, USD/CAD)"]].forEach(([v,t])=>sel.appendChild(el("option",{value:v},t))); sl.appendChild(sel); g.append(sl); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const C=+$("#fxC",b).value,r=+$("#fxR",b).value/100,s=+$("#fxS",b).value,P=+$("#fxP",b).value,t=sel.value;
+      const pip=t==="jpy"?0.01:0.0001;let pv=100000*pip;if(t!=="usdq")pv=P>0?pv/P:0;
+      const risk=C*r;const lots=s>0&&pv>0?risk/(s*pv):0;
+      out.textContent=`1 standard lot-ի pip value ≈ $${fmt(pv,2)}\nՌիսկ = $${fmt(risk,0)}\nLot = ${fmt(lots,2)} (${fmt(lots*10,1)} mini, ${fmt(lots*100,0)} micro)\nՆոմինալ = $${fmt(lots*100000*(t==="usdq"?P:1),0)} → լծակ ≈ ${fmt(lots*100000*(t==="usdq"?P:1)/C,1)}:1`;};
+    b.addEventListener("input",calc); sel.addEventListener("change",calc); calc(); return b;},
+  fut(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Ֆյուչերսներ՝ նոմինալ և sizing"));
+    const g=el("div",{class:"cols"}); g.append(numField("fuP","Ինդեքսի գին",6000),numField("fuM","Բազմապատկիչ ($/կետ)",5),numField("fuR","Ռիսկ ($)",250),numField("fuS","Stop (կետ)",10),numField("fuC","Կապիտալ ($)",10000)); b.appendChild(g);
+    b.appendChild(el("p",{class:"small muted"},"ES՝ $50/կետ, MES՝ $5/կետ։ Ստուգիր ընթացիկ specs-ը CME-ում։"));
+    const out=outBox(b);
+    const calc=()=>{const P=+$("#fuP",b).value,M=+$("#fuM",b).value,R=+$("#fuR",b).value,S=+$("#fuS",b).value,C=+$("#fuC",b).value;const not=P*M;const per=S*M;const n=per>0?Math.floor(R/per):0;
+      out.textContent=`Մեկ պայմանագրի նոմինալ = $${fmt(not,0)}\nՌիսկ մեկ պայմանագրում = $${fmt(per,0)}\nՊայմանագրեր = ${n}\nԸնդհանուր նոմինալ = $${fmt(n*not,0)} → ${fmt(n*not/C,1)}× կապիտալ\n1% շարժում = $${fmt(n*not*0.01,0)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  option(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Օպցիոնների payoff մարման օրը"));
+    const g=el("div",{class:"cols"});
+    const sl=el("label",{class:"f"},"Ռազմավարություն"); const sel=el("select",{id:"opT"}); [["lc","Long call"],["lp","Long put"],["bcs","Bull call spread"],["cc","Covered call"],["pp","Protective put"]].forEach(([v,t])=>sel.appendChild(el("option",{value:v},t))); sl.appendChild(sel);
+    g.append(sl,numField("opS","Բաժնետոմսի ընթացիկ գին",100),numField("opK1","Strike K1",100),numField("opP1","Premium K1",3),numField("opK2","Strike K2 (spread/covered)",110),numField("opP2","Premium K2",1)); b.appendChild(g);
+    const out=outBox(b);
+    const calc=()=>{const t=sel.value,S0=+$("#opS",b).value,K1=+$("#opK1",b).value,P1=+$("#opP1",b).value,K2=+$("#opK2",b).value,P2=+$("#opP2",b).value;
+      const pay=S=>{switch(t){case"lc":return Math.max(0,S-K1)-P1;case"lp":return Math.max(0,K1-S)-P1;case"bcs":return Math.max(0,S-K1)-Math.max(0,S-K2)-P1+P2;case"cc":return (S-S0)-Math.max(0,S-K2)+P2;case"pp":return (S-S0)+Math.max(0,K1-S)-P1;}return 0;};
+      const pts=[];for(let i=0;i<=8;i++){const S=Math.round(S0*(0.6+i*0.1)*100)/100;pts.push(`S = ${String(fmt(S)).padStart(7)}  →  ${pay(S)>=0?"+":""}${fmt(pay(S)*100,0)} $ (1 պայմանագիր = 100)`);}
+      out.textContent=pts.join("\n");};
+    b.addEventListener("input",calc); sel.addEventListener("change",calc); calc(); return b;},
+  channels(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Հաղորդակցության ալիքներ"));
+    const g=el("div",{class:"cols"}); g.append(numField("chA","Մարդիկ (սկզբում)",8),numField("chB","Մարդիկ (հետո)",12)); b.appendChild(g);
+    const out=outBox(b); const c=n=>n*(n-1)/2;
+    const calc=()=>{const a=+$("#chA",b).value,z=+$("#chB",b).value;out.textContent=`n(n−1)/2:  ${c(a)} → ${c(z)}\nԱվելացել է ${c(z)-c(a)} ալիք`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  emv(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"EMV և decision tree"));
+    const mk=(p,id)=>{const g=el("div",{class:"cols"}); g.append(numField(id+"c",p+"՝ հիմնական ծախս",500000),numField(id+"p",p+"՝ ռիսկի հավանականություն (%)",30),numField(id+"i",p+"՝ ռիսկի ազդեցություն",200000)); return g;};
+    b.append(mk("Տարբերակ A","ea"),mk("Տարբերակ B","eb"));
+    const out=outBox(b);
+    const calc=()=>{const v=id=>(+$("#"+id+"c",b).value)+(+$("#"+id+"p",b).value/100)*(+$("#"+id+"i",b).value);const A=v("ea"),B=v("eb");
+      out.textContent=`A-ի սպասվող ծախս = ${fmt(A,0)}\nB-ի սպասվող ծախս = ${fmt(B,0)}\nԸստ EMV-ի ավելի լավն է՝ ${A<B?"A":A>B?"B":"հավասար"}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  cpm(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Critical Path հաշվիչ"));
+    const l=el("label",{class:"f"},"Activity-ներ՝ ամեն տողում «անուն, տևողություն, նախորդներ» (նախորդները բացատով)"); const ta=el("textarea",{id:"cpmIn",style:"min-height:150px"});
+    ta.value="A, 5, -\nB, 3, A\nC, 6, A\nD, 4, B C\nE, 2, C\nF, 3, D E"; l.appendChild(ta); b.appendChild(l);
+    const out=outBox(b);
+    const calc=()=>{try{
+      const acts={};ta.value.split("\n").map(s=>s.trim()).filter(Boolean).forEach(line=>{const p=line.split(",").map(x=>x.trim());if(p.length<2)return;acts[p[0]]={d:+p[1]||0,pre:(p[2]&&p[2]!=="-")?p[2].split(/\s+/).filter(Boolean):[]};});
+      const ids=Object.keys(acts);const order=[];const seen={};const visit=(k,st)=>{if(seen[k]===2)return;if(seen[k]===1)throw new Error("Ցիկլ "+k);seen[k]=1;acts[k].pre.forEach(p=>{if(!acts[p])throw new Error("Անհայտ նախորդ՝ "+p);visit(p);});seen[k]=2;order.push(k);};
+      ids.forEach(k=>visit(k));
+      order.forEach(k=>{const a=acts[k];a.es=a.pre.length?Math.max(...a.pre.map(p=>acts[p].ef)):0;a.ef=a.es+a.d;});
+      const end=Math.max(...ids.map(k=>acts[k].ef));
+      [...order].reverse().forEach(k=>{const a=acts[k];const succ=ids.filter(s=>acts[s].pre.includes(k));a.lf=succ.length?Math.min(...succ.map(s=>acts[s].ls)):end;a.ls=a.lf-a.d;a.fl=a.ls-a.es;});
+      const crit=order.filter(k=>acts[k].fl===0);
+      out.textContent="Activity  ES  EF  LS  LF  Float\n"+order.map(k=>{const a=acts[k];return `${k.padEnd(8)} ${String(a.es).padStart(3)} ${String(a.ef).padStart(3)} ${String(a.ls).padStart(3)} ${String(a.lf).padStart(3)} ${String(a.fl).padStart(5)}`;}).join("\n")+`\n\nՏևողություն = ${end}\nCritical activities: ${crit.join(" → ")}`;
+    }catch(e){out.textContent="Սխալ՝ "+e.message;}};
+    b.addEventListener("input",calc); calc(); return b;}
+};
+
+/* ========== STATE ========== */
+const blankC=()=>({lessons:{},practice:{},labs:{},notes:{},feedback:{},quiz:{},final:null,extra:{},extraQuiz:null,start:null,cert:null,explain:{},qa:{},gen:{},guide:{}});
+let S={v:3,name:"",c:{},migrated:false};
+let db=null, docRef=null, sample=null, downloads=null, saveTimer=null;
+const LS_KEY=ACAD.ls;
+
+function normalize(raw){
+  if(!raw||typeof raw!=="object")return;
+  if(raw.v===3){S=Object.assign({v:3,name:"",c:{},migrated:false},raw);}
+  else{ // v1 / v2: old single PM course
+    const pm=blankC(); pm.notes=raw.notes||{}; pm.start=raw.start||null;
+    S={v:3,name:"",c:{pm},migrated:true};
+  }
+  CID.forEach(id=>{S.c[id]=Object.assign(blankC(),S.c[id]||{});});
+}
+CID.forEach(id=>{S.c[id]=blankC();});
+try{const r=localStorage.getItem(LS_KEY); if(r) normalize(JSON.parse(r)); }catch(e){}
+const st=id=>S.c[id];
+
+function persist(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}
+  writeHubSummary();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    if(docRef){try{await docRef.set({state:JSON.stringify(S),updated:Date.now()}); setNote("Առաջընթացը պահպանված է քո հաշվում");}catch(e){setNote("Առաջընթացը պահպանված է միայն այս բրաուզերում");}}
+  },700);
+}
+function setNote(t){document.getElementById("saveNote").textContent=t;}
+setNote("Առաջընթացը պահպանվում է այս բրաուզերում");
+
+(async()=>{
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const [d,u,s,dl]=await Promise.all([claude.use("db"),claude.use("user"),claude.use("sample"),claude.use("downloads")]);
+    sample=s; downloads=dl;
+    if(d&&u){
+      const id=await u.id();
+      if(id){
+        docRef=d.doc("data/users/"+id+"/"+ACAD.db);
+        const snap=await docRef.get();
+        if(snap.exists){const v=snap.data(); if(v&&v.state){try{normalize(JSON.parse(v.state));}catch(e){}}}
+        await docRef.set({state:JSON.stringify(S),updated:Date.now()});
+        try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch(e){}
+        setNote("Առաջընթացը պահպանվում է քո հաշվում և հասանելի է ցանկացած սարքից");
+      }
+    }
+    render();
+  }catch(e){setNote("Առաջընթացը պահպանվում է այս բրաուզերում"); render();}
+})();
+
+/* ========== HELPERS ========== */
+const $=(s,r=document)=>r.querySelector(s);
+function el(tag,attrs={},html){const e=document.createElement(tag);for(const k in attrs){if(k==="class")e.className=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k]);}if(html!=null)e.innerHTML=html;return e;}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const quizPass=(c,w)=>{const q=st(c.id).quiz[w.n];return !!(q&&q.best>=Math.ceil(w.quiz.length*PASS_QUIZ));};
+function weekProgress(c,w){
+  const s=st(c.id); const total=w.lessons.length+2; let done=0;
+  w.lessons.forEach((_,i)=>{if(s.lessons[w.n+"-"+i])done++;});
+  if(s.practice[w.n])done++; if(quizPass(c,w))done++;
+  return {done,total,pct:Math.round(done/total*100)};
+}
+function courseStats(c){
+  const s=st(c.id); let d=0,t=0;
+  c.weeks.forEach(w=>{const p=weekProgress(c,w);d+=p.done;t+=p.total;});
+  t+=1; if(s.final&&s.final.pass)d++;
+  return {
+    pct:Math.round(d/t*100),
+    lessons:c.weeks.reduce((a,w)=>a+w.lessons.filter((_,i)=>s.lessons[w.n+"-"+i]).length,0),
+    lessonsTotal:c.weeks.reduce((a,w)=>a+w.lessons.length,0),
+    practice:c.weeks.filter(w=>s.practice[w.n]).length,
+    quizzes:c.weeks.filter(w=>quizPass(c,w)).length,
+    final:s.final
+  };
+}
+function certReady(c){const k=courseStats(c);return {quizzes:k.quizzes===c.weeks.length,practice:k.practice>=PRACTICE_MIN,final:!!(k.final&&k.final.pass)};}
+const nextWeek=c=>{for(const w of c.weeks){if(weekProgress(c,w).pct<100)return w.n;}return c.weeks.length;};
+function fmtDate(d,opt){try{return new Date(d).toLocaleDateString("hy-AM",opt||{day:"numeric",month:"long",year:"numeric"});}catch(e){return new Date(d).toDateString();}}
+function stripHtml(h){const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim();}
+
+/* ========== ROUTING ========== */
+function route(){
+  const h=(location.hash||"").slice(1);
+  const m=h.match(new RegExp("^("+CID.join("|")+")(?:-(w\\d+|exam|extra|cert))?$"));
+  if(!m)return{v:"home"};
+  const c=course(m[1]); const sub=m[2]||"";
+  if(sub.startsWith("w"))return{v:"week",c,n:Math.max(1,Math.min(+sub.slice(1),c.weeks.length))};
+  if(sub==="exam")return{v:"exam",c};
+  if(sub==="extra"&&c.extra)return{v:"extra",c};
+  if(sub==="cert")return{v:"cert",c};
+  return{v:"course",c};
+}
+window.addEventListener("hashchange",()=>{render();window.scrollTo(0,0);});
+let subTab={};
+const OPEN=new Set(), GEN=new Set();
+
+/* ========== HEADER ========== */
+function renderChips(r){
+  const ch=$("#chips"); ch.innerHTML="";
+  COURSES.forEach(c=>{const a=el("a",{href:"#"+c.id,class:(r.c&&r.c.id===c.id)?"on":"",style:`--cc:var(--c-${c.id})`},`<span class="dot"></span>${c.short}`);a.title=c.title;ch.appendChild(a);});
+}
+function renderCourseHead(r){
+  const box=$("#course"); box.innerHTML="";
+  if(!r.c)return;
+  const c=r.c, s=st(c.id), k=courseStats(c);
+  box.style.setProperty("--cc",`var(--c-${c.id})`);
+  const head=el("div",{class:"course-head"});
+  head.innerHTML=`<span class="eyebrow">Դասընթաց · ${c.weeks.length} մոդուլ</span><h2>${c.title}</h2><p class="lead">${c.lead}</p>
+   <div class="statrow"><div class="stat"><b>${k.pct}%</b><span>առաջընթաց</span></div><div class="stat"><b>${k.lessons}/${k.lessonsTotal}</b><span>դաս</span></div>
+   <div class="stat"><b>${k.practice}/${c.weeks.length}</b><span>գործնական</span></div><div class="stat"><b>${k.quizzes}/${c.weeks.length}</b><span>թեստ (≥70%)</span></div>
+   <div class="stat"><b>${k.final?k.final.score+"%":"—"}</b><span>քննություն</span></div></div>`;
+  box.appendChild(head);
+  const g=el("div",{class:"gantt",style:"margin-top:16px"}); const grid=el("div",{class:"gantt-grid",style:`grid-template-columns:repeat(${c.weeks.length},minmax(92px,1fr));min-width:${c.weeks.length*98}px`});
+  c.weeks.forEach(w=>{grid.appendChild(el("div",{class:"g-head"},"Մ"+w.n+(s.start?" · "+fmtWeek(s.start,w.n):"")));});
+  c.weeks.forEach(w=>{const p=weekProgress(c,w);
+    grid.appendChild(el("button",{class:"g-bar"+(r.v==="week"&&r.n===w.n?" active":""),onclick:()=>{location.hash=c.id+"-w"+w.n}},`<span>${w.short}</span><span class="fill"><i style="width:${p.pct}%"></i></span><span class="mono small muted">${p.done}/${p.total}</span>`));});
+  grid.appendChild(el("div",{class:"g-ms"},`<span><span class="diamond"></span>Մ${Math.ceil(c.weeks.length/2)}՝ կես ճանապարհ</span><span><span class="diamond"></span>Մ${c.weeks.length}՝ capstone</span><span><span class="diamond"></span>Ավարտական քննություն (≥${PASS_FINAL}%)</span><span><span class="diamond"></span>Սերտիֆիկատ</span>`));
+  g.appendChild(grid); box.appendChild(g);
+  const tabs=el("nav",{class:"tabs",style:"margin-top:16px"});
+  const items=[["","Ծրագիր"],["-w"+nextWeek(c),"Շարունակել ուսումը"]];
+  if(c.extra)items.push(["-extra",c.extra.title]);
+  items.push(["-exam","Ավարտական քննություն"],["-cert","Սերտիֆիկատ"]);
+  items.forEach(([h,t])=>{const on=(h===""&&r.v==="course")||(h==="-extra"&&r.v==="extra")||(h==="-exam"&&r.v==="exam")||(h==="-cert"&&r.v==="cert");tabs.appendChild(el("a",{href:"#"+c.id+h,class:on?"on":""},t));});
+  box.appendChild(tabs);
+}
+function fmtWeek(start,n){const d=new Date(start);d.setDate(d.getDate()+(n-1)*7);return fmtDate(d,{day:"numeric",month:"short"});}
+
+/* ========== RENDER ========== */
+function render(){
+  const r=route(); renderChips(r); renderCourseHead(r);
+  const v=$("#view"); v.innerHTML="";
+  if(r.c)v.style.setProperty("--cc",`var(--c-${r.c.id})`);
+  if(r.v==="home")v.appendChild(viewHome());
+  else if(r.v==="course")v.appendChild(viewCourse(r.c));
+  else if(r.v==="week")v.appendChild(viewWeek(r.c,r.c.weeks[r.n-1]));
+  else if(r.v==="exam")v.appendChild(viewExam(r.c));
+  else if(r.v==="extra")v.appendChild(viewExtra(r.c));
+  else if(r.v==="cert")v.appendChild(viewCert(r.c));
+}
+
+function viewHome(){return HOME();}
+
+function viewCourse(c){
+  const s=st(c.id);
+  const p=el("section",{class:"panel"});
+  p.appendChild(el("div",{},`<span class="eyebrow">Ծրագիր</span><h2>${c.weeks.length} մոդուլ</h2>`));
+  const row=el("div",{class:"row"});
+  row.appendChild(el("span",{class:"muted"},s.start?`Մեկնարկ՝ <b>${fmtDate(s.start)}</b>`:"Նշիր մեկնարկի օրը, որ ժամանակացույցում հայտնվեն ամսաթվերը։"));
+  row.appendChild(el("button",{class:"btn ghost small",onclick:()=>{const d=new Date();const day=d.getDay();d.setDate(d.getDate()+(day===1?0:(8-day)%7));s.start=d.toISOString();persist();render();}},s.start?"Վերսկսել հաջորդ երկուշաբթիից":"Սկսել հաջորդ երկուշաբթիից"));
+  p.appendChild(row);
+  p.appendChild(el("div",{class:"tbl"},`<table><tr><th>Մ</th><th>Թեմա</th><th>Գործնական առաքվող</th><th>Վիճակ</th></tr>${c.weeks.map(w=>{const pr=weekProgress(c,w);return `<tr><td class="mono">${w.n}</td><td><a href="#${c.id}-w${w.n}">${w.title}</a><div class="small muted">${w.aca}</div></td><td>${w.practice.deliverable}</td><td class="mono">${pr.pct}%</td></tr>`;}).join("")}</table>`));
+  const src=el("div",{class:"box"});
+  src.innerHTML=`<h3>Աղբյուրներ և լրացուցիչ նյութեր</h3><div class="tbl"><table>${c.sources.map(r=>`<tr><td><a href="${r[1]}" target="_blank" rel="noopener">${r[0]}</a></td><td class="small muted">${r[2]}</td></tr>`).join("")}</table></div>`;
+  p.appendChild(src);
+  p.appendChild(el("div",{class:"row"})).appendChild(el("a",{class:"btn",href:`#${c.id}-w${nextWeek(c)}`},`Շարունակել՝ մոդուլ ${nextWeek(c)} →`));
+  if(sample){
+    const g=el("div",{class:"box"}); g.appendChild(el("h3",{},"Հարց տուր դասախոսին"));
+    g.appendChild(el("p",{class:"small muted"},"Ցանկացած հարց այս ոլորտի մասին՝ դասերից, աշխատանքից, կարիերայից կամ հարցազրույցից։"));
+    g.appendChild(qaBox(c,c.id+"|general",`Դասընթաց՝ ${c.title}. ${c.lead}\nՄոդուլներ՝ ${c.weeks.map(w=>w.title).join("; ")}`,"Բացել զրույցը",!!(st(c.id).qa[c.id+"|general"]||[]).length));
+    p.appendChild(g);
+  }
+  return p;
+}
+
+function lessonBlock(c,key,label,l,checkedStore){
+  const L=el("div",{class:"lesson"}); const head=el("div",{class:"lesson-h"});
+  head.appendChild(el("div",{},`<span class="eyebrow">${label} · ${l.h}</span><h3>${l.t}</h3>`));
+  const lab=el("label",{class:"chk"}); const cb=el("input",{type:"checkbox",id:"l-"+c.id+"-"+key}); cb.checked=!!checkedStore[key];
+  cb.addEventListener("change",()=>{checkedStore[key]=cb.checked;persist();renderCourseHead(route());});
+  lab.append(cb,document.createTextNode("Ավարտված")); head.appendChild(lab);
+  const s=st(c.id), ek=key, ok=c.id+"|"+key;
+  L.appendChild(head);
+  const content=el("div",{class:"lesson-content"});
+  const toggle=el("button",{class:"btn small"+(OPEN.has(ok)?" ghost":"")},OPEN.has(ok)?"Փակել դասը":"Սկսել դասը");
+  head.firstChild.appendChild(el("div",{class:"row",style:"margin-top:8px"})).appendChild(toggle);
+  L.appendChild(content);
+  const build=()=>{
+    content.innerHTML="";
+    // 1. simple explanation first
+    const simple=el("div",{class:"simple"});
+    simple.appendChild(el("span",{class:"eyebrow"},"Քայլ 1 · Պարզ բացատրություն"));
+    const p=simple.appendChild(el("p",{class:"pre"}));
+    const again=el("button",{class:"btn ghost small"},"Բացատրել նորից, այլ օրինակներով");
+    const gen=async()=>{
+      if(GEN.has(ok))return; GEN.add(ok); again.disabled=true; p.textContent="Պատրաստում եմ պարզ բացատրությունը…";
+      const prompt=`Դու համբերատար և շատ պարզ բացատրող դասախոս ես (${c.title})։ Ուսանողը սկսնակ է այս ոլորտում։ Ահա դասը.
+Վերնագիր՝ ${l.t}
+Բովանդակություն՝ ${stripHtml(l.b).slice(0,4500)}
+
+Բացատրիր այս դասը հայերեն, շատ մատչելի, պարզ տեքստով (առանց markdown նշանների, առանց # և *).
+1. Մեկ նախադասությամբ՝ ինչի մասին է դասը։
+2. Հիմնական գաղափարները քայլ առ քայլ, ամեն անգլերեն տերմին բացատրիր փակագծերում։
+3. Մեկ առօրյա կյանքից համեմատություն։
+4. Մեկ իրական աշխատանքային օրինակ (հայաստանյան կամ միջազգային ընկերության կոնտեքստում)։
+5. «Հիշիր»՝ 3 ամենակարևոր բանը։
+Մինչև 400 բառ։`;
+      try{const r=await sample(prompt,{modelTier:"default",cache:false,onText:({text})=>{p.textContent=text;}});p.textContent=r.text;s.explain[ek]=r.text;persist();}
+      catch(e){p.textContent=e&&e.code==="not_granted"?"Պարզ բացատրությունը հասանելի չէ այս դիտման մեջ. կարդա ներքևի նյութը։":"Չհաջողվեց պատրաստել բացատրությունը։ Սեղմիր «Բացատրել նորից»։";}
+      GEN.delete(ok); again.disabled=false;
+    };
+    again.addEventListener("click",gen);
+    if(sample||s.explain[ek]){
+      content.appendChild(simple);
+      if(s.explain[ek])p.textContent=s.explain[ek]; else gen();
+      if(sample)simple.appendChild(again);
+    }
+    // 2. detailed material
+    content.appendChild(el("span",{class:"eyebrow"},(sample||s.explain[ek])?"Քայլ 2 · Մանրամասն նյութ":"Նյութ"));
+    content.appendChild(el("div",{class:"body"},l.b));
+    // 3. questions
+    if(sample)content.appendChild(qaBox(c,ok,`Դաս՝ ${l.t}\n${stripHtml(l.b).slice(0,4500)}`,"Քայլ 3 · Հարց տուր այն մասին, ինչ չհասկացար",!!(s.qa[ok]&&s.qa[ok].length)));
+  };
+  const setOpen=o=>{if(o){OPEN.add(ok);content.hidden=false;build();toggle.textContent="Փակել դասը";toggle.classList.add("ghost");}else{OPEN.delete(ok);content.hidden=true;content.innerHTML="";toggle.textContent="Սկսել դասը";toggle.classList.remove("ghost");}};
+  toggle.addEventListener("click",()=>setOpen(!OPEN.has(ok)));
+  if(OPEN.has(ok))build(); else content.hidden=true;
+  return L;
+}
+
+/* Q&A thread: ask anything you did not understand */
+function qaBox(c,qkey,context,label,open){
+  const s=st(c.id);
+  const d=el("details",{class:"qa"}); if(open)d.open=true;
+  d.appendChild(el("summary",{},`${label}${s.qa[qkey]&&s.qa[qkey].length?` <span class="mono small muted">(${Math.ceil(s.qa[qkey].length/2)})</span>`:""}`));
+  const thread=el("div",{class:"qa-thread"});
+  const draw=()=>{thread.innerHTML="";(s.qa[qkey]||[]).forEach(m=>{const b=el("div",{class:"msg "+(m.r==="u"?"u":"a")});b.textContent=m.t;thread.appendChild(b);});};
+  draw();
+  const ta=el("textarea",{class:"qa-in",id:"qa-"+qkey.replace(/[^a-z0-9]/gi,"-"),placeholder:ACAD.qaPh});
+  const send=el("button",{class:"btn small"},"Հարցնել");
+  const clear=el("button",{class:"btn small ghost"},"Մաքրել զրույցը");
+  const status=el("span",{class:"small muted"});
+  send.addEventListener("click",async()=>{
+    const q=ta.value.trim(); if(!q){ta.focus();return;}
+    s.qa[qkey]=(s.qa[qkey]||[]).concat({r:"u",t:q}); ta.value=""; draw();
+    const bubble=el("div",{class:"msg a"}); bubble.textContent="Մտածում եմ…"; thread.appendChild(bubble);
+    send.disabled=true; status.textContent="";
+    let hist=s.qa[qkey].slice(-12); if(hist[0].r!=="u")hist=hist.slice(1);
+    const msgs=hist.map((m,i)=>({role:m.r==="u"?"user":"assistant",content:i===0?`Դու ${c.title} ոլորտի համբերատար դասախոս ես։ Ուսանողը սկսնակ է։ Պատասխանիր հայերեն, պարզ, կոնկրետ օրինակներով, պարզ տեքստով առանց markdown նշանների։ Անգլերեն տերմինները բացատրիր։ Եթե հարցը դասից դուրս է, բայց կապված է ոլորտի հետ, միևնույն է պատասխանիր։ Եթե չգիտես կամ փաստը կարող է փոխված լինել, ասա այդ մասին։\n\nԿոնտեքստ՝\n${context}\n\nՈւսանողի հարցը՝ ${m.t}`:m.t}));
+    if(msgs[0].role!=="user")msgs.shift();
+    try{const r=await sample(msgs,{modelTier:"default",cache:false,onText:({text})=>{bubble.textContent=text;}});
+      s.qa[qkey].push({r:"a",t:r.text}); s.qa[qkey]=s.qa[qkey].slice(-30); persist(); draw();}
+    catch(e){bubble.textContent=e&&e.code==="not_granted"?"Հարց ու պատասխանը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց պատասխանել։ Փորձիր նորից։"; s.qa[qkey].pop(); ta.value=q;}
+    send.disabled=false;
+  });
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))send.click();});
+  clear.addEventListener("click",()=>{delete s.qa[qkey];persist();draw();});
+  const row=el("div",{class:"row"}); row.append(send,clear,status);
+  d.append(thread,ta,row); return d;
+}
+
+function moduleContext(w){return `Մոդուլ՝ ${w.title}\n`+w.lessons.map(l=>`• ${l.t}: ${stripHtml(l.b)}`).join("\n").slice(0,9000);}
+
+/* Test tasks: AI-generated quizzes and applied problems */
+function viewTests(c,w){
+  const s=st(c.id); const g=s.gen[w.n]=s.gen[w.n]||{taken:0,best:0};
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:18px"});
+  wrap.appendChild(el("p",{class:"muted"},`Այստեղ ամեն անգամ ստեղծվում են նոր հարցեր այս մոդուլի նյութից, որպեսզի կարողանաս մարզվել այնքան, որքան պետք է։ Անցած թեստեր՝ <b class="mono">${g.taken}</b>${g.taken?` · լավագույն արդյունք՝ <b class="mono">${g.best}%</b>`:""}`));
+  if(!sample){wrap.appendChild(el("p",{class:"small muted"},"Թեստերի ստեղծումը հասանելի չէ այս դիտման մեջ. օգտագործիր «Թեստ» բաժինը։"));return wrap;}
+  // quiz generator
+  const qb=el("div",{class:"box"}); qb.appendChild(el("h3",{},"Նոր թեստ՝ 6 հարց"));
+  const lvls=[["easy","Հեշտ","հեշտ, տերմինների և հիմնական գաղափարների ստուգում"],["mid","Միջին","միջին, կիրառական իրավիճակներ և պարզ հաշվարկներ"],["hard","Բարդ","բարդ, սցենարային հարցեր հարցազրույցի և սերտիֆիկացիոն քննության մակարդակով"]];
+  let lvl="mid"; const lr=el("div",{class:"row"});
+  lvls.forEach(([k,t])=>{const b=el("button",{class:"btn small"+(k===lvl?"":" ghost")},t);b.addEventListener("click",()=>{lvl=k;[...lr.children].forEach(x=>x.classList.add("ghost"));b.classList.remove("ghost");});lr.appendChild(b);});
+  const gen=el("button",{class:"btn"},"Ստեղծել թեստը"); const qout=el("div",{style:"display:flex;flex-direction:column;gap:12px"});
+  gen.addEventListener("click",async()=>{
+    gen.disabled=true; qout.innerHTML=""; qout.appendChild(el("p",{class:"muted"},"Ստեղծում եմ հարցերը…"));
+    const L=lvls.find(x=>x[0]===lvl);
+    const prompt=`Դու ${c.title} դասընթացի քննիչ ես։ Ստեղծիր 6 նոր multiple-choice հարց հայերեն՝ միայն այս նյութի հիման վրա։ Մակարդակ՝ ${L[2]}։ Յուրաքանչյուր հարց ունենա 4 տարբերակ, միայն մեկը ճիշտ, ճիշտ պատասխանի դիրքը տարբեր լինի հարցերում, և կարճ բացատրություն։ Մի կրկնիր այս հարցերը՝ ${w.quiz.map(q=>q[0]).join(" | ").slice(0,1500)}
+Նյութ՝
+${moduleContext(w)}
+
+Վերադարձրու միայն JSON այս ձևով՝ {"questions":[{"q":"...","options":["...","...","...","..."],"answer":0,"explanation":"..."}]}`;
+    try{
+      const data=await sample.json(prompt,{modelTier:"default",cache:false});
+      const qs=(data&&Array.isArray(data.questions)?data.questions:[]).filter(x=>x&&typeof x.q==="string"&&Array.isArray(x.options)&&x.options.length>=2&&Number.isInteger(x.answer)&&x.answer>=0&&x.answer<x.options.length).map(x=>[x.q,x.options.map(String),x.answer,String(x.explanation||"")]);
+      qout.innerHTML="";
+      if(!qs.length){qout.appendChild(el("p",{class:"muted"},"Չհաջողվեց ստեղծել հարցերը։ Փորձիր նորից։"));}
+      else qout.appendChild(quizRunner(qs,(sc)=>{const pct=Math.round(sc/qs.length*100);g.taken++;g.best=Math.max(g.best,pct);persist();},Math.ceil(qs.length*PASS_QUIZ)));
+    }catch(e){qout.innerHTML="";qout.appendChild(el("p",{class:"muted"},e&&e.code==="not_granted"?"Թեստերի ստեղծումը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց ստեղծել հարցերը։ Փորձիր նորից։"));}
+    gen.disabled=false;
+  });
+  qb.append(lr,el("div",{class:"row"}),qout); qb.children[2].appendChild(gen); wrap.appendChild(qb);
+  // applied task
+  const tb=el("div",{class:"box"}); tb.appendChild(el("h3",{},"Կիրառական առաջադրանք"));
+  tb.appendChild(el("p",{class:"small muted"},"Իրական աշխատանքային իրավիճակ, հաշվարկ կամ փոքր case։ Պատասխանիր գրավոր, և կստանաս գնահատում ու ճիշտ լուծումը։"));
+  const task=el("div",{class:"feedback"}); task.textContent=(g.task&&g.task.q)||"Սեղմիր «Նոր առաջադրանք»։";
+  const ans=el("textarea",{id:"task-"+c.id+"-"+w.n,placeholder:"Քո լուծումը…",style:"min-height:140px"}); ans.value=(g.task&&g.task.a)||"";
+  ans.addEventListener("input",()=>{if(g.task){g.task.a=ans.value;persist();}});
+  const tfb=el("div",{class:"feedback"}); tfb.hidden=!(g.task&&g.task.f); tfb.textContent=(g.task&&g.task.f)||"";
+  const nt=el("button",{class:"btn ghost"},"Նոր առաջադրանք"), gt=el("button",{class:"btn"},"Ստուգել լուծումը");
+  nt.addEventListener("click",async()=>{nt.disabled=true;task.textContent="Պատրաստում եմ…";tfb.hidden=true;ans.value="";
+    try{const r=await sample(`Դու ${c.title} ոլորտի դասախոս ես։ Ստեղծիր ՄԵԿ կիրառական թեստային առաջադրանք հայերեն այս մոդուլի նյութից՝ իրական աշխատանքային իրավիճակ, թվերով հաշվարկ կամ փոքր case (օր.՝ հայաստանյան ընկերության կոնտեքստում)։ Տուր անհրաժեշտ բոլոր տվյալները և հստակ նշիր, թե ինչ է պետք պատասխանել։ Մի տուր պատասխանը։ Պարզ տեքստ, առանց markdown, մինչև 150 բառ։ Պատահական թեմա՝ ${Math.random().toString(36).slice(2,6)}\n\nՆյութ՝\n${moduleContext(w)}`,{modelTier:"default",cache:false,onText:({text})=>{task.textContent=text;}});
+      task.textContent=r.text; g.task={q:r.text,a:"",f:""}; persist();}
+    catch(e){task.textContent="Չհաջողվեց ստեղծել առաջադրանքը։ Փորձիր նորից։";}nt.disabled=false;});
+  gt.addEventListener("click",async()=>{if(!g.task||!ans.value.trim()){tfb.hidden=false;tfb.textContent="Նախ ստացիր առաջադրանք և գրիր լուծումը։";return;}gt.disabled=true;tfb.hidden=false;tfb.textContent="Ստուգում եմ…";
+    try{const r=await sample(`Դու ${c.title} դասախոս ես։ Առաջադրանք՝\n${g.task.q}\n\nՈւսանողի լուծումը՝\n"""${ans.value.slice(0,6000)}"""\n\nԳնահատիր հայերեն, պարզ տեքստով (առանց markdown). Գնահատական X/10, ինչ է ճիշտ, ինչ է սխալ կամ պակաս, ապա «Ճիշտ լուծում»՝ քայլ առ քայլ։ Բարի և խրախուսող եղիր։`,{modelTier:"default",cache:false,onText:({text})=>{tfb.textContent=text;}});
+      tfb.textContent=r.text; g.task.f=r.text; persist();}
+    catch(e){tfb.textContent="Չհաջողվեց ստուգել։ Փորձիր նորից։";}gt.disabled=false;});
+  const tr=el("div",{class:"row"}); tr.append(nt,gt);
+  tb.append(task,ans,tr,tfb); wrap.appendChild(tb);
+  return wrap;
+}
+
+function introBox(c,w){
+  const it=INTRO[c.id]&&INTRO[c.id][w.n-1]; if(!it)return el("div");
+  const b=el("div",{class:"intro"});
+  b.innerHTML=`<span class="eyebrow">Սկսենք պարզից</span><h3>Ինչի մասին է այս մոդուլը</h3><p>${it.about}</p>
+   <div class="cols"><div class="box"><b>Օրինակ կյանքից</b><p>${it.analogy}</p></div><div class="box"><b>Ինչու է սա կարևոր աշխատանքում</b><p>${it.why}</p></div></div>
+   <div><b>Հիմնական բառեր</b><div class="tbl"><table>${it.terms.map(t=>`<tr><td class="mono" style="white-space:nowrap">${t[0]}</td><td>${t[1]}</td></tr>`).join("")}</table></div></div>
+   <p class="small muted">Ինչպես սովորել. յուրաքանչյուր դասում սեղմիր «Սկսել դասը». նախ կտեսնես պարզ բացատրությունը, հետո մանրամասն նյութը, իսկ վերջում կարող ես հարցնել այն, ինչ չհասկացար։</p>`;
+  return b;
+}
+
+function viewWeek(c,w){
+  const s=st(c.id);
+  const sec=el("section",{class:"panel"});
+  const p=weekProgress(c,w);
+  sec.appendChild(el("div",{},`<span class="eyebrow">Մոդուլ ${w.n} / ${c.weeks.length} · ${w.aca} · ${p.pct}% ավարտված</span><h2>${w.title}</h2><p class="muted" style="margin-top:6px">${w.goal}</p>`));
+  const key=c.id+w.n; const tab=subTab[key]||"theory";
+  const stb=el("div",{class:"sub-tabs",role:"tablist"});
+  [["theory","Տեսություն"],["practice","Գործնական"],["quiz","Թեստ"],["tests","Թեստային առաջադրանքներ"]].forEach(([k,t])=>{stb.appendChild(el("button",{class:tab===k?"on":"",onclick:()=>{subTab[key]=k;render();}},t));});
+  sec.appendChild(stb);
+  if(tab==="tests"){sec.appendChild(viewTests(c,w));}
+  else if(tab==="theory"){
+    sec.appendChild(introBox(c,w));
+    w.lessons.forEach((l,i)=>sec.appendChild(lessonBlock(c,w.n+"-"+i,`Դաս ${w.n}.${i+1}`,l,s.lessons)));
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{subTab[key]="practice";render();window.scrollTo(0,0);}},"Անցնել գործնականին →"));
+  } else if(tab==="practice"){
+    const pr=w.practice;
+    sec.appendChild(el("div",{},`<span class="pill ms">Գործնական առաջադրանք</span><h3 style="margin-top:8px">${pr.t}</h3>`));
+    sec.appendChild(practiceGuide(c,w));
+    sec.appendChild(el("ol",{},pr.steps.map(x=>`<li>${x}</li>`).join("")));
+    if(pr.labSteps){
+      const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Լաբ՝ քայլ առ քայլ"));
+      pr.labSteps.forEach((t,i)=>{const k=w.n+"-"+i;const lab=el("label",{class:"chk",style:"align-items:flex-start"});const cb=el("input",{type:"checkbox",id:"lab-"+c.id+"-"+k});cb.checked=!!s.labs[k];cb.addEventListener("change",()=>{s.labs[k]=cb.checked;persist();});const sp=el("span");sp.textContent=(i+1)+". "+t;lab.append(cb,sp);b.appendChild(lab);});
+      sec.appendChild(b);
+    }
+    sec.appendChild(el("p",{},`<b>Առաքվող՝</b> ${pr.deliverable}`));
+    (pr.tools||[]).forEach(t=>{const f=TOOLS[t];if(f)sec.appendChild(f(c));});
+    sec.appendChild(workBox(c,w));
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{subTab[key]="quiz";render();window.scrollTo(0,0);}},"Անցնել թեստին →"));
+  } else {
+    const q=s.quiz[w.n];
+    sec.appendChild(el("p",{class:"muted"},`${w.quiz.length} հարց · անցողիկ՝ 70% (${Math.ceil(w.quiz.length*PASS_QUIZ)}/${w.quiz.length})${q?` · լավագույն արդյունք՝ <b class="mono">${q.best}/${w.quiz.length}</b>`:""}`));
+    sec.appendChild(quizRunner(w.quiz,(score)=>{const prev=s.quiz[w.n];s.quiz[w.n]={best:Math.max(score,prev?prev.best:0),last:score};persist();renderCourseHead(route());},Math.ceil(w.quiz.length*PASS_QUIZ)));
+    const nx=w.n<c.weeks.length?`#${c.id}-w${w.n+1}`:`#${c.id}-exam`;
+    const nr=el("div",{class:"row"}); sec.appendChild(nr);
+    nr.appendChild(el("button",{class:"btn ghost",onclick:()=>{subTab[key]="tests";render();window.scrollTo(0,0);}},"Լրացուցիչ թեստեր →"));
+    nr.appendChild(el("a",{href:nx,class:"btn"},w.n<c.weeks.length?`Մոդուլ ${w.n+1} →`:"Ավարտական քննություն →"));
+  }
+  if(sample&&tab!=="theory")sec.appendChild(qaBox(c,c.id+"|m"+w.n,moduleContext(w),"Հարց տուր այս մոդուլի մասին",false));
+  return sec;
+}
+
+
+function practiceGuide(c,w){
+  const s=st(c.id), pr=w.practice, gk=c.id+"|g"+w.n;
+  s.guide=s.guide||{};
+  if(!sample&&!s.guide[w.n])return el("div");
+  const box=el("div",{class:"simple"});
+  box.appendChild(el("span",{class:"eyebrow"},"Նախ՝ ինչպես կատարել այս առաջադրանքը"));
+  const p=box.appendChild(el("p",{class:"pre"}));
+  const again=el("button",{class:"btn ghost small"},"Բացատրել նորից");
+  const gen=async()=>{
+    if(GEN.has(gk))return; GEN.add(gk); again.disabled=true; p.textContent="Պատրաստում եմ ուղեցույցը…";
+    try{const r=await sample(`Դու ${c.title} ոլորտի համբերատար դասախոս ես։ Ուսանողը սկսնակ է։ Բացատրիր հայերեն, շատ պարզ, պարզ տեքստով (առանց markdown), թե ինչպես կատարել այս գործնական առաջադրանքը.
+Առաջադրանք՝ ${pr.t}
+Քայլեր՝ ${pr.steps.concat(pr.labSteps||[]).join("; ")}
+Առաքվող՝ ${pr.deliverable}
+
+Գրիր. 1) ինչ ենք սովորում այս առաջադրանքով (1–2 նախադասություն), 2) յուրաքանչյուր քայլի համար՝ ինչ անել կոնկրետ և ինչ անվճար գործիք օգտագործել, 3) փոքր օրինակ, թե ինչպես կարող է տեսք ունենալ պատրաստի արդյունքի մի հատվածը, 4) 3 տարածված սխալ։ Մինչև 450 բառ։`,{modelTier:"default",cache:false,onText:({text})=>{p.textContent=text;}});
+      p.textContent=r.text; s.guide[w.n]=r.text; persist();}
+    catch(e){p.textContent=e&&e.code==="not_granted"?"Ուղեցույցը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց պատրաստել ուղեցույցը։ Սեղմիր «Բացատրել նորից»։";}
+    GEN.delete(gk); again.disabled=false;
+  };
+  again.addEventListener("click",gen);
+  if(s.guide[w.n])p.textContent=s.guide[w.n]; else gen();
+  if(sample)box.appendChild(again);
+  return box;
+}
+
+function workBox(c,w){
+  const s=st(c.id), pr=w.practice;
+  const box=el("div",{class:"box"});
+  box.appendChild(el("h3",{},"Իմ աշխատանքը"));
+  box.appendChild(el("p",{class:"small muted"},"Գրիր կամ տեղադրիր առաքվողի տեքստը (աղյուսակները կարող ես պատճենել տեքստով, իսկ հղումները՝ Figma, GitHub, Notion)։ Պահպանվում է ավտոմատ։"));
+  const ta=el("textarea",{id:"note-"+c.id+"-"+w.n,placeholder:"Սկսիր այստեղ…"}); ta.value=s.notes[w.n]||"";
+  ta.addEventListener("input",()=>{s.notes[w.n]=ta.value;persist();});
+  box.appendChild(ta);
+  const row=el("div",{class:"row"});
+  const fb=el("div",{class:"feedback"}); fb.hidden=!s.feedback[w.n]; fb.textContent=s.feedback[w.n]||"";
+  if(sample){
+    const ab=el("button",{class:"btn ghost"},"Ստանալ AI գնահատում");
+    ab.addEventListener("click",async()=>{
+      if(!ta.value.trim()){fb.hidden=false;fb.textContent="Նախ գրիր կամ տեղադրիր աշխատանքդ։";return;}
+      ab.disabled=true; fb.hidden=false; fb.textContent="Ստուգում եմ…";
+      const prompt=`Դու ${c.title} ոլորտի փորձառու դասախոս և պրակտիկ մասնագետ ես։ Գնահատիր ուսանողի գործնական աշխատանքը։
+Մոդուլ՝ ${w.title}
+Առաջադրանք՝ ${pr.t}
+Քայլեր՝ ${pr.steps.concat(pr.labSteps||[]).join("; ")}
+Պահանջվող առաքվող՝ ${pr.deliverable}
+
+Ուսանողի աշխատանքը՝
+"""${ta.value.slice(0,12000)}"""
+
+Պատասխանիր հայերեն, պարզ տեքստով (առանց markdown նշանների), այս կառուցվածքով.
+Գնահատական՝ X/10
+Ուժեղ կողմեր՝ 2–3 կետ
+Ինչ բացակայում է կամ սխալ է՝ կոնկրետ կետեր՝ հղելով քայլերին
+Ինչպես բարելավել՝ 3 գործնական քայլ
+Եթե գնահատականը ≥7, ավելացրու «Առաջադրանքը կարելի է համարել ավարտված»։`;
+      try{const r=await sample(prompt,{modelTier:"default",onText:({text})=>{fb.textContent=text;}}); fb.textContent=r.text; s.feedback[w.n]=r.text; persist();}
+      catch(e){fb.textContent=e&&e.code==="not_granted"?"AI գնահատումը հասանելի չէ այս դիտման մեջ։":"Չհաջողվեց ստանալ գնահատում։ Փորձիր մի փոքր ուշ։";}
+      ab.disabled=false;
+    });
+    row.appendChild(ab);
+  }
+  const lab=el("label",{class:"chk"}); const cb=el("input",{type:"checkbox",id:"p-"+c.id+"-"+w.n}); cb.checked=!!s.practice[w.n];
+  cb.addEventListener("change",()=>{s.practice[w.n]=cb.checked;persist();renderCourseHead(route());});
+  lab.append(cb,document.createTextNode("Գործնականն ավարտված է")); row.appendChild(lab);
+  box.append(row,fb); return box;
+}
+
+function quizRunner(qs,onDone,passN){
+  const wrap=el("div",{style:"display:flex;flex-direction:column;gap:12px"});
+  const name="q"+Math.random().toString(36).slice(2,7);
+  qs.forEach((q,i)=>{
+    const b=el("div",{class:"q"});
+    b.appendChild(el("p",{},`<b class="mono">${i+1}.</b> ${esc(q[0])}`));
+    const o=el("div",{class:"opts"});
+    q[1].forEach((t,j)=>{const lab=el("label",{class:"opt"});const r=el("input",{type:"radio",name:name+i,value:j,id:name+i+"_"+j});const sp=el("span");sp.textContent=t;lab.append(r,sp);o.appendChild(lab);});
+    b.appendChild(o); const ex=el("p",{class:"expl"}); ex.hidden=true; ex.textContent=q[3]; b.appendChild(ex);
+    wrap.appendChild(b);
+  });
+  const res=el("p",{class:"result"}); res.hidden=true;
+  const btn=el("button",{class:"btn"},"Ստուգել պատասխանները");
+  btn.addEventListener("click",()=>{
+    let sc=0;
+    wrap.querySelectorAll(".q").forEach((b,i)=>{
+      const sel=b.querySelector("input:checked"); const right=qs[i][2];
+      b.querySelectorAll(".opt").forEach((lab,j)=>{lab.classList.remove("right","wrong");if(j===right)lab.classList.add("right");else if(sel&&+sel.value===j)lab.classList.add("wrong");});
+      b.querySelector(".expl").hidden=false;
+      if(sel&&+sel.value===right)sc++;
+    });
+    res.hidden=false; res.textContent=`Արդյունք՝ ${sc}/${qs.length} (${Math.round(sc/qs.length*100)}%) — ${sc>=passN?"Անցած է ✓":"Չի անցել. կրկնիր դասերը և փորձիր նորից"}`;
+    res.style.color=sc>=passN?"var(--ok)":"var(--bad)";
+    btn.disabled=true; onDone(sc);
+  });
+  const again=el("button",{class:"btn ghost",onclick:()=>render()},"Նորից");
+  const row=el("div",{class:"row"}); row.append(btn,again);
+  wrap.append(row,res); wrap._submit=()=>{if(!btn.disabled)btn.click();}; return wrap;
+}
+
+/* ========== EXAM ========== */
+let examState={};
+function viewExam(c){
+  const s=st(c.id);
+  const sec=el("section",{class:"panel"});
+  const total=c.final.length+c.examExtra;
+  sec.appendChild(el("div",{},`<span class="eyebrow">Ավարտական քննություն</span><h2>${c.title}</h2><p class="muted" style="margin-top:6px">${total} հարց (${c.final.length} սցենարային + ${c.examExtra} պատահական մոդուլային թեստերից) · ${c.examMin} րոպե · անցողիկ՝ ${PASS_FINAL}%</p>`));
+  if(s.final)sec.appendChild(el("p",{},`Վերջին արդյունք՝ <b class="mono">${s.final.score}%</b> ${s.final.pass?'<span class="pill ok">Անցած է</span>':'<span class="pill ms">Չի անցել</span>'}`));
+  const ready=c.weeks.filter(w=>quizPass(c,w)).length;
+  if(ready<c.weeks.length)sec.appendChild(el("p",{class:"small muted"},`Խորհուրդ է տրվում սկսել բոլոր ${c.weeks.length} մոդուլային թեստերն անցնելուց հետո (անցած է ${ready}/${c.weeks.length})։ Կարող ես փորձել նաև հիմա՝ ինքնաստուգման համար։`));
+  const ex=examState[c.id];
+  if(!ex){
+    sec.appendChild(el("div",{class:"row"})).appendChild(el("button",{class:"btn",onclick:()=>{
+      const pool=[];c.weeks.forEach(w=>w.quiz.forEach(q=>pool.push(q)));
+      for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+      examState[c.id]={qs:c.final.concat(pool.slice(0,c.examExtra)),end:Date.now()+c.examMin*60000};render();}},"Սկսել քննությունը"));
+    return sec;
+  }
+  const tm=el("p",{class:"timer"}); sec.appendChild(tm);
+  const runner=quizRunner(ex.qs,(sc)=>{clearInterval(iv);const pct=Math.round(sc/ex.qs.length*100);s.final={score:pct,pass:pct>=PASS_FINAL,date:Date.now()};persist();renderCourseHead(route());delete examState[c.id];
+    if(pct>=PASS_FINAL){const r=certReady(c);sec.appendChild(el("div",{class:"notice"},r.quizzes&&r.practice?`<span>Շնորհավորում եմ։ Բոլոր պահանջները կատարված են։</span><a class="btn small" href="#${c.id}-cert">Ստանալ սերտիֆիկատը</a>`:`<span>Քննությունն անցած է։ Սերտիֆիկատի համար ավարտիր մնացած պահանջները։</span><a class="btn small ghost" href="#${c.id}-cert">Տեսնել պահանջները</a>`));}
+  },Math.ceil(ex.qs.length*PASS_FINAL/100));
+  const tick=()=>{const left=Math.max(0,ex.end-Date.now());const m=Math.floor(left/60000),sc=Math.floor(left%60000/1000);tm.textContent=`Մնացած ժամանակ՝ ${String(m).padStart(2,"0")}:${String(sc).padStart(2,"0")}`;if(left<=0){clearInterval(iv);runner._submit();}};
+  const iv=setInterval(()=>{if(!document.body.contains(tm)){clearInterval(iv);return;}tick();},1000); tick();
+  sec.appendChild(runner);
+  return sec;
+}
+
+/* ========== EXTRA (best practices) ========== */
+let extraTab="lessons";
+function viewExtra(c){
+  const s=st(c.id), x=c.extra;
+  const sec=el("section",{class:"panel"});
+  const done=x.lessons.filter((_,i)=>s.extra["l"+i]).length;
+  sec.appendChild(el("div",{},`<span class="eyebrow">Լրացուցիչ մոդուլ · ${done}/${x.lessons.length} դաս${s.extraQuiz?` · թեստ՝ ${s.extraQuiz.best}/${x.quiz.length}`:""}</span><h2>Ինչպես են աշխատում առաջատար ընկերությունները</h2><p class="muted" style="margin-top:6px;max-width:70ch">Amazon, Google, Spotify, Atlassian, Basecamp, GOV.UK, Netflix և կարիերայի մատրիցներ։ Խորհուրդ է տրվում անցնել մեկ դաս շաբաթական՝ հիմնական մոդուլներին զուգահեռ։</p>`));
+  const stb=el("div",{class:"sub-tabs"});
+  [["lessons","Դասեր"],["practice","Գործնական"],["quiz","Թեստ"]].forEach(([k,t])=>stb.appendChild(el("button",{class:extraTab===k?"on":"",onclick:()=>{extraTab=k;render();}},t)));
+  sec.appendChild(stb);
+  if(extraTab==="lessons")x.lessons.forEach((l,i)=>sec.appendChild(lessonBlock(c,"l"+i,`Դաս ${i+1}`,l,s.extra)));
+  else if(extraTab==="practice"){
+    const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կիրառիր պրակտիկաները քո capstone-ում"));
+    x.steps.forEach((t,i)=>{const k="s"+i;const lab=el("label",{class:"chk",style:"align-items:flex-start"});const cb=el("input",{type:"checkbox",id:"ex-"+k});cb.checked=!!s.extra[k];cb.addEventListener("change",()=>{s.extra[k]=cb.checked;persist();});const sp=el("span");sp.textContent=(i+1)+". "+t;lab.append(cb,sp);b.appendChild(lab);});
+    sec.appendChild(b);
+  } else {
+    sec.appendChild(el("p",{class:"muted"},`${x.quiz.length} հարց · անցողիկ՝ 80%`));
+    sec.appendChild(quizRunner(x.quiz,(sc)=>{const p=s.extraQuiz;s.extraQuiz={best:Math.max(sc,p?p.best:0)};persist();},Math.ceil(x.quiz.length*0.8)));
+  }
+  return sec;
+}
+
+/* ========== CERTIFICATE ========== */
+function certId(c,name,date){let h=0;const str=c.id+"|"+name+"|"+date;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;}return ACAD.seal+"-"+c.id.toUpperCase()+"-"+h.toString(36).toUpperCase().padStart(7,"0").slice(0,7);}
+function viewCert(c){
+  const s=st(c.id), r=certReady(c), k=courseStats(c);
+  const sec=el("section",{class:"panel"});
+  sec.appendChild(el("div",{},`<span class="eyebrow">Սերտիֆիկատ</span><h2>Ավարտական վկայական՝ ${c.title}</h2>`));
+  const req=el("div",{class:"req"});
+  [[r.quizzes,`Բոլոր ${c.weeks.length} մոդուլային թեստերն անցած են (${k.quizzes}/${c.weeks.length})`],[r.practice,`Առնվազն ${PRACTICE_MIN} գործնական առաջադրանք ավարտված է (${k.practice}/${c.weeks.length})`],[r.final,`Ավարտական քննությունն անցած է ≥${PASS_FINAL}% (${k.final?k.final.score+"%":"դեռ չի հանձնվել"})`]]
+    .forEach(([ok,t])=>req.appendChild(el("div",{},`<span class="mark${ok?" done":""}">${ok?"✓":""}</span><span>${t}</span>`)));
+  sec.appendChild(req);
+  const all=r.quizzes&&r.practice&&r.final;
+  if(!all){sec.appendChild(el("p",{class:"muted"},"Կատարիր բոլոր պահանջները, և այստեղ կհայտնվի քո անվանական վկայականը։"));return sec;}
+  const nameRow=el("div",{class:"row"});
+  const lab=el("label",{class:"f",style:"flex:1;min-width:220px"},"Անուն Ազգանուն վկայականի համար");
+  const inp=el("input",{type:"text",id:"cert-name",placeholder:"Օր.՝ Նվեր Թորոսյան"}); inp.value=S.name||"";
+  lab.appendChild(inp); nameRow.appendChild(lab);
+  const issue=el("button",{class:"btn",style:"align-self:flex-end"},s.cert?"Թարմացնել անունը":"Տրամադրել վկայականը");
+  issue.addEventListener("click",()=>{const n=inp.value.trim(); if(!n){inp.focus();return;} S.name=n; const date=s.cert?s.cert.date:Date.now(); s.cert={name:n,date,score:s.final.score,id:certId(c,n,date)}; persist(); render();});
+  nameRow.appendChild(issue); sec.appendChild(nameRow);
+  if(!s.cert)return sec;
+  const cert=el("div",{class:"cert",style:`--cc:var(--c-${c.id})`});
+  cert.innerHTML=`<span class="eyebrow">${ACAD.name} · ինքնուսուցման ծրագիր</span>
+    <h2 style="font-size:clamp(24px,4vw,34px)">Ավարտական վկայական</h2>
+    <p class="muted">Սույնով հավաստվում է, որ</p>
+    <div class="cname">${esc(s.cert.name)}</div>
+    <p class="muted">հաջողությամբ ավարտել է ${c.weeks.length}-մոդուլային դասընթացը</p>
+    <div class="ctitle">${c.title}</div>
+    <p class="small muted" style="max-width:56ch">ներառյալ ${k.lessonsTotal} տեսական դաս, ${k.practice} գործնական առաջադրանք, ${c.weeks.length} մոդուլային թեստ և ավարտական քննություն</p>
+    <div class="cert-meta"><div>Քննության արդյունք<b>${s.cert.score}%</b></div><div>Տրման ամսաթիվ<b>${fmtDate(s.cert.date)}</b></div><div>Վկայականի ID<b>${s.cert.id}</b></div></div>
+    <div class="seal">${ACAD.seal}</div>
+    <p class="small muted" style="max-width:60ch">Վկայականը հավաստում է ինքնուսուցման ծրագրի ավարտը և չի հանդիսանում պետական, համալսարանական կամ ${ACAD.disc} հավատարմագրված սերտիֆիկատ։</p>`;
+  sec.appendChild(cert);
+  const act=el("div",{class:"row"}); const msg=el("span",{class:"small muted"});
+  if(downloads){
+    const b=el("button",{class:"btn"},"Պահպանել որպես նկար (SVG)");
+    b.addEventListener("click",async()=>{try{const res=await downloads.save({filename:`certificate-${c.id}.svg`,data:certSvg(c,s.cert,k)}); msg.textContent=res&&res.status==="saved"?"Պահպանված է":"";}catch(e){msg.textContent=e&&e.code==="unavailable"?"Պահպանումը հասանելի չէ այս դիտման մեջ. կարող ես անել screenshot։":"Պահպանումը չեղարկվեց։";}});
+    act.appendChild(b);
+  } else act.appendChild(el("span",{class:"small muted"},"Վկայականը պահպանելու համար կարող ես անել screenshot։"));
+  act.appendChild(msg); sec.appendChild(act);
+  sec.appendChild(el("p",{class:"small muted"},"LinkedIn-ում կարող ես ավելացնել որպես «Licenses & certifications» կամ «Courses»՝ նշելով, որ սա ինքնուսուցման ծրագիր է, իսկ capstone նախագիծը ավելացնել «Projects» բաժնում։"));
+  return sec;
+}
+function certSvg(c,cert,k){
+  const color=ACAD.colors[c.id];
+  const f=`font-family="Noto Serif Armenian, 'Sylfaen', 'Arial Unicode MS', serif"`, fs=`font-family="Noto Sans Armenian, 'Sylfaen', Arial, sans-serif"`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1130" viewBox="0 0 1600 1130">
+<rect width="1600" height="1130" fill="#fbfbf8"/>
+<rect x="40" y="40" width="1520" height="1050" fill="none" stroke="${color}" stroke-width="4"/>
+<rect x="58" y="58" width="1484" height="1014" fill="none" stroke="${color}" stroke-width="1.5"/>
+<text x="800" y="170" text-anchor="middle" ${fs} font-size="26" letter-spacing="4" fill="#5b6b70">${esc(ACAD.name.toUpperCase())} · ԻՆՔՆՈՒՍՈՒՑՄԱՆ ԾՐԱԳԻՐ</text>
+<text x="800" y="270" text-anchor="middle" ${f} font-size="72" font-weight="800" fill="#14232b">Ավարտական վկայական</text>
+<text x="800" y="360" text-anchor="middle" ${fs} font-size="28" fill="#5b6b70">Սույնով հավաստվում է, որ</text>
+<text x="800" y="470" text-anchor="middle" ${f} font-size="80" font-weight="700" fill="#14232b">${esc(cert.name)}</text>
+<line x1="420" y1="500" x2="1180" y2="500" stroke="#c9d2d0" stroke-width="2"/>
+<text x="800" y="570" text-anchor="middle" ${fs} font-size="28" fill="#5b6b70">հաջողությամբ ավարտել է ${c.weeks.length}-մոդուլային դասընթացը</text>
+<text x="800" y="660" text-anchor="middle" ${f} font-size="60" font-weight="700" fill="${color}">${esc(c.title)}</text>
+<text x="800" y="720" text-anchor="middle" ${fs} font-size="22" fill="#5b6b70">${k.lessonsTotal} տեսական դաս · ${k.practice} գործնական առաջադրանք · ${c.weeks.length} մոդուլային թեստ · ավարտական քննություն</text>
+<g ${fs} text-anchor="middle">
+<text x="420" y="840" font-size="20" fill="#5b6b70">Քննության արդյունք</text><text x="420" y="880" font-size="32" fill="#14232b">${cert.score}%</text>
+<text x="800" y="840" font-size="20" fill="#5b6b70">Տրման ամսաթիվ</text><text x="800" y="880" font-size="32" fill="#14232b">${esc(fmtDate(cert.date))}</text>
+<text x="1180" y="840" font-size="20" fill="#5b6b70">Վկայականի ID</text><text x="1180" y="880" font-size="28" fill="#14232b" font-family="monospace">${cert.id}</text>
+</g>
+<circle cx="800" cy="960" r="38" fill="none" stroke="${color}" stroke-width="3"/><text x="800" y="968" text-anchor="middle" font-family="monospace" font-size="20" fill="${color}">${ACAD.seal}</text>
+<text x="800" y="1045" text-anchor="middle" ${fs} font-size="17" fill="#8a9799">Վկայականը հավաստում է ինքնուսուցման ծրագրի ավարտը և չի հանդիսանում պետական, համալսարանական կամ միջազգային հավատարմագրված սերտիֆիկատ։</text>
+</svg>`;
+}
+
+/* ========== TOOLS ========== */
+function numField(id,label,val){const l=el("label",{class:"f"},label);const i=el("input",{type:"number",id,step:"any",value:val});l.appendChild(i);return l;}
+const TOOLS={
+  pert(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"PERT հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("po","Optimistic (O)",4),numField("pm","Most likely (M)",6),numField("pp","Pessimistic (P)",14)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const O=+$("#po",b).value,M=+$("#pm",b).value,P=+$("#pp",b).value;const E=(O+4*M+P)/6,T=(O+M+P)/3,sd=(P-O)/6;
+      out.textContent=`PERT E = ${E.toFixed(2)}    Triangular = ${T.toFixed(2)}    σ = ${sd.toFixed(2)}\n68%՝ ${(E-sd).toFixed(1)} – ${(E+sd).toFixed(1)}\n95%՝ ${(E-2*sd).toFixed(1)} – ${(E+2*sd).toFixed(1)}`;};
+    b.addEventListener("input",calc); calc(); return b;},
+  evm(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"EVM հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("bac","BAC ($)",120000),numField("pv","PV ($)",60000),numField("ac","AC ($)",58000),numField("pc","Ավարտված %",45)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out); const f=n=>Math.round(n).toLocaleString("en-US");
+    const calc=()=>{const BAC=+$("#bac",b).value,PV=+$("#pv",b).value,AC=+$("#ac",b).value,pc=+$("#pc",b).value/100;const EV=pc*BAC,CPI=EV/AC,SPI=EV/PV,EAC=BAC/CPI;
+      out.textContent=`EV  = ${f(EV)}\nCV  = ${f(EV-AC)}   ${EV-AC<0?"(գերծախս)":"(խնայողություն)"}\nSV  = ${f(EV-PV)}   ${EV-PV<0?"(ուշացում)":"(առաջ)"}\nCPI = ${CPI.toFixed(2)}    SPI = ${SPI.toFixed(2)}\nEAC = ${f(EAC)}\nETC = ${f(EAC-AC)}\nVAC = ${f(BAC-EAC)}\nTCPI = ${((BAC-EV)/(BAC-AC)).toFixed(2)}`;};
+    b.addEventListener("input",calc); calc(); b.appendChild(el("p",{class:"small muted"},"Նախ լուծիր ձեռքով, հետո ստուգիր հաշվիչով։")); return b;},
+  forecast(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"Կանխատեսման հաշվիչ (velocity և Little's Law)"));
+    const vl=el("label",{class:"f"},"Վերջին sprint-երի velocity (ստորակետով)"); const vi=el("input",{type:"text",id:"vel",value:"18, 24, 21, 20"}); vl.appendChild(vi);
+    const g=el("div",{class:"cols"}); g.append(vl,numField("bl","Backlog (point)",160),numField("wip","Միջին WIP",15),numField("thr","Throughput (item/շաբաթ)",5)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const v=vi.value.split(/[,\s]+/).map(Number).filter(x=>x>0);const bl=+$("#bl",b).value;const wip=+$("#wip",b).value,thr=+$("#thr",b).value;
+      let t="";if(v.length){const avg=v.reduce((a,x)=>a+x,0)/v.length,mx=Math.max(...v),mn=Math.min(...v);t+=`Միջին velocity = ${avg.toFixed(1)}\nԿանխատեսում՝ ${Math.ceil(bl/mx)}–${Math.ceil(bl/mn)} sprint (միջինով՝ ${Math.ceil(bl/avg)})\n\n`;}
+      t+=thr>0?`Little's Law: Cycle time = ${wip} / ${thr} = ${(wip/thr).toFixed(1)} շաբաթ`:"";out.textContent=t;};
+    b.addEventListener("input",calc); calc(); return b;},
+  rice(){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},"RICE հաշվիչ"));
+    const g=el("div",{class:"cols"}); g.append(numField("rr","Reach (օգտատեր/եռամսյակ)",2000),numField("ri","Impact (0.25–3)",2),numField("rc","Confidence (%)",80),numField("re","Effort (person-month)",4)); b.appendChild(g);
+    const out=el("div",{class:"formula"}); b.appendChild(out);
+    const calc=()=>{const R=+$("#rr",b).value,I=+$("#ri",b).value,C=+$("#rc",b).value/100,E=+$("#re",b).value;out.textContent=E>0?`RICE = (${R} × ${I} × ${C}) / ${E} = ${(R*I*C/E).toFixed(0)}`:"Effort-ը պետք է լինի 0-ից մեծ";};
+    b.addEventListener("input",calc); calc(); return b;},
+  interview(c){const b=el("div",{class:"box"}); b.appendChild(el("h3",{},`Փորձնական հարցազրույց՝ ${ROLE[c.id]}`));
+    if(!sample){b.appendChild(el("p",{class:"small muted"},"AI հարցազրույցը հասանելի չէ այս դիտման մեջ։ Օգտագործիր դասերում նշված հարցերը և պատասխանիր գրավոր։"));return b;}
+    const types=["վարքային (STAR)","սցենարային","տեխնիկական","case study"]; let qtext=""; let count=0;
+    const qbox=el("div",{class:"feedback"}); qbox.textContent="Սեղմիր «Նոր հարց»՝ սկսելու համար։";
+    const ta=el("textarea",{id:"iv-"+c.id,placeholder:"Քո պատասխանը…",style:"min-height:140px"});
+    const fb=el("div",{class:"feedback"}); fb.hidden=true;
+    const nq=el("button",{class:"btn ghost"},"Նոր հարց"), ev=el("button",{class:"btn"},"Գնահատել պատասխանը");
+    nq.addEventListener("click",async()=>{nq.disabled=true;fb.hidden=true;ta.value="";const t=types[count++%types.length];qbox.textContent="Պատրաստում եմ հարցը…";
+      try{const r=await sample(`Դու ${ROLE[c.id]} պաշտոնի համար հարցազրույց վարող փորձառու hiring manager ես ${ACAD.ivOrg}։ Տուր ՄԵԿ ${t} հարց junior/middle մակարդակի թեկնածուի համար։ Պատասխանիր միայն հարցով, հայերեն, առանց նախաբանի։ Պատահական թեմա՝ ${Math.random().toString(36).slice(2,6)}`,{modelTier:"quick",cache:false});qtext=r.text.trim();qbox.textContent=qtext;}
+      catch(e){qbox.textContent="Չհաջողվեց ստանալ հարց։ Փորձիր նորից։";}nq.disabled=false;});
+    ev.addEventListener("click",async()=>{if(!qtext||!ta.value.trim()){fb.hidden=false;fb.textContent="Նախ ստացիր հարց և գրիր պատասխանդ։";return;}ev.disabled=true;fb.hidden=false;fb.textContent="Գնահատում եմ…";
+      try{const r=await sample(`Դու ${ROLE[c.id]} պաշտոնի հարցազրույց վարող ես։ Հարց՝ «${qtext}»\nԹեկնածուի պատասխան՝ """${ta.value.slice(0,6000)}"""\nԳնահատիր հայերեն, պարզ տեքստով (առանց markdown). Գնահատական X/10, ինչ էր լավ, ինչ պակասեց, ինչպես կհնչեր ուժեղ պատասխանը (կարճ օրինակ)։`,{modelTier:"default",cache:false,onText:({text})=>{fb.textContent=text;}});fb.textContent=r.text;}
+      catch(e){fb.textContent="Չհաջողվեց գնահատել։ Փորձիր նորից։";}ev.disabled=false;});
+    const row=el("div",{class:"row"}); row.append(nq,ev);
+    b.append(qbox,ta,row,fb); return b;}
+};
+
+Object.assign(TOOLS,EXTRA_TOOLS);
+render();
+</script>
+</body></html>
